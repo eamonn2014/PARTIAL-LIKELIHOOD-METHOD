@@ -136,7 +136,7 @@ sidebar <- dashboardSidebar(width=300,
                                   ),
                                   
                                   tags$div(
-                                    textInput(inputId='hr', label='Hazard ratio', width = '90%' , "2"),
+                                    textInput(inputId='hr', label='Hazard ratio', width = '90%' , ".5"),
                                   ) 
                                   
                                 ) 
@@ -167,19 +167,31 @@ sidebar <- dashboardSidebar(width=300,
                                       
                                       
                                       
+                             ),
+                             
+                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~#NEW
+                             
+                             menuItem("2 AE table & Dynamic listing", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
+                             
+                             #~~~~~~~~~~~~~
+                             menuItem("3 Supporting outputs",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
+                                      
+                                      menuSubItem("i Word cloud",        tabName = "RESULTS3"),
+                                      menuSubItem("ii Dynamic listing (repeat)",  tabName = "RESULTS")
+                                      #  menuSubItem("testing" ,         tabName = "RESULTS2")
+                                      #  menuSubItem("PF WORD CLOUD" ,  tabName = "RESULTS4")
                              )
-                             
-                             
+                             #~~~~~~~~~~~~~
                              
                           
-                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~END NEW
                             )
                             
                                                  
 )
 
     frow1 <- fluidRow(
-        valueBoxOutput("value1")
+         valueBoxOutput("value1")
         ,valueBoxOutput("value2")
         ,valueBoxOutput("value3")
      )
@@ -204,11 +216,62 @@ sidebar <- dashboardSidebar(width=300,
         ) 
         
     )
-
-
+    
+    
+    
+    
+    
+    
+  
     # combine the two fluid rows to make the body
-    body <- dashboardBody(frow1, frow2 
+    body <- dashboardBody(frow1, frow2 ,
                           
+                          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~NEW
+                          tabItems(
+                            tabItem("OVERVIEW",
+                                    fluidRow(        
+                                      box(
+                                        title = "Table"
+                                        ,status = "primary"
+                                        ,solidHeader = TRUE 
+                                        ,collapsible = TRUE 
+                                       , htmlOutput("tableset") 
+                                      )
+                                    )
+                            ) ),
+                          
+                          
+                          
+                          #~~~~~~~~~~~~~
+                          tabItem("RESULTS3",
+                                  fluidRow(        
+                                    box(
+                                      title = "SYSTEM ORGAN CLASS WORDCLOUD"
+                                      ,status = "primary"
+                                      ,solidHeader = TRUE 
+                                      ,collapsible = TRUE 
+                                     # , plotOutput("SOC", height = "500px") #, width  ="800px")
+                                    )
+                                    
+                                    ,box(
+                                      title = "PREFERRED TERM WORDCLOUD"
+                                      ,status = "primary"
+                                      ,solidHeader = TRUE 
+                                      ,collapsible = TRUE 
+                                      #,plotOutput("PF", height = "500px")
+                                    ) 
+                                  )
+                          ),
+                          #~~~~~~~~~~~~~
+                          
+                          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                          tabItem("RESULTS", 
+                                  box(" ", 
+                                      DT::dataTableOutput("mytable")
+                                  )
+                          )                          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~END NEW
+                      
                           )
     #completing the ui part with dashboardPage
     
@@ -429,6 +492,42 @@ server <- function(input, output) {
         
     })
 
+    
+    
+    output$tableset <- renderText({
+      
+      f <- dat()$d  # Get the  data
+
+    })
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
 }
 
