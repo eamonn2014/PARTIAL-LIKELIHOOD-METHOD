@@ -97,9 +97,9 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#Dashboard header carrying the title of the dashboard
-header <- dashboardHeader(title = "Transformations")  
+    ui <- dashboardPage( 
+#Dashboard header carrying the title of the dashboard,
+ dashboardHeader(title = "Transformations")  ,
 
 #Sidebar content of the dashboard
 sidebar <- dashboardSidebar(width=300,
@@ -176,10 +176,9 @@ sidebar <- dashboardSidebar(width=300,
                              #~~~~~~~~~~~~~
                              menuItem("3 Supporting outputs",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                       
-                                      menuSubItem("i Word cloud",        tabName = "RESULTS3"),
-                                      menuSubItem("ii Dynamic listing (repeat)",  tabName = "RESULTS")
-                                      #  menuSubItem("testing" ,         tabName = "RESULTS2")
-                                      #  menuSubItem("PF WORD CLOUD" ,  tabName = "RESULTS4")
+                                      menuSubItem("i xxxxxxxxxxx",                 tabName = "RESULTS1"),
+                                      menuSubItem("ii xxxxxxxxxx",                 tabName = "RESULTS2")
+                                      
                              )
                              #~~~~~~~~~~~~~
                              
@@ -189,15 +188,21 @@ sidebar <- dashboardSidebar(width=300,
                             
                                                  
 )
+,
 
-    frow1 <- fluidRow(
+
+ dashboardBody(
+  
+    fluidRow(
          valueBoxOutput("value1")
         ,valueBoxOutput("value2")
         ,valueBoxOutput("value3")
-     )
+     ),
     
-    frow2 <- fluidRow(
-        
+    tabItems(
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      tabItem("OVERVIEW",
+    fluidRow(
         box(
             title = "Kaplan-Meier Curve"
             ,status = "primary"
@@ -207,75 +212,49 @@ sidebar <- dashboardSidebar(width=300,
         )
         
         ,box(
-          #  title = "Half-width of confidence intervals centered at average of two survival estimates"
             title='Difference in two Kaplan-Meier estimates with approximate confidence bands for differences'
             ,status = "primary"
             ,solidHeader = TRUE 
             ,collapsible = TRUE 
             ,plotOutput("plot2", height = "750px")
-        ) 
-        
-    )
+        ) )    )   ,               
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    
-    
-    
-    
-    
-  
-    # combine the two fluid rows to make the body
-    body <- dashboardBody(frow1, frow2 ,
-                          
-                          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~NEW
-                          tabItems(
-                            tabItem("OVERVIEW",
-                                    fluidRow(        
-                                      box(
-                                        title = "Table"
-                                        ,status = "primary"
-                                        ,solidHeader = TRUE 
-                                        ,collapsible = TRUE 
-                                       , htmlOutput("tableset") 
-                                      )
-                                    )
-                            ) ),
-                          
-                          
-                          
-                          #~~~~~~~~~~~~~
-                          tabItem("RESULTS3",
-                                  fluidRow(        
-                                    box(
-                                      title = "SYSTEM ORGAN CLASS WORDCLOUD"
-                                      ,status = "primary"
-                                      ,solidHeader = TRUE 
-                                      ,collapsible = TRUE 
-                                     # , plotOutput("SOC", height = "500px") #, width  ="800px")
-                                    )
+    tabItem("RESULTS1",
+        fluidRow(        
+           box(
+              title = "SYSTEM ORGAN CLASS WORDCLOUD"
+                 ,status = "primary"
+                   ,solidHeader = TRUE 
+                    ,collapsible = TRUE 
+                       # , plotOutput("SOC", height = "500px") #, width  ="800px")
+           )
                                     
-                                    ,box(
-                                      title = "PREFERRED TERM WORDCLOUD"
-                                      ,status = "primary"
-                                      ,solidHeader = TRUE 
-                                      ,collapsible = TRUE 
+            ,box(
+               title = "PREFERRED TERM WORDCLOUD"
+                     ,status = "primary"
+                          ,solidHeader = TRUE 
+                             ,collapsible = TRUE 
                                       #,plotOutput("PF", height = "500px")
-                                    ) 
+                                ) 
                                   )
                           ),
                           #~~~~~~~~~~~~~
                           
                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                          tabItem("RESULTS", 
-                                  box(" ", 
-                                      DT::dataTableOutput("mytable")
+                          tabItem("RESULTS2",
+                                  box(" ",
+                                     # DT::dataTableOutput("mytable")
                                   )
                           )                          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~END NEW
                       
                           )
+ 
+    ))
     #completing the ui part with dashboardPage
     
-    ui <- dashboardPage(title = 'Examples of transforming data for analysis', header, sidebar, body, skin='blue')
+  #  ui <- dashboardPage(title = 'Examples of transforming data for analysis', header, sidebar, body, skin='blue')
 
 
 # create the server functions for the dashboard  
