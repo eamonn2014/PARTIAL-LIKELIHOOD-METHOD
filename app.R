@@ -51,7 +51,7 @@
     options(scipen=999)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-# function to create minor lines to match log tick values https://r-graphics.org/recipe-axes-axis-log-ticks
+# function to create data and analyse
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     coxdata <- function(n, allocation, hr, baseline) { 
@@ -85,10 +85,8 @@
       
       f1 <- survfit(Surv(dt,e) ~ trt, data = d)
       
-      
       np <- npsurv(Surv(dt,e) ~ trt,d)
-      
-      
+
       return(list(f=f, d=d, f1=f1, sf=sf, np=np))
       
     }
@@ -99,10 +97,10 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ui <- dashboardPage( 
 #Dashboard header carrying the title of the dashboard,
- dashboardHeader(title = "COX PH")  ,
-
-#Sidebar content of the dashboard
-sidebar <- dashboardSidebar(width=300,
+      dashboardHeader(title = "COX PH")  ,
+      
+      #Sidebar content of the dashboard
+      sidebar <- dashboardSidebar(width=300,
                             br(),
                             tags$head(
                               tags$style(HTML('#resample{background-color:palegreen}'))
@@ -111,12 +109,7 @@ sidebar <- dashboardSidebar(width=300,
                             
                             sidebarMenu(
                                 id = "tabs",
-                             #  br(),
-                             
-                                
-                          
-                                
-                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                              menuItem("Define parameters ", icon = icon("bar-chart-o"),
                                 splitLayout(
                                     
@@ -143,10 +136,6 @@ sidebar <- dashboardSidebar(width=300,
                              ),
                                  
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                             
-                             
-                             
-                             
                              menuItem("Code & link to explanation", icon = icon("bar-chart-o"),
                                       menuSubItem("Shiny",  
                                                   icon = icon("send",lib='glyphicon'), 
@@ -162,14 +151,10 @@ sidebar <- dashboardSidebar(width=300,
                                       menuSubItem("Click for bells and whistles main app.",  
                                                   icon = icon("send",lib='glyphicon'), 
                                                   href = "https://eamonn3.shinyapps.io/LoQs/")
-                                      
-                                      
-                                      
-                                      
+                                  
                                       
                              ),
-                             
-                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~#NEW
+                          
                              
                              menuItem("Survival analysis", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                              
@@ -180,44 +165,37 @@ sidebar <- dashboardSidebar(width=300,
                                       menuSubItem("ii xxxxxxxxxx",                 tabName = "RESULTS2")
                                       
                              )
-                             #~~~~~~~~~~~~~
-                             
-                          
-                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~END NEW
                             )
-                            
-                                                 
-)
-,
+                            ),
 
 
- dashboardBody(
-  
-    fluidRow(
-         valueBoxOutput("value1")
-        ,valueBoxOutput("value2")
-        ,valueBoxOutput("value3")
-     ),
+   dashboardBody(
+    
+      fluidRow(
+           valueBoxOutput("value1")
+          ,valueBoxOutput("value2")
+          ,valueBoxOutput("value3")
+       ),
     
     tabItems(
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("OVERVIEW",
-    fluidRow(
-        box(
-            title = "Kaplan-Meier Curve"
-            ,status = "primary"
-            ,solidHeader = TRUE 
-            ,collapsible = TRUE 
-            ,plotlyOutput("plot1", height = "750px")
-        )
-        
-        ,box(
-            title='Difference in two Kaplan-Meier estimates with approximate confidence bands for differences'
-            ,status = "primary"
-            ,solidHeader = TRUE 
-            ,collapsible = TRUE 
-            ,plotOutput("plot2", height = "750px")
-        ) )    )   ,               
+          fluidRow(
+              box(
+                  title = "Kaplan-Meier Curve"
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                  ,plotlyOutput("plot1", height = "750px")
+              )
+              
+              ,box(
+                  title='Difference in two Kaplan-Meier estimates with approximate confidence bands for differences'
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                  ,plotOutput("plot2", height = "750px")
+              ))),               
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     tabItem("RESULTS1",
@@ -247,15 +225,12 @@ sidebar <- dashboardSidebar(width=300,
                                   box(" ",
                                      # DT::dataTableOutput("mytable")
                                   )
-                          )                          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~END NEW
+                          )                        
                       
                           )
  
     ))
-    #completing the ui part with dashboardPage
-    
-  #  ui <- dashboardPage(title = 'Examples of transforming data for analysis', header, sidebar, body, skin='blue')
+   
 
 
 # create the server functions for the dashboard  
@@ -433,9 +408,6 @@ server <- function(input, output) {
       return(y)
     })
     
-    
-   
-  
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # MAIN PLOT! updated with log transformation  option
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -450,12 +422,8 @@ server <- function(input, output) {
                        )
       ggplotly(p1[[1]])
       
-     # plot_ly(iris, x = ~get(input$choice), y = ~Sepal.Length, type = 'scatter', mode = 'markers')
-      
-      
     })
-    
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     output$plot2<-renderPlot({     
         
       f <- dat()$np  # Get the  data
@@ -473,6 +441,7 @@ server <- function(input, output) {
     })
 
     
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     output$mytable <- DT::renderDataTable({
       
@@ -489,30 +458,9 @@ server <- function(input, output) {
                      )
                    )
     })
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
    
-    
-     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
 
 
