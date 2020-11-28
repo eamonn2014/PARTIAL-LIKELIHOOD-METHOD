@@ -99,7 +99,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ui <- dashboardPage( 
 #Dashboard header carrying the title of the dashboard,
- dashboardHeader(title = "Transformations")  ,
+ dashboardHeader(title = "COX PH")  ,
 
 #Sidebar content of the dashboard
 sidebar <- dashboardSidebar(width=300,
@@ -171,7 +171,7 @@ sidebar <- dashboardSidebar(width=300,
                              
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~#NEW
                              
-                             menuItem("2 AE table & Dynamic listing", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
+                             menuItem("Survival analysis", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                              
                              #~~~~~~~~~~~~~
                              menuItem("3 Supporting outputs",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
@@ -223,19 +223,20 @@ sidebar <- dashboardSidebar(width=300,
     tabItem("RESULTS1",
         fluidRow(        
            box(
-              title = "SYSTEM ORGAN CLASS WORDCLOUD"
+              title = "Data listing"
                  ,status = "primary"
                    ,solidHeader = TRUE 
                     ,collapsible = TRUE 
-                       # , plotOutput("SOC", height = "500px") #, width  ="800px")
+              , DT::dataTableOutput("mytable")
            )
                                     
             ,box(
-               title = "PREFERRED TERM WORDCLOUD"
+               title = "Partial Likelihood by hand!"
                      ,status = "primary"
                           ,solidHeader = TRUE 
                              ,collapsible = TRUE 
                                       #,plotOutput("PF", height = "500px")
+              #, DT::dataTableOutput("mytable")
                                 ) 
                                   )
                           ),
@@ -473,21 +474,25 @@ server <- function(input, output) {
 
     
     
-    output$tableset <- renderText({
+    output$mytable <- DT::renderDataTable({
       
-      f <- dat()$d  # Get the  data
-
+      all=dat()$d
+      
+      DT::datatable(all, rownames=FALSE,
+                    plugins = 'natural',
+                   colnames=c('Time' = 'dt', 'Event or censored' = 'e', 
+                              'Treatment'='trt'),
+                    
+                    options = list(
+                   #  dom = 't',
+                       columnDefs = list(list(type = 'natural', targets = c(1,2)))
+                     )
+                   )
     })
     
+   
     
-    
-    
-    
-    
-    
-    
-    
-    
+     
     
     
     
