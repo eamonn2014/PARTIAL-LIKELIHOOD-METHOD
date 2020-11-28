@@ -151,54 +151,49 @@
                                       menuSubItem("Click for bells and whistles main app.",  
                                                   icon = icon("send",lib='glyphicon'), 
                                                   href = "https://eamonn3.shinyapps.io/LoQs/")
-                                  
-                                      
                              ),
-                          
-                             
+
                              menuItem("Survival analysis", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                              
-                             #~~~~~~~~~~~~~
+                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                              menuItem("3 Supporting outputs",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                       
                                       menuSubItem("i xxxxxxxxxxx",                 tabName = "RESULTS1"),
                                       menuSubItem("ii xxxxxxxxxx",                 tabName = "RESULTS2")
                                       
-                             )
-                            )
-                            ),
-
-
-   dashboardBody(
-    
-      fluidRow(
-           valueBoxOutput("value1")
-          ,valueBoxOutput("value2")
-          ,valueBoxOutput("value3")
-       ),
-    
-    tabItems(
+                             ))),
+                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      
+        
+           dashboardBody(
+            
+              fluidRow(
+                   valueBoxOutput("value1")
+                  ,valueBoxOutput("value2")
+                  ,valueBoxOutput("value3")
+               ),
+            
+            tabItems(
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      tabItem("OVERVIEW",
-          fluidRow(
-              box(
-                  title = "Kaplan-Meier Curve"
-                  ,status = "primary"
-                  ,solidHeader = TRUE 
-                  ,collapsible = TRUE 
-                  ,plotlyOutput("plot1", height = "750px")
-              )
-              
-              ,box(
-                  title='Difference in two Kaplan-Meier estimates with approximate confidence bands for differences'
-                  ,status = "primary"
-                  ,solidHeader = TRUE 
-                  ,collapsible = TRUE 
-                  ,plotOutput("plot2", height = "750px")
-              ))),               
+            tabItem("OVERVIEW",
+                fluidRow(
+                    box(
+                        title = "Kaplan-Meier Curve"
+                        ,status = "primary"
+                        ,solidHeader = TRUE 
+                        ,collapsible = TRUE 
+                        ,plotlyOutput("plot1", height = "750px")
+                    )
+                    
+                    ,box(
+                        title='Difference in two Kaplan-Meier estimates with approximate confidence bands for differences'
+                        ,status = "primary"
+                        ,solidHeader = TRUE 
+                        ,collapsible = TRUE 
+                        ,plotOutput("plot2", height = "750px")
+                    ))),               
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    tabItem("RESULTS1",
+     tabItem("RESULTS1",
         fluidRow(        
            box(
               title = "Data listing"
@@ -214,7 +209,7 @@
                           ,solidHeader = TRUE 
                              ,collapsible = TRUE 
                                       #,plotOutput("PF", height = "500px")
-              #, DT::dataTableOutput("mytable")
+              , DT::dataTableOutput("mytable2")
                                 ) 
                                   )
                           ),
@@ -223,13 +218,9 @@
                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                           tabItem("RESULTS2",
                                   box(" ",
-                                     # DT::dataTableOutput("mytable")
-                                  )
-                          )                        
-                      
-                          )
- 
-    ))
+                                     # DT::dataTableOutput("mytable2")
+                                  )  )  )
+   ))
    
 
 
@@ -442,7 +433,6 @@ server <- function(input, output) {
 
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
     output$mytable <- DT::renderDataTable({
       
       all=dat()$d
@@ -459,6 +449,62 @@ server <- function(input, output) {
                    )
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    output$mytable2 <- DT::renderDataTable({
+      
+       d=dat()$d
+      
+       sample <- random.sample()
+       hr=   sample$hr
+   
+      
+       guess=hr
+       d$expB <- exp(guess*d$trt)
+      
+      # maximum likelihood
+       d$part3 <- log(rev(cumsum(rev(d$expB))))
+       d$part1 <- d$e  
+       d$part2 <- guess*d$trt
+       d$likelihoodi <- d$part1*(d$part2 - d$part3)
+      #sum(d$likelihoodi)
+   
+       DT::datatable(d, rownames=FALSE,
+                         plugins = 'natural',
+                         colnames=c('Time' = 'dt', 
+                                    'Event or censored' = 'e', 
+                                    'Treatment'='trt',
+                                    'Beta'='expB',
+                                    'A'='part1',
+                                    'B'='part1',
+                                    'C'='part3',
+                                    'LL' ='likelihoodi'
+                                    
+                                    ),
+                    
+                    options = list(
+                      #  dom = 't',
+                      columnDefs = list(list(type = 'natural', targets = c(1,2)))
+                    )
+      )
+    })
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
    
 }
