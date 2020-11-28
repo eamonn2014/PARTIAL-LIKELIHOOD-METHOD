@@ -30,6 +30,13 @@
          }
         
     }
+    
+    formatz0 <- function(x){
+      sprintf(x, fmt = '%s')  
+    }
+    formatz1 <- function(x){
+      sprintf(x, fmt = '%#.1f')  
+    }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     logit <- function(p) log(1/(1/p-1))
@@ -71,11 +78,15 @@
       S <- Surv(dt,e)
       f <- cph(S ~  trt, x=TRUE, y=TRUE, d )
       # f
-      # summary(f)
+      sf <- summary(f)
       
       f1 <- survfit(Surv(dt,e) ~ trt, data = d)
       
-      return(list(f=f, d=d, f1=f1))
+      
+      np <- npsurv(Surv(dt,e) ~ trt,d)
+      
+      
+      return(list(f=f, d=d, f1=f1, sf=sf, np=np))
       
     }
 
@@ -173,7 +184,7 @@ sidebar <- dashboardSidebar(width=300,
     frow2 <- fluidRow(
         
         box(
-            title = "Fitted Analysis Model"
+            title = "Kaplan-Meier Curve"
             ,status = "primary"
             ,solidHeader = TRUE 
             ,collapsible = TRUE 
@@ -181,11 +192,11 @@ sidebar <- dashboardSidebar(width=300,
         )
         
         ,box(
-            title = "Fitted Analysis Model with logarithmic transformation"
+            title = "Half-width of confidence intervals centered at average of two survival estimates"
             ,status = "primary"
             ,solidHeader = TRUE 
             ,collapsible = TRUE 
-            ,plotlyOutput("plot2", height = "750px")
+            ,plotOutput("plot2", height = "750px")
         ) 
         
     )
@@ -207,19 +218,21 @@ server <- function(input, output) {
     # https://stackoverflow.com/questions/55043092/r-shinydashboard-display-sum-of-selected-input-in-a-valuebox
     output$value1 <- renderValueBox({
       
-        valueBox( 
-         formatz(setUpByName())
-         ,subtitle = tags$p("Sum of squares of residuals (smaller the better)", style = "font-size: 150%;")
-         ,icon = icon("server")
-         ,color = "purple")
+      valueBox(
+        value =  tags$p(paste0(formatz0(setUpByName())," / ",formatz0(setUpByNamea()) ," / ",formatz1(setUpByNameb()) ," / ",formatz1(setUpByNamec()))
+                        ,style = "font-size: 100%;")
+        ,subtitle = tags$p('Trt 0: N; No. of events; exposure; median survival', style = "font-size: 150%;")
+        ,icon = icon("stats",lib='glyphicon')
+        ,color = "red" )
         
     })
     
     output$value2 <- renderValueBox({
         
         valueBox(
-            formatz(setUpByName2())
-            ,subtitle = tags$p('Model sigma', style = "font-size: 150%;")
+          value =  tags$p(paste0(formatz0(setUpByName2())," / ",formatz0(setUpByName2a()) ," / ",formatz1(setUpByName2b()) ," / ",formatz1(setUpByName2c()))
+          ,style = "font-size: 100%;")
+            ,subtitle = tags$p('Trt 1: N; No. of events; exposure; median survival', style = "font-size: 150%;")
             ,icon = icon("stats",lib='glyphicon')
             ,color = "green")
         
@@ -228,9 +241,9 @@ server <- function(input, output) {
     output$value3 <- renderValueBox({
         
         valueBox(
-            value =  tags$p(paste0(formatz(setUpByName3())," ( ",formatz(setUpByName3()),"; ",formatz(setUpByName3())," )")
+            value =  tags$p(paste0(formatz(setUpByName4())," ( ",formatz(setUpByName5()),"; ",formatz(setUpByName6())," )")
             ,style = "font-size: 100%;")
-            ,subtitle = tags$p(paste0("Prediction at ",formatz(setUpByName3())," with 95% confidence"), style = "font-size: 150%;")
+            ,subtitle = tags$p(paste0("Hazard ratio treatment 1 v 2 with 95% confidence"), style = "font-size: 150%;")
             ,icon = icon("education",lib='glyphicon')
             ,color = "yellow")
         
@@ -276,7 +289,7 @@ server <- function(input, output) {
         
         res <- coxdata(n, allocation, hr, baseline)
   
-        return(list(  d=res$d, f=res$f, f1=res$f1))
+        return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np))
         
     })
     
@@ -286,22 +299,93 @@ server <- function(input, output) {
     
     
     setUpByName <- reactive ({
-        f <-dat()$f  # Get the  data
-        y <- as.numeric(as.character(f$coefficients))
+        f <-dat()$np  # Get the  data
+        f <-  f$n[1]
+        y <- as.numeric(as.character(f))
         return(y)
     })
-    
-    setUpByName2 <- reactive ({
-      f <- dat()$f  # Get the  data
-      y <- as.numeric(as.character(f$coefficients))
+
+    setUpByNamea <- reactive ({
+      f <-dat()$np  # Get the  data
+      f <-  f$numevents[1]
+      y <- as.numeric(as.character(f))
       return(y)
     })
+    
+    setUpByNameb <- reactive ({
+      f <-dat()$np  # Get the  data
+      f <-  f$exposure[1]
+      y <- as.numeric(as.character(f))
+      return(y)
+    })
+    
+    setUpByNamec <- reactive ({
+      f <-dat()$np  # Get the  data
+      f <-  summary(f)$table[,'median'][1]
+      y <- as.numeric(as.character(f))
+      return(y)
+    })
+    
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    setUpByName2 <- reactive ({
+      f <-dat()$np  # Get the  data
+      f <-  f$n[2]
+      y <- as.numeric(as.character(f))
+      return(y)
+    })
+    
+    setUpByName2a <- reactive ({
+      f <-dat()$np  # Get the  data
+      f <-  f$numevents[2]
+      y <- as.numeric(as.character(f))
+      return(y)
+    })
+    
+
+    setUpByName2b <- reactive ({
+      f <-dat()$np  # Get the  data
+      f <-  f$exposure[2]
+      y <- as.numeric(as.character(f))
+      return(y)
+    })
+    
+    setUpByName2c <- reactive ({
+      f <-dat()$np  # Get the  data
+      f <-  summary(f)$table[,'median'][2]
+      y <- as.numeric(as.character(f))
+      return(y)
+    })
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
 
     setUpByName3 <- reactive ({
       f <- dat()$f  # Get the  data
       y <- as.numeric(as.character(f$coefficients))
       return(y)
     })
+    
+    
+    setUpByName4 <- reactive ({
+      f <-dat()$sf  # Get the  data
+      y <- as.numeric(as.character(f[2,c("Effect")]))
+      return(y)
+    })
+    
+  
+    setUpByName5 <- reactive ({
+      f <-dat()$sf  # Get the  data
+      y <- as.numeric(as.character(f[2,c("Lower 0.95")]))
+      return(y)
+    })
+    
+    setUpByName6 <- reactive ({
+      f <-dat()$sf  # Get the  data
+      y <- as.numeric(as.character(f[2,c("Upper 0.95")]))
+      return(y)
+    })
+    
     
    
   
@@ -313,7 +397,10 @@ server <- function(input, output) {
       f <- dat()$f1  # Get the  data
       
      
-      p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve for the NCCTG Lung Cancer Data")
+      p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
+                       palette = c("red", "darkgreen"),conf.int = TRUE,
+                       ggtheme = theme_bw() # Change ggplot2 theme
+                       )
       ggplotly(p1[[1]])
       
      # plot_ly(iris, x = ~get(input$choice), y = ~Sepal.Length, type = 'scatter', mode = 'markers')
@@ -322,12 +409,18 @@ server <- function(input, output) {
     })
     
     
-    output$plot2<-renderPlotly({     
+    output$plot2<-renderPlot({     
         
-      f <- dat()$f1  # Get the  data
-      
-      p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve for the NCCTG Lung Cancer Data")
-      plotly::ggplotly(p1[[1]])
+      f <- dat()$np  # Get the  data
+  
+     # survdiffplot(f, col='purple', col.fill='green')
+      survplot(f, conf='diffbands',col='purple',cex.aehaz=5,
+               col.fill='blue'
+                             , aehaz=TRUE, #times= c(5), 
+              label.curves=list(method="arrow", cex=2), 
+             #  label.curves=list(keys=1:2, cex=2),
+               abbrev.label=TRUE, levels.only = FALSE)
+    
         
     })
 
