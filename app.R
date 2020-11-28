@@ -37,6 +37,9 @@
     formatz1 <- function(x){
       sprintf(x, fmt = '%#.1f')  
     }
+    formatz2 <- function(x){
+      sprintf(x, fmt = '%#.2f')  
+    }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     logit <- function(p) log(1/(1/p-1))
@@ -192,7 +195,8 @@ sidebar <- dashboardSidebar(width=300,
         )
         
         ,box(
-            title = "Half-width of confidence intervals centered at average of two survival estimates"
+          #  title = "Half-width of confidence intervals centered at average of two survival estimates"
+            title='Difference in two Kaplan-Meier estimates with approximate confidence bands for differences'
             ,status = "primary"
             ,solidHeader = TRUE 
             ,collapsible = TRUE 
@@ -219,33 +223,33 @@ server <- function(input, output) {
     output$value1 <- renderValueBox({
       
       valueBox(
-        value =  tags$p(paste0(formatz0(setUpByName())," / ",formatz0(setUpByNamea()) ," / ",formatz1(setUpByNameb()) ," / ",formatz1(setUpByNamec()))
+        value =  tags$p(paste0(formatz0(setUpByName())," / ",formatz0(setUpByNamea()) ," / ",formatz1(setUpByNameb()) ," / ",formatz1(setUpByNamec()) ," / ",formatz2(setUpByNamea()/setUpByNameb()  )    )
                         ,style = "font-size: 100%;")
-        ,subtitle = tags$p('Trt 0: N; No. of events; exposure; median survival', style = "font-size: 150%;")
+        ,subtitle = tags$p('Treat. 0 : N; Events; Exposure; Median survival; Hazard', style = "font-size: 150%;")
         ,icon = icon("stats",lib='glyphicon')
-        ,color = "red" )
+        ,color = "yellow" )
         
     })
     
     output$value2 <- renderValueBox({
         
         valueBox(
-          value =  tags$p(paste0(formatz0(setUpByName2())," / ",formatz0(setUpByName2a()) ," / ",formatz1(setUpByName2b()) ," / ",formatz1(setUpByName2c()))
+          value =  tags$p(paste0(formatz0(setUpByName2())," / ",formatz0(setUpByName2a()) ," / ",formatz1(setUpByName2b()) ," / ",formatz1(setUpByName2c()) ," / ",formatz2(setUpByName2a()/setUpByName2b()  )    )
           ,style = "font-size: 100%;")
-            ,subtitle = tags$p('Trt 1: N; No. of events; exposure; median survival', style = "font-size: 150%;")
-            ,icon = icon("stats",lib='glyphicon')
-            ,color = "green")
+          ,subtitle = tags$p('Treat. 1 : N; Events; Exposure; Median survival; Hazard', style = "font-size: 150%;")
+          ,icon = icon("stats",lib='glyphicon')
+            ,color = "purple")
         
     })
     
     output$value3 <- renderValueBox({
         
         valueBox(
-            value =  tags$p(paste0(formatz(setUpByName4())," ( ",formatz(setUpByName5()),"; ",formatz(setUpByName6())," )")
+            value =  tags$p(paste0(formatz2(setUpByName4())," ( ",formatz2(setUpByName5()),", ",formatz2(setUpByName6())," )")
             ,style = "font-size: 100%;")
-            ,subtitle = tags$p(paste0("Hazard ratio treatment 1 v 2 with 95% confidence"), style = "font-size: 150%;")
+            ,subtitle = tags$p(paste0("Hazard ratio treatment 1 v 0 with 95% confidence"), style = "font-size: 150%;")
             ,icon = icon("education",lib='glyphicon')
-            ,color = "yellow")
+            ,color = "green")
         
     })
 
@@ -398,8 +402,8 @@ server <- function(input, output) {
       
      
       p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
-                       palette = c("red", "darkgreen"),conf.int = TRUE,
-                       ggtheme = theme_bw() # Change ggplot2 theme
+                       palette = c("orange", "purple") #,#conf.int = TRUE,
+                      # ggtheme = theme_bw() # Change ggplot2 theme
                        )
       ggplotly(p1[[1]])
       
@@ -413,13 +417,14 @@ server <- function(input, output) {
         
       f <- dat()$np  # Get the  data
   
-     # survdiffplot(f, col='purple', col.fill='green')
-      survplot(f, conf='diffbands',col='purple',cex.aehaz=5,
-               col.fill='blue'
-                             , aehaz=TRUE, #times= c(5), 
-              label.curves=list(method="arrow", cex=2), 
+      survdiffplot(f, col='darkgreen' )
+      
+     # survplot(f, conf='diffbands',col='purple',cex.aehaz=5,
+      #         col.fill='blue'
+       #                      , aehaz=TRUE, #times= c(5), 
+        #      label.curves=list(method="arrow", cex=2), 
              #  label.curves=list(keys=1:2, cex=2),
-               abbrev.label=TRUE, levels.only = FALSE)
+         #      abbrev.label=TRUE, levels.only = FALSE)
     
         
     })
