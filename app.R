@@ -44,16 +44,17 @@
 # function to create minor lines to match log tick values https://r-graphics.org/recipe-axes-axis-log-ticks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    coxdata <- function(n, allocation, hr) { 
+    coxdata <- function(n, allocation, hr, baseline) { 
+      
+      #n=1000; allocation =.5; hr=2
       
       trt <- sample(0:1, n,  rep=TRUE, prob=c(1-allocation, allocation))
       
       cens <- 15*runif(n)
-      
-      h <- exp(log(hr)*(trt==1))
+   
+      h <- baseline*exp(log(hr)*(trt==1))
       
       dt <- -log(runif(n))/h
-      
       label(dt) <- 'Follow-up Time'
       
       e <- ifelse(dt <= cens,1,0)
@@ -62,19 +63,19 @@
       
       units(dt) <- "Year"
       
-      d <- data.frame(cbind(dt, e, trt=trt))
-      
-      d <- plyr::arrange(d, dt)
+      d <- data.frame(cbind(dt,e,trt=trt))
       
       dd <- datadist(d)
       options(datadist='dd')
       
       S <- Surv(dt,e)
-      f <- cph(S ~  trt, x=TRUE, y=TRUE,d)
+      f <- cph(S ~  trt, x=TRUE, y=TRUE, d )
+      # f
+      # summary(f)
       
-      f1 <- survfit(S ~ trt, data = d)
+      f1 <- survfit(Surv(dt,e) ~ trt, data = d)
       
-      return(list(f=f,d=d, f1=f1))
+      return(list(f=f, d=d, f1=f1))
       
     }
 
@@ -106,20 +107,25 @@ sidebar <- dashboardSidebar(width=300,
                                 splitLayout(
                                     
                                     tags$div(
-                                        textInput(inputId="n", label='N', width = '90%' , value="100"),
+                                        textInput(inputId="n", label='Total sample size', width = '90%' , value="1000"),
                                     ),
                                     
                                     tags$div(
-                                        textInput(inputId='allocation', label='allocation', width = '90%' , ".5"),
-                                    ),
-                                    
-                                    tags$div(
-                                        textInput(inputId='hr', label='Slrope', width = '90%' , "2"),
-                                    )
-                                    
-                                ) #,
+                                        textInput(inputId='allocation', label='random allocation', width = '90%' , ".5"),
+                                    ) 
+                                ) ,
                                 
-                                
+                                splitLayout(
+                                  
+                                  tags$div(
+                                    textInput(inputId='baseline', label='baseline hazard', width = '90%' , ".4"),
+                                  ),
+                                  
+                                  tags$div(
+                                    textInput(inputId='hr', label='Hazard ratio', width = '90%' , "2"),
+                                  ) 
+                                  
+                                ) 
                              ),
                                  
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -245,10 +251,13 @@ server <- function(input, output) {
 
         hr <- as.numeric(input$hr)
       
+        baseline <- as.numeric(input$baseline)
+        
         return(list(  
             n=n,
             allocation =allocation,
-            hr=hr
+            hr=hr,
+            baseline=baseline
         ))
         
     })
@@ -263,10 +272,10 @@ server <- function(input, output) {
         n=         sample$n
         allocation=sample$allocation
         hr=        sample$hr
+        baseline=  sample$baseline
         
-        res <- coxdata(n, allocation, hr)
-        
-        
+        res <- coxdata(n, allocation, hr, baseline)
+  
         return(list(  d=res$d, f=res$f, f1=res$f1))
         
     })
