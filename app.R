@@ -207,7 +207,7 @@
                         ,status = "primary"
                         ,solidHeader = TRUE 
                         ,collapsible = TRUE 
-                        ,plotlyOutput("plot1", height = "750px")
+                        ,plotlyOutput("plot1", height = "720px")
                     )
                     
                     ,box(
@@ -215,7 +215,7 @@
                         ,status = "primary"
                         ,solidHeader = TRUE 
                         ,collapsible = TRUE 
-                        ,plotOutput("plot2", height = "750px")
+                        ,plotOutput("plot2", height = "720px")
                     ))),               
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      tabItem("RESULTS1",
@@ -243,8 +243,55 @@ ranks of the event times, not their numerical values!"
    tabItem("HELP", 
            box("", 
                textOutput("help"),
+               
+               
                br(),
-               textOutput("help2"))
+               textOutput("help2"),
+               withMathJax(),
+               p(strong("To do spieglehalter explanantion/ equations and partial likelihood example")) ,
+               
+               p("where $a=\\sqrt{b}$ is the dependent variable (operationalized as the hazard rate at time t for subject i), x1 to xk are k independent variables or covariates,
+and 1 to k are the regression coefficients; h0(t) is a baseline hazard
+function and is left unspecified. The baseline hazard function can be
+thought of as the hazard function for an individual whose covariates all
+have values of 0"),  
+               
+               
+               p("$$\\begin{align}
+                     h_{i}  {(t)} = h_{0} {(t)} {exp} ({\\beta_1}{x_{i1}} + \\cdots{\\beta_k}{x_{ik}})
+                      \\end{align}$$"),
+               
+               p("$$\\begin{align}
+                     \\log h_{i}  {(t)} ={\\alpha{(t)}} + {\\beta_1}{x_{i1}} + \\cdots{\\beta_k}{x_{ik}}
+                      \\end{align}$$"),
+               
+               
+               
+               p("$$\\begin{align}
+                      \\sigma^2 \\\\
+                      \\end{align}$$"),
+               p(""), 
+               p(strong("using a pooled estimate of the variance in each group ",HTML(" <em>i</em>")," this is just the mean variance")),
+               
+               p("$$\\begin{align}
+                      s_p^2 =\\frac{\\sum  s_i^2}{I} \\approx \\sigma^2 \\\\
+                      \\end{align}$$"),
+               p(""), 
+               
+               p(strong("Here is the trick, we have another way to estimate the population variance, if the group means do not differ the sample means are normally 
+                distributed with variance:")),
+               
+               p("$$\\begin{align}
+                      \\frac{\\sigma^2}{n} = s_\\bar{Y}^2 \\\\
+                      \\end{align}$$"),
+               p(""), 
+               
+       
+               
+               
+               
+               
+               )
    ),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
@@ -256,7 +303,7 @@ log time as the horizontal axis"
                ,status = "primary"
                ,solidHeader = TRUE 
                ,collapsible = TRUE 
-               ,plotOutput("plot3", height = "750px")
+               ,plotOutput("plot3", height = "720px")
              )
              
              ,box(
@@ -266,7 +313,7 @@ Repeated Cox regression coefficients estimates and confidence limits within time
                ,status = "primary"
                ,solidHeader = TRUE 
                ,collapsible = TRUE 
-               ,plotOutput("plot4", height = "750px")
+               ,plotOutput("plot4", height = "720px")
              )))
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
