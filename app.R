@@ -94,8 +94,11 @@
       f1 <- survfit(Surv(dt,e) ~ trt, data = d)
       
       np <- npsurv(Surv(dt,e) ~ trt,d)
+      
+      
+      S <- Surv(d$dt, d$e)
 
-      return(list(f=f, d=d, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0))
+      return(list(f=f, d=d, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0, S=S))
       
     }
 
@@ -137,7 +140,7 @@
                                   ),
                                   
                                   tags$div(
-                                    textInput(inputId='hr', label='Hazard ratio', width = '90%' , "2"),
+                                    textInput(inputId='hr', label='Hazard ratio', width = '90%' , ".75"),
                                   ) 
                                   
                                 ) 
@@ -166,8 +169,9 @@
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                              menuItem("3 Partial likelihood",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                       
-                                      menuSubItem("i Listing & Likelihood",                 tabName = "RESULTS1"),
-                                      menuSubItem("ii xxxxxxxxxx",                 tabName = "RESULTS2")
+                                      menuSubItem("i Listing & Partial log likelihood",        tabName = "RESULTS1"),
+                                      menuSubItem("ii Diagnostics",                tabName = "RESULTS3"),
+                                      menuSubItem("iii Diagnostics",               tabName = "HELP")
                                       
                              ))),
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -212,22 +216,51 @@
            )
                                     
             ,box(
-               title = "Partial Likelihood by hand! Here we show how to calculate the log likelihood given the model HR. In reality a starting HR is supplied and an iterative process used to search for the value that maximises the log partial likelihood function."
+               title = "Partial Likelihood by hand! Here we show how to calculate the log likelihood given the actual model HR. 
+                In reality a starting HR is supplied and an iterative process used to search for the value that maximises the log partial likelihood function.
+               So the Beta obtained is the value that maximizes log PL. Note the estimate depends only on the
+ranks of the event times, not their numerical values!"
                      ,status = "primary"
-                          ,solidHeader = TRUE 
-                             ,collapsible = TRUE 
-                                      #,plotOutput("PF", height = "500px")
-              , DT::dataTableOutput("mytable2")
-                                ) 
-                                  )
-                          ),
-                          #~~~~~~~~~~~~~
-                          
-                          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                          tabItem("RESULTS2",
-                                  box(" ",
-                                     # DT::dataTableOutput("mytable2")
-                                  )  )  )
+                     ,solidHeader = TRUE 
+                     ,collapsible = TRUE 
+                     , DT::dataTableOutput("mytable2")
+                            ))),
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   tabItem("HELP", 
+           box("", 
+               textOutput("help"),
+               br(),
+               textOutput("help2"))
+   ),
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+   tabItem("RESULTS3",
+           fluidRow(
+             box(
+               title = "Log-log survivor plot; log[-log S(t)] as the vertical axis, and
+log time as the horizontal axis"
+               ,status = "primary"
+               ,solidHeader = TRUE 
+               ,collapsible = TRUE 
+               ,plotOutput("plot3", height = "750px")
+             )
+             
+             ,box(
+               title='
+Repeated Cox regression coefficients estimates and confidence limits within time intervals. 
+               The log hazard ratios are plotted against the mean failure/censoring time within the interval'
+               ,status = "primary"
+               ,solidHeader = TRUE 
+               ,collapsible = TRUE 
+               ,plotOutput("plot4", height = "750px")
+             )))
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+   
+   
+   
+   )
    ))
    
 
@@ -240,9 +273,9 @@ server <- function(input, output) {
     output$value1 <- renderValueBox({
       
       valueBox(
-        value =  tags$p(paste0(formatz0(setUpByName())," ; ",formatz0(setUpByNamea()) ," ; ",formatz00(setUpByNameb()) ," ; ",formatz1(setUpByNamec()) ," ; ",formatz2(setUpByNamea()/setUpByNameb()  )    )
+        value =  tags$p(paste0(formatz0(setUpByName())," / ",formatz0(setUpByNamea()) ," / ",formatz00(setUpByNameb()) ," / ",formatz1(setUpByNamec()) ," / ",formatz2(setUpByNamea()/setUpByNameb()  )    )
                         ,style = "font-size: 100%;")
-        ,subtitle = tags$p('Treat. 0 : N; Events; Exposure; Median survival; Hazard', style = "font-size: 150%;")
+        ,subtitle = tags$p('N; Events (a); Exposure (b); Median surv.; Hazard (a/b)', style = "font-size: 150%;")
         ,icon = icon("stats",lib='glyphicon')
         ,color = "yellow" )
         
@@ -251,9 +284,9 @@ server <- function(input, output) {
     output$value2 <- renderValueBox({
         
         valueBox(
-          value =  tags$p(paste0(formatz0(setUpByName2())," ; ",formatz0(setUpByName2a()) ," ; ",formatz00(setUpByName2b()) ," ; ",formatz1(setUpByName2c()) ," ; ",formatz2(setUpByName2a()/setUpByName2b()  )    )
+          value =  tags$p(paste0(formatz0(setUpByName2())," / ",formatz0(setUpByName2a()) ," / ",formatz00(setUpByName2b()) ," / ",formatz1(setUpByName2c()) ," / ",formatz2(setUpByName2a()/setUpByName2b()  )    )
           ,style = "font-size: 100%;")
-          ,subtitle = tags$p('Treat. 1 : N; Events; Exposure; Median survival; Hazard', style = "font-size: 150%;")
+          ,subtitle = tags$p('N; Events (a); Exposure (b); Median surv.; Hazard (a/b)', style = "font-size: 150%;")
           ,icon = icon("stats",lib='glyphicon')
             ,color = "purple")
         
@@ -310,7 +343,7 @@ server <- function(input, output) {
         
         res <- coxdata(n, allocation, hr, baseline)
   
-        return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np , LL1=res$LL1, LL0=res$LL0))
+        return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np , LL1=res$LL1, LL0=res$LL0, S=res$S))
         
     })
     
@@ -379,6 +412,8 @@ server <- function(input, output) {
       return(y)
     })
     
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
     setUpByNameLL <- reactive ({
       f <-dat()$LL1  
       y <- as.numeric(as.character(f))
@@ -432,7 +467,7 @@ server <- function(input, output) {
         
       f <- dat()$np  # Get the  data
   
-      survdiffplot(f, col='darkgreen' )
+      survdiffplot(f, col='darkgreen' , xlab="Time")
       
      # survplot(f, conf='diffbands',col='purple',cex.aehaz=5,
       #         col.fill='blue'
@@ -443,7 +478,27 @@ server <- function(input, output) {
     
         
     })
+ 
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    output$plot3 <- renderPlot({
+      
+      d <- dat()$d  # Get the  obj
+      S <- dat()$S
+      f <- dat()$f
+      
+      #plot(survfit(S~ d$trt), col=c("purple", "orange"), fun="cloglog", xlab="Time", ylab="log(-log(Survival)" , lwd=3)
+      survplot(f,logt=TRUE, loglog=TRUE, col=c("orange", "purple"))   #Check for Weibull-ness (linearity)
+      
+    })
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    output$plot4<-renderPlot({     
+      
+      d <- dat()$d  # Get the  obj
+      S <- dat()$S
 
+      hazard.ratio.plot(d$trt, S, e=20, legendloc='ll', xlab='Time', antilog=FALSE, col='blue', smooth=TRUE)
+      
+    })
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     output$mytable <- DT::renderDataTable({
@@ -483,9 +538,9 @@ server <- function(input, output) {
       
       
        d$expB <- exp(guess*d$trt)
-     
-       d$part3 <- log(rev(cumsum(rev(d$expB))))
        d$part2 <- guess*d$trt
+       d$part3 <- log(rev(cumsum(rev(d$expB))))
+      
        d$likelihoodi <- d$e*(d$part2 - d$part3)
        d$LL <- sum(d$likelihoodi)
     
@@ -496,9 +551,9 @@ server <- function(input, output) {
                          colnames=c('Time' = 'dt', 
                                     'Event or censored' = 'e', 
                                     'Treatment'='trt',
-                                    'Exponentiated HR'='expB',
+                                    'HR'='expB',
                                    # 'A'='part1',
-                                    'HR x trt'='part2',
+                                    'logHR x trt'='part2',
                                     'Log(exp HR) of each risk set'='part3',
                                     'Individual likelihoods' ='likelihoodi',
                                    'Sum the Individual likelihoods to give log likelihood' ='LL'
@@ -511,9 +566,9 @@ server <- function(input, output) {
       ) %>%
          
          formatRound(
-           columns= c("Time","Exponentiated HR", 
+           columns= c("Time","HR", 
                       #"A",
-                      "HR x trt","Log(exp HR) of each risk set",'Individual likelihoods'), 
+                      "logHR x trt","Log(exp HR) of each risk set",'Individual likelihoods'), 
            digits=4 ) %>%
         formatRound(
         columns= c("Sum the Individual likelihoods to give log likelihood"), 
@@ -523,21 +578,30 @@ server <- function(input, output) {
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    output$help <- renderText({
+      HTML("Adverse event presentation may be confusing if you do not have experience seeing such a presentation before.
+         
+         
+         
+         Here each patient is counted only once within each category. So when one patient has two headache AEs for example, 
+         then this patient is counted once under headache. This means, that the numbers of the preferred terms may not sum up to the body system numbers. 
+          
+         So to build the table investigate first each SOC. So within an SOC count how many patients have at least one of the particular SOC. Second, investigate all PTs within each SOC. 
+         Report how many patients have at least one.  
+
+         Note also the 'Number of patients with at least one adverse event' may not match the sum of the SOCs, as at least one patient is quite likely to have more than one SOC.
+
+Ways of saying the same thing: 'Patients with more than one occurrence of a preferred term are counted only once'.'A patient with multiple occurrences of an AE is counted only once in the AE category.'
+
+'Patients with any adverse event' is synonymous with 'Patients with at least one AE'")
+    })
+    output$help2 <- renderText({
+      HTML("To simulate the data click 'Define parameters' and enter the maximum number of SOCs, 
+    the maximum number of PTs and the rate of AEs based on the Poisson distribution 
+    (no difference in two treatement groups) and the total number of patients. A new sample can be simulated by hitting the green button. The dynamic listing is useful to help
+         understand the table construction. By sorting on the two duplication columns any duplication within patient is evident. Filtering is also possible
+         for example a patient ID can be entered and the data for said patient interogated. Word Clouds supplement the table, present most prevelant SOCs and PFs shown by increasing font size.")
+    })
    
 }
 
