@@ -18,6 +18,8 @@
     library(survminer)
     library(rms)
     library(scales) # For the trans_format function
+    library(DT)
+    library(survival)
     options(max.print=1000000)    
 
    # https://stackoverflow.com/questions/3245862/format-numbers-to-significant-figures-nicely-in-r
@@ -39,6 +41,9 @@
     }
     formatz2 <- function(x){
       sprintf(x, fmt = '%#.2f')  
+    }
+    formatz00 <- function(x){
+      round(x,0) 
     }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,21 +78,24 @@
       
       units(dt) <- "Year"
       
-      d <- data.frame(cbind(dt,e,trt=trt))
+      d <<- data.frame(cbind(dt,e,trt=trt))  ##why the << required to circumvent error?
       
-      dd <- datadist(d)
+      dd <<- datadist(d)
       options(datadist='dd')
       
-      S <- Surv(dt,e)
-      f <- cph(S ~  trt, x=TRUE, y=TRUE, d )
-      # f
+     # S <- Surv(dt,e)
+      f <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
+      
+      LL1 <- f$loglik[2]
+      LL0 <- f$loglik[1]
+      
       sf <- summary(f)
       
       f1 <- survfit(Surv(dt,e) ~ trt, data = d)
       
       np <- npsurv(Surv(dt,e) ~ trt,d)
 
-      return(list(f=f, d=d, f1=f1, sf=sf, np=np))
+      return(list(f=f, d=d, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0))
       
     }
 
@@ -114,7 +122,7 @@
                                 splitLayout(
                                     
                                     tags$div(
-                                        textInput(inputId="n", label='Total sample size', width = '90%' , value="1000"),
+                                        textInput(inputId="n", label='Total sample size', width = '90%' , value="800"),
                                     ),
                                     
                                     tags$div(
@@ -129,7 +137,7 @@
                                   ),
                                   
                                   tags$div(
-                                    textInput(inputId='hr', label='Hazard ratio', width = '90%' , ".5"),
+                                    textInput(inputId='hr', label='Hazard ratio', width = '90%' , "2"),
                                   ) 
                                   
                                 ) 
@@ -156,9 +164,9 @@
                              menuItem("Survival analysis", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                              
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                             menuItem("3 Supporting outputs",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
+                             menuItem("3 Partial likelihood",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                       
-                                      menuSubItem("i xxxxxxxxxxx",                 tabName = "RESULTS1"),
+                                      menuSubItem("i Listing & Likelihood",                 tabName = "RESULTS1"),
                                       menuSubItem("ii xxxxxxxxxx",                 tabName = "RESULTS2")
                                       
                              ))),
@@ -204,7 +212,7 @@
            )
                                     
             ,box(
-               title = "Partial Likelihood by hand!"
+               title = "Partial Likelihood by hand! Here we show how to calculate the log likelihood given the model HR. In reality a starting HR is supplied and an iterative process used to search for the value that maximises the log partial likelihood function."
                      ,status = "primary"
                           ,solidHeader = TRUE 
                              ,collapsible = TRUE 
@@ -232,7 +240,7 @@ server <- function(input, output) {
     output$value1 <- renderValueBox({
       
       valueBox(
-        value =  tags$p(paste0(formatz0(setUpByName())," / ",formatz0(setUpByNamea()) ," / ",formatz1(setUpByNameb()) ," / ",formatz1(setUpByNamec()) ," / ",formatz2(setUpByNamea()/setUpByNameb()  )    )
+        value =  tags$p(paste0(formatz0(setUpByName())," ; ",formatz0(setUpByNamea()) ," ; ",formatz00(setUpByNameb()) ," ; ",formatz1(setUpByNamec()) ," ; ",formatz2(setUpByNamea()/setUpByNameb()  )    )
                         ,style = "font-size: 100%;")
         ,subtitle = tags$p('Treat. 0 : N; Events; Exposure; Median survival; Hazard', style = "font-size: 150%;")
         ,icon = icon("stats",lib='glyphicon')
@@ -243,7 +251,7 @@ server <- function(input, output) {
     output$value2 <- renderValueBox({
         
         valueBox(
-          value =  tags$p(paste0(formatz0(setUpByName2())," / ",formatz0(setUpByName2a()) ," / ",formatz1(setUpByName2b()) ," / ",formatz1(setUpByName2c()) ," / ",formatz2(setUpByName2a()/setUpByName2b()  )    )
+          value =  tags$p(paste0(formatz0(setUpByName2())," ; ",formatz0(setUpByName2a()) ," ; ",formatz00(setUpByName2b()) ," ; ",formatz1(setUpByName2c()) ," ; ",formatz2(setUpByName2a()/setUpByName2b()  )    )
           ,style = "font-size: 100%;")
           ,subtitle = tags$p('Treat. 1 : N; Events; Exposure; Median survival; Hazard', style = "font-size: 150%;")
           ,icon = icon("stats",lib='glyphicon')
@@ -254,9 +262,9 @@ server <- function(input, output) {
     output$value3 <- renderValueBox({
         
         valueBox(
-            value =  tags$p(paste0(formatz2(setUpByName4())," ( ",formatz2(setUpByName5()),", ",formatz2(setUpByName6())," )")
+            value =  tags$p(paste0(formatz2(setUpByName4())," ( ",formatz2(setUpByName5()),", ",formatz2(setUpByName6())," ) " ," ; ",formatz1(setUpByNameLL()))
             ,style = "font-size: 100%;")
-            ,subtitle = tags$p(paste0("Hazard ratio treatment 1 v 0 with 95% confidence"), style = "font-size: 150%;")
+            ,subtitle = tags$p(paste0("Hazard ratio trt 1 v 0 with 95% conf. ; log likelihood"), style = "font-size: 150%;")
             ,icon = icon("education",lib='glyphicon')
             ,color = "green")
         
@@ -302,7 +310,7 @@ server <- function(input, output) {
         
         res <- coxdata(n, allocation, hr, baseline)
   
-        return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np))
+        return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np , LL1=res$LL1, LL0=res$LL0))
         
     })
     
@@ -370,6 +378,12 @@ server <- function(input, output) {
       y <- as.numeric(as.character(f))
       return(y)
     })
+    
+    setUpByNameLL <- reactive ({
+      f <-dat()$LL1  
+      y <- as.numeric(as.character(f))
+      return(y)
+    })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
 
@@ -404,9 +418,8 @@ server <- function(input, output) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     output$plot1 <- renderPlotly({
       
-      f <- dat()$f1  # Get the  data
-      
-     
+      f <- dat()$f1  # Get the  obj
+
       p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
                        palette = c("orange", "purple") #,#conf.int = TRUE,
                       # ggtheme = theme_bw() # Change ggplot2 theme
@@ -435,9 +448,11 @@ server <- function(input, output) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     output$mytable <- DT::renderDataTable({
       
-      all=dat()$d
+      d=dat()$d
       
-      DT::datatable(all, rownames=FALSE,
+      d <- plyr::arrange(d, dt)
+      
+      DT::datatable(d, rownames=FALSE,
                     plugins = 'natural',
                    colnames=c('Time' = 'dt', 'Event or censored' = 'e', 
                               'Treatment'='trt'),
@@ -446,46 +461,63 @@ server <- function(input, output) {
                    #  dom = 't',
                        columnDefs = list(list(type = 'natural', targets = c(1,2)))
                      )
-                   )
+                   ) %>%
+        
+        formatRound(
+          columns= c("Time" ), 
+          digits=4 )
     })
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~maximum likelihood
     
     output$mytable2 <- DT::renderDataTable({
       
        d=dat()$d
-      
-       sample <- random.sample()
-       hr=   sample$hr
+       
+       f <- dat()$f  # Get the  data
+       y <- as.numeric(as.character(f$coefficients))
+       guess=y  # we use the actual model hr estimate
+      # sample <- random.sample()
+      # hr=   sample$hr
    
+       d <- plyr::arrange(d, dt)
       
-       guess=hr
+      
        d$expB <- exp(guess*d$trt)
-      
-      # maximum likelihood
+     
        d$part3 <- log(rev(cumsum(rev(d$expB))))
-       d$part1 <- d$e  
        d$part2 <- guess*d$trt
-       d$likelihoodi <- d$part1*(d$part2 - d$part3)
-      #sum(d$likelihoodi)
-   
-       DT::datatable(d, rownames=FALSE,
+       d$likelihoodi <- d$e*(d$part2 - d$part3)
+       d$LL <- sum(d$likelihoodi)
+    
+       
+       
+        datatable(d, rownames=FALSE,
                          plugins = 'natural',
                          colnames=c('Time' = 'dt', 
                                     'Event or censored' = 'e', 
                                     'Treatment'='trt',
-                                    'Beta'='expB',
-                                    'A'='part1',
-                                    'B'='part1',
-                                    'C'='part3',
-                                    'LL' ='likelihoodi'
-                                    
+                                    'Exponentiated HR'='expB',
+                                   # 'A'='part1',
+                                    'HR x trt'='part2',
+                                    'Log(exp HR) of each risk set'='part3',
+                                    'Individual likelihoods' ='likelihoodi',
+                                   'Sum the Individual likelihoods to give log likelihood' ='LL'
                                     ),
                     
                     options = list(
                       #  dom = 't',
                       columnDefs = list(list(type = 'natural', targets = c(1,2)))
                     )
-      )
+      ) %>%
+         
+         formatRound(
+           columns= c("Time","Exponentiated HR", 
+                      #"A",
+                      "HR x trt","Log(exp HR) of each risk set",'Individual likelihoods'), 
+           digits=4 ) %>%
+        formatRound(
+        columns= c("Sum the Individual likelihoods to give log likelihood"), 
+        digits=1 )
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
