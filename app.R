@@ -171,7 +171,7 @@
                                     
                                     menuSubItem("R",  
                                                 icon = icon("send",lib='glyphicon'), 
-                                                href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/app.R") 
+                                                href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/cox%20calculations.R") 
                                     
                                     
                                     
