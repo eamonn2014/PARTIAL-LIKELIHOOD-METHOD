@@ -147,33 +147,46 @@
                              ),
                                  
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                             menuItem("Code & link to explanation", icon = icon("bar-chart-o"),
-                                      menuSubItem("Shiny",  
-                                                  icon = icon("send",lib='glyphicon'), 
-                                                  href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/dashboard1/app.R"),
-                                      
-                                      
-                                      menuSubItem("R",  
-                                                  icon = icon("send",lib='glyphicon'), 
-                                                  href = "https://raw.githubusercontent.com/eamonn2014/Functional-sensitivity/master/Rcode.R") ,
-                                      
-                                      
-                                      
-                                      menuSubItem("Click for bells and whistles main app.",  
-                                                  icon = icon("send",lib='glyphicon'), 
-                                                  href = "https://eamonn3.shinyapps.io/LoQs/")
-                             ),
+                            
 
                              menuItem("Survival analysis", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                              
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                             menuItem("3 Partial likelihood",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
+                             menuItem("More",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                       
-                                      menuSubItem("i Listing & Partial log likelihood",        tabName = "RESULTS1"),
-                                      menuSubItem("ii Diagnostics",                tabName = "RESULTS3"),
-                                      menuSubItem("iii Diagnostics",               tabName = "HELP")
+                                      menuSubItem("a Partial log likelihood",        tabName = "RESULTS1"),
+                                      menuSubItem("b Diagnostics",                tabName = "RESULTS3"),
+                                      menuSubItem("c Explanation",               tabName = "HELP")
                                       
-                             ))),
+                             ),
+                           
+                            
+                           
+                           
+                           menuItem("Code", icon = icon("bar-chart-o"),
+                                    menuSubItem("Shiny",  
+                                                icon = icon("send",lib='glyphicon'), 
+                                                href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/app.R"),
+                                    
+                                    
+                                    menuSubItem("R",  
+                                                icon = icon("send",lib='glyphicon'), 
+                                                href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/app.R") 
+                                    
+                                    
+                                    
+                                    # menuSubItem("Click for bells and whistles main app.",  
+                                    #             icon = icon("send",lib='glyphicon'), 
+                                    #             href = "https://eamonn3.shinyapps.io/LoQs/")
+                           )
+                           
+                           
+                            )
+                           
+                           
+                           ),
+      
+      
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       
         
@@ -579,28 +592,10 @@ server <- function(input, output) {
     
     
     output$help <- renderText({
-      HTML("Adverse event presentation may be confusing if you do not have experience seeing such a presentation before.
-         
-         
-         
-         Here each patient is counted only once within each category. So when one patient has two headache AEs for example, 
-         then this patient is counted once under headache. This means, that the numbers of the preferred terms may not sum up to the body system numbers. 
-          
-         So to build the table investigate first each SOC. So within an SOC count how many patients have at least one of the particular SOC. Second, investigate all PTs within each SOC. 
-         Report how many patients have at least one.  
-
-         Note also the 'Number of patients with at least one adverse event' may not match the sum of the SOCs, as at least one patient is quite likely to have more than one SOC.
-
-Ways of saying the same thing: 'Patients with more than one occurrence of a preferred term are counted only once'.'A patient with multiple occurrences of an AE is counted only once in the AE category.'
-
-'Patients with any adverse event' is synonymous with 'Patients with at least one AE'")
+      HTML("xxxxxxxxxxxxxxxxxx'")
     })
     output$help2 <- renderText({
-      HTML("To simulate the data click 'Define parameters' and enter the maximum number of SOCs, 
-    the maximum number of PTs and the rate of AEs based on the Poisson distribution 
-    (no difference in two treatement groups) and the total number of patients. A new sample can be simulated by hitting the green button. The dynamic listing is useful to help
-         understand the table construction. By sorting on the two duplication columns any duplication within patient is evident. Filtering is also possible
-         for example a patient ID can be entered and the data for said patient interogated. Word Clouds supplement the table, present most prevelant SOCs and PFs shown by increasing font size.")
+      HTML("xxxxxxxxxxxxxxx.")
     })
    
 }
