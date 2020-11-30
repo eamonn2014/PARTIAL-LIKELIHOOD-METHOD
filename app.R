@@ -138,8 +138,9 @@
       dd <- plyr::arrange(dd,time)
       
       dd$part3 <- log(rev(cumsum(rev(dd$expB))))
-      dd$likelihoodi <- dd$part1*(dd$part2 - dd$part3)
+     
       dd$guess <- exp(x)
+      dd$likelihoodi <- dd$part1*(dd$part2 - dd$part3)
       dd$L <- sum(dd$likelihoodi)
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       dd <- as.data.frame(dd)
@@ -200,9 +201,10 @@
                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                              menuItem("More",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                       
-                                      menuSubItem("a Partial log likelihood",        tabName = "RESULTS1"),
-                                      menuSubItem("b Diagnostics",                tabName = "RESULTS3"),
-                                      menuSubItem("c Explanation",               tabName = "HELP")
+                                  
+                                      menuSubItem("Diagnostics",               tabName = "RESULTS3"),
+                                      menuSubItem("Partial log likelihood",    tabName = "RESULTS1"),
+                                      menuSubItem("Explanation",               tabName = "HELP")
                                       
                              ),
                            
@@ -339,16 +341,21 @@ ranks of the event times, not their numerical values!"
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    tabItem("HELP", 
-           box("", 
+           
+           
+           fluidRow(
+           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           box(  
+               title='Proportional hazards model'
+               ,status = "primary"
+               ,solidHeader = TRUE 
+               ,collapsible = TRUE ,
                textOutput("help"),
-               
-               
-               br(),
+         #      br(),
                textOutput("help2"),
-               withMathJax(),
-             #  p(strong("To do spieglehalter explanantion/ equations and partial likelihood example")) ,
-               
-               
+               withMathJax(),  # need this to be stated
+             #  p(strong("To do spieglehalter explanantion/ equations and partial likelihood example/cox paper link")) ,
+
                p("The proportional hazard model can be expressed as:"),
                
                p("$$\\begin{align}
@@ -357,55 +364,135 @@ ranks of the event times, not their numerical values!"
                
                p("where $h_{i}  {(t)}$ is the dependent variable (operationalized as the hazard rate at time t for subject i), ${x_{1}}$  to 
                ${x_{k}}$  are k independent variables or covariates,
-  and $\\beta_{1}$ to $\\beta_{k}$ are the regression coefficients; $h_{0} {(t)}$ is a baseline hazard
-function and is left unspecified. The baseline hazard function can be
-thought of as the hazard function for an individual whose covariates all
-have values of 0. Taking logs"),  
+               and $\\beta_{1}$ to $\\beta_{k}$ are the regression coefficients; $h_{0} {(t)}$ is a baseline hazard
+                function and is left unspecified. The baseline hazard function can be
+                thought of as the hazard function for an individual whose covariates all
+                have values of 0."),  
                
-               
+              p("taking logs:"),   
               
-               
                p("$$\\begin{align}
                      \\log h_{i}  {(t)} ={\\alpha{(t)}} + {\\beta_1}{x_{i1}} + \\cdots{\\beta_k}{x_{ik}}
                       \\end{align}$$"),
                
-               
-               
                p("Two features of the model are worth noting: (a) the model does not
-require assumptions about the underlying distribution of the survival
-times (i.e., no matter what the actual form of the survival distribution
-is—exponential, Weibull, Gompertz, standard gamma, generalized
-gamma, log-normal, or log-logistic—the analyst can run the same Cox
-regression model for all); and (b) the model assumes a constant ratio of
-the hazards for any two individuals."),
+              require assumptions about the underlying distribution of the survival
+              times (i.e., no matter what the actual form of the survival distribution
+              is - exponential, Weibull, Gompertz, standard gamma, generalized
+              gamma, log-normal, or log-logistic - one can run the same Cox
+              regression model for all) and (b) the model assumes a constant ratio of
+              the hazards for any two individuals."),
                
                p("The second feature gives the model its name: proportional hazards
-model. Because there is no requirement for understanding the underlying survival distribution and because of the proportional hazards
-assumption, the model is also known as a semiparametric model. The second feature gives the model its name: proportional hazards
-model. Because there is no requirement for understanding the underlying survival distribution, and because of the proportional hazards
-assumption, the model is also known as a semiparametric model"),
-               
+              model. Because there is no requirement for understanding the underlying survival distribution and because of the proportional hazards
+              assumption, the model is also known as a semiparametric model. The second feature gives the model its name: proportional hazards
+              model. Because there is no requirement for understanding the underlying survival distribution, and because of the proportional hazards
+              assumption, the model is also known as a semiparametric model"),
                
                p("The proportional hazards assumption is that the hazard for any individual in a sample is a 
                fixed proportion of the hazard for any other individual,
-and the ratio of the two hazards is constant over time. Precisely, it means
-that in a log(hazard) plot, the log(hazard) curves for any two individuals
-should be strictly parallel. What is important here is that with this assumption, $h_{0} {(t)}$, 
-the baseline hazard function cancels out from the formula
-expressing a hazard ratio for any two individuals i and j, as follows (we can cross out the $h_{0} {(t)}$:"),
+              and the ratio of the two hazards is constant over time. Precisely, it means
+              that in a log(hazard) plot, the log(hazard) curves for any two individuals
+              should be strictly parallel. What is important here is that with this assumption, $h_{0} {(t)}$, 
+              the baseline hazard function cancels out from the formula
+              expressing a hazard ratio for any two individuals i and j, as follows (we can cross out the $h_{0} {(t)}$:"),
                
+
              p("$$\\begin{align}
-                     \\frac{ h_{i}  {(t)} = h_{0} {(t)} {exp} ({\\beta_1}{x_{i1}} + \\cdots{\\beta_k}{x_{ik}})}
-                            {h_{j}  {(t)} = h_{0} {(t)} {exp} ({\\beta_1}{x_{j1}} + \\cdots{\\beta_k}{x_{jk}})}
-                      \\end{align}$$"),
-              
-               
-       
-               
-               
-               
-               
-               )
+                     \\frac{ h_{i} (t)}  {h_{j} (t)} = 
+                       \\frac{  
+                          h_{0} (t) {exp} ({\\beta_1}{x_{i1}} + \\cdots+{\\beta_k}{x_{ik}})}
+                       {  h_{0} (t) {exp} ({\\beta_1}{x_{j1}} + \\cdots+{\\beta_k}{x_{jk}})}
+         \\end{align}$$"),
+             p("rearranging:"),   
+             
+             p("$$\\begin{align}
+                     
+                          {exp} ({\\beta_1}({x_{i1}}-{x_{j1}} +\\cdots+{\\beta_k}{x_{ik}}-{x_{jk}} ))
+          \\end{align}$$"),
+             
+             
+             )
+           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      
+           
+           
+           ,box(
+             title='Partial likelihood'
+             ,status = "primary"
+             ,solidHeader = TRUE 
+             ,collapsible = TRUE ,
+            # ,plotOutput("plot4", height = "720px")
+            p("Now we develop the partial likelihood function. First sort the data
+             in an ascending order by the study time, so that the first subject in our
+             sample has the shortest study time or highest hazard rate  $h_{1}$, the second
+             subject has the next shortest study time or second highest hazard rate $h_{2}$,
+             and so on, until the last or the $\\it{n}$th subject who has the longest study time
+             or lowest hazard rate $h_{n}$"),
+         
+         
+         p("$$\\begin{align}
+                     
+                          {h_{1} (t)} = {h_{0} (t)} exp({\\beta}{x_{1}})
+          \\end{align}$$"),
+         
+         p("where x1 denotes the value of x for subject 1. Likewise, we can have a
+         similar expression of hazard functions for all subjects. Taking the sum of
+         hazards over all sample subjects, we obtain a risk set as:"),
+         
+         p("$$\\begin{align}
+                     
+                          {h_{1} (t)} + {h_{2} (t)} + {h_{3} (t)} + \\cdots+  {h_{n} (t)}
+          \\end{align}$$"),
+         
+         p("The likelihood for individual 1 to have the event at time t is simply the
+ratio of hazard over the risk set, or is the hazard for subject 1 at time t
+divided by the sum of the hazards for all subjects who are at risk of having
+the event at time t. That is,"),
+         
+         
+         p("$$\\begin{align}
+                     {L_{1}} = \\frac{h_{1} (t)}    {  {h_{1} (t)} + {h_{2} (t)} + {h_{3} (t)} + \\cdots+  {h_{n} (t)} }
+          \\end{align}$$"),
+         
+         p("For the 2nd subject"),
+         
+         p("$$\\begin{align}
+                    {L_{2}} = \\frac{h_{2} (t)}    {  {h_{2} (t)} + {h_{3} (t)} + {h_{4} (t)} + \\cdots+  {h_{n} (t)} }
+          \\end{align}$$"),
+         
+         p("Substituting and cancelling all $h_{0} {(t)}$ for subject 1"),
+         
+         p("$$\\begin{align}
+                   {L_{1}} = \\frac {exp({\\beta}{x_{1}})}    {  
+           exp({\\beta}{x_{1}}) + exp({\\beta}{x_{2}}) + exp({\\beta}{x_{3}}) + \\cdots+  exp({\\beta}{x_{n}}) 
+                     }
+          \\end{align}$$"),
+         
+         p("Substituting and cancelling all $h_{0} {(t)}$ for subject 2"),
+         
+         p("$$\\begin{align}
+                   {L_{2}} =  \\frac {exp({\\beta}{x_{2}})}    {  
+           exp({\\beta}{x_{2}}) + exp({\\beta}{x_{3}}) + exp({\\beta}{x_{4}}) + \\cdots+  exp({\\beta}{x_{n}}) 
+                     }
+          \\end{align}$$"),
+         
+         
+         
+         
+         
+         
+         
+         
+         
+           ),  # box end
+         
+           
+           )
+           
+           
+           
+           
    ),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
@@ -726,10 +813,11 @@ server <- function(input, output) {
                                     'Event or censored' = 'e', 
                                     'Treatment'='trt',
                                     'HR'='expB',
+                                    'Individual likelihoods' ='likelihoodi',
                                    # 'A'='part1',
                                     'logHR x trt'='part2',
                                     'Log(exp HR) of each risk set'='part3',
-                                    'Individual likelihoods' ='likelihoodi',
+                                   
                                    'Sum the Individual likelihoods to give log likelihood' ='LL'
                                     ),
                     
@@ -766,11 +854,13 @@ server <- function(input, output) {
                            'Event or censored' = 'e', 
                            'Treatment'='trt',
                            'Model Hazard Ratio'='hr',
+                           
                            'Null Log Likelihood'='lognull',
                            'Maximised Log Likelihood'='lognmax',
-                           'Individual likelihoods' ='likelihoodi',
+                         
                            'HR guess' ='guess',
-                           'Sum the Individual likelihoods - log likelihood based on guess' ='L'
+                           'Individual likelihoods' ='likelihoodi',
+                           'Sum the Individual likelihoods to give log likelihood based on guess' ='L'
                 ),
                 
                 options = list(
@@ -787,48 +877,18 @@ server <- function(input, output) {
        formatRound(
           columns= c( 'Null Log Likelihood',
                         'Maximised Log Likelihood',
-                      'Sum the Individual likelihoods - log likelihood based on guess'), 
+                      'Sum the Individual likelihoods to give log likelihood based on guess'), 
           digits=0 )
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+  
     
     output$help <- renderText({
-      HTML("xxxxxxxxxxxxxxxxxx'")
+      HTML(" ")
     })
     output$help2 <- renderText({
-      HTML("xxxxxxxxxxxxxxx.")
+      HTML(" ")
     })
    
 }
