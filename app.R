@@ -61,7 +61,7 @@
 
     coxdata <- function(n, allocation, hr, baseline) { 
       
-      #n=1000; allocation =.5; hr=2
+      #n=1000; allocation =.5; hr=2; baseline=.4
       
       trt <- sample(0:1, n,  rep=TRUE, prob=c(1-allocation, allocation))
       
@@ -95,22 +95,68 @@
       
       np <- npsurv(Surv(dt,e) ~ trt,d)
       
-      
       S <- Surv(d$dt, d$e)
 
       return(list(f=f, d=d, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0, S=S))
       
     }
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ui <- dashboardPage( 
-#Dashboard header carrying the title of the dashboard,
-      dashboardHeader(title = "COX PH")  ,
+    
+    # dummy <- coxdata(n=1000, allocation =.5, hr=2, baseline=.4)
       
-      #Sidebar content of the dashboard
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# function that can use the information from coxdata function to learn about the 
+# behind the scenes cal in Cox PH, we allow a guess at HR and see the log likelihood
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    ## enter hr guess, data, dead var, trt var and treat var
+    
+    loglike2 <- function(x, dat, dead, indep , time) {
+      
+      dd <- dat          # make another data object
+      dd$dead <- dead    # take the key variables to run Cox PH
+      dd$indep <- indep
+      dd$time <- time
+      
+      ## run the analysis to get hr and log like
+      ddd <<- datadist(dd)
+      options(datadist='ddd')
+      
+      S <- Surv(time,dead)  # run Cox PH
+      f <- cph(S ~  indep, x=TRUE, y=TRUE,dd)
+      
+      #~~~~~~~~~~extract hr and loglikelihood at null and maximised log likelihood
+      dd$hr <- exp(f$coefficients)
+      dd$lognull <- f$loglik[[1]]
+      dd$lognmax <- f$loglik[[2]]
+      
+      #~~~~~~~~~using our guess x calculate log likelihood by jand
+      dd$expB <- exp(x*dd$indep)
+      dd$part1 <- dd$dead  
+      dd$part2 <- x*dd$indep 
+      
+      dd <- plyr::arrange(dd,time)
+      
+      dd$part3 <- log(rev(cumsum(rev(dd$expB))))
+      dd$likelihoodi <- dd$part1*(dd$part2 - dd$part3)
+      dd$guess <- exp(x)
+      dd$L <- sum(dd$likelihoodi)
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      dd <- as.data.frame(dd)
+      dd$dead <- dd$indep <- dd$part1 <- dd$part2 <- dd$part3 <- NULL
+      # return(head(dd))
+      return(dd)
+      
+    }
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Start app
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    ui <- dashboardPage( 
+    
+       # Dashboard header carrying the title of the dashboard,
+      dashboardHeader(title = "COX PH")  ,
+       #Sidebar content of the dashboard
       sidebar <- dashboardSidebar(width=300,
                             br(),
                             tags$head(
@@ -160,7 +206,17 @@
                                       
                              ),
                            
-                            
+                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                           menuItem("Partial likelihood exercise",  startExpanded = FALSE,    icon = icon("bar-chart-o"),
+                                    
+                                      tags$div(
+                                        textInput(inputId="guess", label='Enter a guess at Hazard Ratio (Defaulted to null)', width = '90%' , value="1"),
+                                      ),
+
+                                    menuSubItem("Partial log likelihood reveal",  tabName = "partial")
+                                    
+                           ),
+                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                            
                            
                            menuItem("Code", icon = icon("bar-chart-o"),
@@ -191,6 +247,23 @@
       
         
            dashboardBody(
+# https://stackoverflow.com/questions/54876731/inline-latex-equations-in-shiny-app-with-mathjax
+             tags$head(
+               tags$link(rel="stylesheet", 
+                         href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css", 
+                         integrity="sha384-dbVIfZGuN1Yq7/1Ocstc1lUEm+AT+/rCkibIcC/OmWo5f0EA48Vf8CytHzGrSwbQ",
+                         crossorigin="anonymous"),
+               HTML('<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.js" integrity="sha384-2BKqo+exmr9su6dir+qCw08N2ZKRucY4PrGQPPWU1A7FtlCGjmEGFqXCv5nyM5Ij" crossorigin="anonymous"></script>'),
+               HTML('<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>'),
+               HTML('
+    <script>
+      document.addEventListener("DOMContentLoaded", function(){
+        renderMathInElement(document.body, {
+          delimiters: [{left: "$", right: "$", display: false}]
+        });
+      })
+    </script>')
+             ),
             
               fluidRow(
                    valueBoxOutput("value1")
@@ -220,15 +293,16 @@
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      tabItem("RESULTS1",
         fluidRow(        
-           box(
-              title = "Data listing"
-                 ,status = "primary"
-                   ,solidHeader = TRUE 
-                    ,collapsible = TRUE 
-              , DT::dataTableOutput("mytable")
-           )
+         #  box(
+          #    title = "Data listing"
+           #      ,status = "primary"
+            #       ,solidHeader = TRUE 
+             #       ,collapsible = TRUE 
+          #    , DT::dataTableOutput("mytable")
+           #)
                                     
-            ,box(
+            #,
+            box(width=8,
                title = "Partial Likelihood by hand! Here we show how to calculate the log likelihood given the actual model HR. 
                 In reality a starting HR is supplied and an iterative process used to search for the value that maximises the log partial likelihood function.
                So the Beta obtained is the value that maximizes log PL. Note the estimate depends only on the
@@ -239,6 +313,30 @@ ranks of the event times, not their numerical values!"
                      , DT::dataTableOutput("mytable2")
                             ))),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   # new tab
+   tabItem("partial",
+           fluidRow(
+             box(
+               width=8,
+              # background = "green",
+               title = "Can you enter a HR that maximises the Log Likelihood? Hint: try thr model HR"
+               ,status = "primary"
+               ,solidHeader = TRUE 
+               ,collapsible = TRUE 
+               , DT::dataTableOutput("exercise")
+             )
+             
+             ,box(
+               width=4,
+               title='xxxxxxxxxxxxxxxxx'
+               ,status = "primary"
+               ,solidHeader = TRUE 
+               ,collapsible = TRUE 
+            #   , DT::dataTableOutput("exercise")
+             ))),        
+   
+   
+   
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    tabItem("HELP", 
            box("", 
@@ -248,18 +346,24 @@ ranks of the event times, not their numerical values!"
                br(),
                textOutput("help2"),
                withMathJax(),
-               p(strong("To do spieglehalter explanantion/ equations and partial likelihood example")) ,
+             #  p(strong("To do spieglehalter explanantion/ equations and partial likelihood example")) ,
                
-               p("where $a=\\sqrt{b}$ is the dependent variable (operationalized as the hazard rate at time t for subject i), x1 to xk are k independent variables or covariates,
-and 1 to k are the regression coefficients; h0(t) is a baseline hazard
-function and is left unspecified. The baseline hazard function can be
-thought of as the hazard function for an individual whose covariates all
-have values of 0"),  
                
+               p("The proportional hazard model can be expressed as:"),
                
                p("$$\\begin{align}
                      h_{i}  {(t)} = h_{0} {(t)} {exp} ({\\beta_1}{x_{i1}} + \\cdots{\\beta_k}{x_{ik}})
                       \\end{align}$$"),
+               
+               p("where $h_{i}  {(t)}$ is the dependent variable (operationalized as the hazard rate at time t for subject i), ${x_{1}}$  to 
+               ${x_{k}}$  are k independent variables or covariates,
+  and $\\beta_{1}$ to $\\beta_{k}$ are the regression coefficients; $h_{0} {(t)}$ is a baseline hazard
+function and is left unspecified. The baseline hazard function can be
+thought of as the hazard function for an individual whose covariates all
+have values of 0. Taking logs"),  
+               
+               
+              
                
                p("$$\\begin{align}
                      \\log h_{i}  {(t)} ={\\alpha{(t)}} + {\\beta_1}{x_{i1}} + \\cdots{\\beta_k}{x_{ik}}
@@ -267,24 +371,34 @@ have values of 0"),
                
                
                
-               p("$$\\begin{align}
-                      \\sigma^2 \\\\
-                      \\end{align}$$"),
-               p(""), 
-               p(strong("using a pooled estimate of the variance in each group ",HTML(" <em>i</em>")," this is just the mean variance")),
+               p("Two features of the model are worth noting: (a) the model does not
+require assumptions about the underlying distribution of the survival
+times (i.e., no matter what the actual form of the survival distribution
+is—exponential, Weibull, Gompertz, standard gamma, generalized
+gamma, log-normal, or log-logistic—the analyst can run the same Cox
+regression model for all); and (b) the model assumes a constant ratio of
+the hazards for any two individuals."),
                
-               p("$$\\begin{align}
-                      s_p^2 =\\frac{\\sum  s_i^2}{I} \\approx \\sigma^2 \\\\
-                      \\end{align}$$"),
-               p(""), 
+               p("The second feature gives the model its name: proportional hazards
+model. Because there is no requirement for understanding the underlying survival distribution and because of the proportional hazards
+assumption, the model is also known as a semiparametric model. The second feature gives the model its name: proportional hazards
+model. Because there is no requirement for understanding the underlying survival distribution, and because of the proportional hazards
+assumption, the model is also known as a semiparametric model"),
                
-               p(strong("Here is the trick, we have another way to estimate the population variance, if the group means do not differ the sample means are normally 
-                distributed with variance:")),
                
-               p("$$\\begin{align}
-                      \\frac{\\sigma^2}{n} = s_\\bar{Y}^2 \\\\
+               p("The proportional hazards assumption is that the hazard for any individual in a sample is a 
+               fixed proportion of the hazard for any other individual,
+and the ratio of the two hazards is constant over time. Precisely, it means
+that in a log(hazard) plot, the log(hazard) curves for any two individuals
+should be strictly parallel. What is important here is that with this assumption, $h_{0} {(t)}$, 
+the baseline hazard function cancels out from the formula
+expressing a hazard ratio for any two individuals i and j, as follows (we can cross out the $h_{0} {(t)}$:"),
+               
+             p("$$\\begin{align}
+                     \\frac{ h_{i}  {(t)} = h_{0} {(t)} {exp} ({\\beta_1}{x_{i1}} + \\cdots{\\beta_k}{x_{ik}})}
+                            {h_{j}  {(t)} = h_{0} {(t)} {exp} ({\\beta_1}{x_{j1}} + \\cdots{\\beta_k}{x_{jk}})}
                       \\end{align}$$"),
-               p(""), 
+              
                
        
                
@@ -403,7 +517,7 @@ server <- function(input, output) {
         
         res <- coxdata(n, allocation, hr, baseline)
   
-        return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np , LL1=res$LL1, LL0=res$LL0, S=res$S))
+        return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np , LL1=res$LL1, LL0=res$LL0, S=res$S, res=res))
         
     })
     
@@ -635,6 +749,78 @@ server <- function(input, output) {
         digits=1 )
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    output$exercise <- DT::renderDataTable({
+      
+      dummy = dat()$res
+      
+      g <- log(as.numeric(input$guess))
+      
+      foo <- loglike2(g, dat=dummy$d, dead=dummy$d$e, indep=dummy$d$trt, time=dummy$d$dt)  # try
+      foo$time =NULL
+      foo$expB = NULL
+      
+      datatable(foo, rownames=FALSE,
+                plugins = 'natural',
+                colnames=c('Time' = 'dt', 
+                           'Event or censored' = 'e', 
+                           'Treatment'='trt',
+                           'Model Hazard Ratio'='hr',
+                           'Null Log Likelihood'='lognull',
+                           'Maximised Log Likelihood'='lognmax',
+                           'Individual likelihoods' ='likelihoodi',
+                           'HR guess' ='guess',
+                           'Sum the Individual likelihoods - log likelihood based on guess' ='L'
+                ),
+                
+                options = list(
+                  #  dom = 't',
+                  columnDefs = list(list(type = 'natural', targets = c(1,2)))
+                )
+      ) %>%
+        
+        formatRound(
+          columns= c("Time","Model Hazard Ratio",  
+                      'Individual likelihoods'
+          ),
+          digits=4 ) %>%
+       formatRound(
+          columns= c( 'Null Log Likelihood',
+                        'Maximised Log Likelihood',
+                      'Sum the Individual likelihoods - log likelihood based on guess'), 
+          digits=0 )
+    })
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
