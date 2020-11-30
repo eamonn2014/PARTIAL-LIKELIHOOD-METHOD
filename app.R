@@ -425,7 +425,7 @@ ranks of the event times, not their numerical values!"
             # ,plotOutput("plot4", height = "720px")
             p("Now we develop the partial likelihood function. First sort the data
              in an ascending order by the study time, so that the first subject in our
-             sample has the shortest study time or highest hazard rate  $h_{1}$, the second
+             sample has the shortest study time or highest hazard rate $h_{1}$, the second
              subject has the next shortest study time or second highest hazard rate $h_{2}$,
              and so on, until the last or the $\\it{n}$th subject who has the longest study time
              or lowest hazard rate $h_{n}$"),
@@ -455,7 +455,7 @@ the event at time t. That is,"),
                      {L_{1}} = \\frac{h_{1} (t)}    {  {h_{1} (t)} + {h_{2} (t)} + {h_{3} (t)} + \\cdots+  {h_{n} (t)} }
           \\end{align}$$"),
          
-         p("For the 2nd subject"),
+         p("For the 2nd subject, note the first subject is no longer in the risk set"),
          
          p("$$\\begin{align}
                     {L_{2}} = \\frac{h_{2} (t)}    {  {h_{2} (t)} + {h_{3} (t)} + {h_{4} (t)} + \\cdots+  {h_{n} (t)} }
@@ -469,7 +469,7 @@ the event at time t. That is,"),
                      }
           \\end{align}$$"),
          
-         p("Substituting and cancelling all $h_{0} {(t)}$ for subject 2"),
+         p("Substituting and cancelling all $h_{0} {(t)}$ for subject 2, note the first subject is no longer in the risk set"),
          
          p("$$\\begin{align}
                    {L_{2}} =  \\frac {exp({\\beta}{x_{2}})}    {  
@@ -478,12 +478,27 @@ the event at time t. That is,"),
           \\end{align}$$"),
          
          
+         p("Three points to note (a) the
+baseline hazard is canceled out; (b) as a result, the likelihood function
+is solely expressed by $\\beta—the coefficient to be estimated and the
+predictor; and (c) the model takes the information of censored
+cases into account when building the likelihood function—censored
+cases are not excluded, and their information (i.e., the hazard functions)
+is built into the construction of the risk set"),
          
          
          
+         p("Writing the partial likelihoods for each of the n subjects and multiplying all
+         these partial likelihoods together, we obtain the sample partial likelihood:"),
+      
+          
+        
+         p("$$\\begin{align}
+             {  \\it{PL} = \\prod_{i=1}^n {L_i} =  {L_1} \\times {L_2} \\times \\cdots \\times {L_n} }
+              \\end{align}$$"),
          
          
-         
+         p("Each censored subject $\\it{j}$ contributes a likelihood of value 1, or $L_{j}^0=1$")
          
            ),  # box end
          
