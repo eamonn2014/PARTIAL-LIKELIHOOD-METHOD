@@ -214,29 +214,128 @@ loglike(0 )  # try a log hr and see if we can minimise
     f$loglik
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      
-
+    
+    # app function
+    coxdata <- function(n, allocation, hr, baseline) { 
+      
+      #n=1000; allocation =.5; hr=2; baseline=.4
+      
+      trt <- sample(0:1, n,  rep=TRUE, prob=c(1-allocation, allocation))
+      
+      cens <- 15*runif(n)
+      
+      h <- baseline*exp(log(hr)*(trt==1))
+      
+      dt <- -log(runif(n))/h
+      label(dt) <- 'Follow-up Time'
+      
+      e <- ifelse(dt <= cens,1,0)
+      
+      dt <- pmin(dt, cens)
+      
+      units(dt) <- "Year"
+      
+      d <<- data.frame(cbind(dt,e,trt=trt))  ##why the << required to circumvent error?
+      
+      dd <<- datadist(d)
+      options(datadist='dd')
+      
+      # S <- Surv(dt,e)
+      f <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
+      
+      LL1 <- f$loglik[2]
+      LL0 <- f$loglik[1]
+      
+      sf <- summary(f)
+      
+      f1 <- survfit(Surv(dt,e) ~ trt, data = d)
+      
+      np <- npsurv(Surv(dt,e) ~ trt,d)
+      
+      S <- Surv(d$dt, d$e)
+      
+      return(list(f=f, d=d, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0, S=S))
+      
+    }
   # function that we will use to maximum the partial log likelihood
    
-  
-  loglike2 <- function(x, dat, dead, indep ) {
+  ## guess, data, dead var, trt var.
+  loglike2 <- function(x, dat, dead, indep , time) {
     
-    dd <- dat
-    dd$dead <- dead
+    dd <- dat          #make another data object
+    dd$dead <- dead    # take the key variables to run Cox PH
     dd$indep <- indep
+    dd$time <- time
+    
+    ## run the analysis to get hr and loglike
+    ddd <<- datadist(dd)
+    options(datadist='ddd')
+    
+    S <- Surv(time,dead)  # run Cox PH
+    f <- cph(S ~  indep, x=TRUE, y=TRUE,dd)
+    
+    #~~~~~~~~~~extract hr and loglikelihood at null and maximised log likelihood
+    dd$hr <- exp(f$coefficients)
+    dd$lognull <- f$loglik[[1]]
+    dd$lognmax <- f$loglik[[2]]
+    
+    #~~~~~~~~~using our guess x calculate log likelihood by jand
     dd$expB <- exp(x*dd$indep)
-    part1 <- dd$dead  
-    part2 <- x*dd$indep 
-    part3 <- log(rev(cumsum(rev(dd$expB))))
-    likelihoodi <- part1*(part2 - part3)
-    L <- sum(likelihoodi)
-    return(c(L))
+    dd$part1 <- dd$dead  
+    dd$part2 <- x*dd$indep 
+    
+    dd <- plyr::arrange(dd,time)
+    
+    dd$part3 <- log(rev(cumsum(rev(dd$expB))))
+    dd$likelihoodi <- dd$part1*(dd$part2 - dd$part3)
+    dd$guess <- exp(x)
+    dd$L <- sum(dd$likelihoodi)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    dd <- as.data.frame(dd)
+    dd$dead <- dd$indep <- dd$part1 <- dd$part2 <- dd$part3 <- NULL
+   # return(head(dd))
+    return(dd)
     
   }
   
+  # this will work in app
+  dummy <- coxdata(n=100, allocation =.5, hr=2, baseline=.4)  # app function
+  
+  loglike2(0, dat=dummy$d, dead=dummy$d$e, indep=dummy$d$trt, time=dummy$d$dt)  # try
+  
+  loglike2(dummy$f$coefficients[[1]], dat=dummy$d, dead=dummy$d$e, indep=dummy$d$trt, time=dummy$d$dt)  # try
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # take the data drom coxdata
 
-  loglike2(0,      dat=d, dead=d$e, indep=d$trt)  # try a log hr and see if we can minimise
-  loglike2(.6435,  dat=d, dead=d$e, indep=d$trt)  # try a log hr and see if we can minimise
+  loglike2(0,      dat=d, dead=d$e, indep=d$trt, time=d$dt)  # try a log hr and see if we can minimise
+  
+  
+  loglike2(f$coefficients[[1]],  dat=d, dead=d$e, indep=d$trt, time=d$dt)  # try a log hr and see if we can minimise
+  
+  
+  # this will work in app
+  dummy <- coxdata(n=100, allocation =.5, hr=2, baseline=.4)  # app function
+  
+  loglike2(0,      dat=dummy$d, dead=dummy$d$e, indep=dummy$d$trt, time=dummy$d$dt)  # try
+  
+  
+  
+  
   
   
   hr <- optimize(loglike2, lower = -2, upper = 1, dead=d$e, dat=d, 

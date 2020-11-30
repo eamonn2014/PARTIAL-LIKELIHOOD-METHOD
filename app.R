@@ -319,7 +319,7 @@ ranks of the event times, not their numerical values!"
    tabItem("partial",
            fluidRow(
              box(
-               width=8,
+               width=7,
               # background = "green",
                title = "Can you enter a HR that maximises the Log Likelihood? Hint: try thr model HR"
                ,status = "primary"
@@ -329,12 +329,13 @@ ranks of the event times, not their numerical values!"
              )
              
              ,box(
-               width=4,
-               title='xxxxxxxxxxxxxxxxx'
+               width=5,
+               title='Small example of N=10 exemplifying partial likelihood calculations'
                ,status = "primary"
                ,solidHeader = TRUE 
                ,collapsible = TRUE 
-            #   , DT::dataTableOutput("exercise")
+              , DT::dataTableOutput("exercise2")
+              , p("xxxxxxxxxxxxxxxx")
              ))),        
    
    
@@ -410,6 +411,29 @@ ranks of the event times, not their numerical values!"
                      
                           {exp} ({\\beta_1}({x_{i1}}-{x_{j1}} +\\cdots+{\\beta_k}{x_{ik}}-{x_{jk}} ))
           \\end{align}$$"),
+         
+         
+         # p("$$\\begin{equation}
+         #             
+         #                  {exp} ({\\beta_1}({x_{i1}}-{x_{j1}} +\\cdots+{\\beta_k}{x_{ik}}-{x_{jk}} ))
+         #                   \\label{eq:sample}
+         #  \\end{equation}$$"),
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
              
              
              )
@@ -498,7 +522,73 @@ is built into the construction of the risk set"),
               \\end{align}$$"),
          
          
-         p("Each censored subject $\\it{j}$ contributes a likelihood of value 1, or $L_{j}^0=1$")
+         p("Each censored subject $\\it{j}$ contributes a likelihood of value 1, or $L_{j}^0=1$"),
+         
+         
+         
+         p("$$\\begin{align}
+            
+             
+              
+ {\\it{PL} = \\prod_{i=1}^n }
+   \\left[ 
+     \\frac{
+       e^{\\beta x}
+     }{
+       
+       \\sum_{j=1}^n {Y_{ij}}
+       e^{\\beta x}
+       }
+       
+   \\right]^{\\delta_i}
+ 
+        \\end{align}$$"),
+         
+         
+         p("
+       where ${Y_{ij} =1}$ if ${t_{j}} \\gt {t_{i}}$; and ${Y_{ij} =0}$ if ${t_{j}} \\lt {t_{i}}$. 
+       Here ${Y_{ij}}$ serves as a switcher (i.e., on
+and off), indicates that the study times are rank ordered, and signifies that
+the estimating algorithm should not use the information for those whose
+events occurred at a point earlier than the current ith subject in the calculation of the risk set 
+(i.e., the formation of denominators). This makes sense
+because those who already had the events have exited the set and are no
+longer elements of the risk set.  $\\delta_i$ is the censoring code
+and takes the value of 0 or 1. If $\\delta_i=0$ (i.e., the study time is censored), then
+the whole partial likelihood for this subject equals value 1 otherwise a non one value. "),
+         
+         
+         
+         p("To avoid numerical problems we work on the log scale and so the partial log likelihood becomes: "),
+         
+         
+         
+         p("$$\\begin{align}
+            
+             
+              
+           {log\\it{PL} = 
+ \\sum_{i=1}^n }  {\\delta_i}
+   \\left[ 
+      
+       {\\beta x_i} - log(
+          
+       \\sum_{j=1}^n {Y_{ij}}
+       e^{\\beta x_j})
+       
+   \\right]^{\\delta_i}
+        \\end{align}$$"),
+         
+         
+         p("With this log partial likelihood function, we can search for the
+best estimate of $\\beta$. Typically a starting value of $\\beta$ is plugged 
+into the right-hand side of the equation to obtain a first 'guess’ of log
+PL. Through several iterations, we should fing that further modification of $\\beta$ is no longer necessary because the difference between the
+current log PL and the log PL obtained from the previous iteration is
+less than a predetermined value called the convergence criterion,
+typically a very small value such as .000001. We stop
+searching, and the $\\beta$ so obtained is the best that maximizes log PL.
+Using this $\\beta$, the likelihood of reproducing the sample data is maximum or optimal")
          
            ),  # box end
          
@@ -867,7 +957,7 @@ server <- function(input, output) {
                 plugins = 'natural',
                 colnames=c('Time' = 'dt', 
                            'Event or censored' = 'e', 
-                           'Treatment'='trt',
+                           'Treat.'='trt',
                            'Model Hazard Ratio'='hr',
                            
                            'Null Log Likelihood'='lognull',
@@ -894,10 +984,71 @@ server <- function(input, output) {
                         'Maximised Log Likelihood',
                       'Sum the Individual likelihoods to give log likelihood based on guess'), 
           digits=0 )
+      
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
+    output$exercise2 <- DT::renderDataTable({
+      
+      
+      sample <- random.sample()
+      #n=         sample$n
+      
+      allocation=sample$allocation
+      hr=        sample$hr
+      baseline=  sample$baseline
   
+      res <- coxdata(n=10, allocation=allocation, hr=hr, baseline =baseline)
+      
+      d <- res$d
+      d <- plyr::arrange(d, dt)  # sort by time
+      
+      # Calculate Li for everyone
+      d$Numerator   <- exp(res$f$coefficients[[1]] * d$trt)
+      d$Denominator <- (rev(cumsum(rev(d$Numerator))))
+      d$Li          <- d$Numerator/d$Denominator
+      
+      # all censored contribute 1 (on multiplicative scale)
+      d$Li<- ifelse(d$e %in% 1,d$Li,1)
+      
+      # get the product of all and log answer
+      d$LL <- log(prod(d$Li))  
+      d
+      # model LL, prove we have ecalc correctly
+      res$f$loglik
+      
+  
+      datatable(d, rownames=FALSE,
+                plugins = 'natural',
+                colnames=c('Time' = 'dt', 
+                           'Event or censored' = 'e', 
+                           'Treat.'='trt',
+                           'Num.'='Numerator',
+                           'Den.'='Denominator',
+                           
+                           'Individual likelihoods'='Li',
+                           'log of product of Individual likelihoods to give maximizes log likelihood' ='LL'
+                           
+                            
+                ),
+                
+                options = list(
+                  #  dom = 't',
+                  columnDefs = list(list(type = 'natural', targets = c(1,2)))
+                )
+      ) %>%
+        
+        formatRound(
+          columns= c("Time","Num.","Den.", 
+                     'Individual likelihoods', 'log of product of Individual likelihoods to give maximizes log likelihood'
+          ),
+          digits=4 ) %>%
+        formatRound(
+          columns= c( 'Event or censored',
+                      'Treat.'), 
+          digits=0 )
+    })
     
     output$help <- renderText({
       HTML(" ")
