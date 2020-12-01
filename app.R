@@ -354,8 +354,9 @@ ui <- dashboardPage(
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   ,plotlyOutput("plot1", height = "720px"),
-                  verbatimTextOutput("help2") ,
-                  p("zzzzzzzzzzzzzzz"),
+                  
+                  #verbatimTextOutput("help2") ,
+                  #p("zzzzzzzzzzzzzzz"),
                   h5(textOutput("Staff_name"))
                 )
                 
@@ -921,7 +922,8 @@ server <- function(input, output) {
     
     p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
                      palette = c("orange", "purple") 
-                     , xlab= paste0("Time: HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," )" )
+                     , xlab= paste0("Time" )
+                    # , xlab= paste0("Time: HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," )" )
                      #,#conf.int = TRUE,
                      # ggtheme = theme_bw() # Change ggplot2  
     )
@@ -1206,15 +1208,15 @@ server <- function(input, output) {
   
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  output$help2 <- renderText({
-    
-    sf  <- dat()$sf
-    X <- as.numeric(as.character(sf[2,c("Effect")]))
-    Y <- as.numeric(as.character(sf[2,c("Lower 0.95")]))
-    Z <- as.numeric(as.character(sf[2,c("Upper 0.95")]))
-   
-    HTML(paste("HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," ) "))
-  })
+  # output$help2 <- renderText({
+  #   
+  #   sf  <- dat()$sf
+  #   X <- as.numeric(as.character(sf[2,c("Effect")]))
+  #   Y <- as.numeric(as.character(sf[2,c("Lower 0.95")]))
+  #   Z <- as.numeric(as.character(sf[2,c("Upper 0.95")]))
+  #  
+  #   HTML(paste("HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," ) "))
+  # })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$Staff_name <- renderText({  
@@ -1224,8 +1226,24 @@ server <- function(input, output) {
     Y <- as.numeric(as.character(sf[2,c("Lower 0.95")]))
     Z <- as.numeric(as.character(sf[2,c("Upper 0.95")]))
     
+    Xp  <- X/(X+1)
+    Yp  <- Y/(Y+1)
+    Zp  <- Z/(Z+1)
+   
+    wordup <- ifelse(X>1,"higher", "")
+    
+    
+     paste0( "The estimated hazard ratio is "
+     , formatz2(X),", 95%CI ( ",formatz2(Y),", ",formatz2(Z),
+     " ) comparing treatment 1 to 0. 
      
-     paste("HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," ) ")
+ A hazard ratio of  ", formatz2(X)," means that, in each unit of time, someone 
+treated in group 1 has ", formatz00(abs(X/1-1)*100),"% ", wordup ," of the chance of experiencing the event of interest
+in the following unit of time as they would were they taking treatment 0.
+          The hazard ratio can be reformulated, possibly more intuitively, as
+      the probability that a patient in treatment 
+      group 1 experiences the event before a patient in treatment group 0 which is "
+     , formatz2(Xp),", 95%CI ( ",formatz2(Yp),", ",formatz2(Zp),").")
     
     })
   
