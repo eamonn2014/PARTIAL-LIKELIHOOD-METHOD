@@ -200,7 +200,8 @@ loglike2 <- function(x, dat, dead, indep , time) {
 ui <- dashboardPage( 
   
   # Dashboard header carrying the title of the dashboard,
-  dashboardHeader(title = "COX PH")  ,
+
+  dashboardHeader(title = h4(HTML("Cox proportional hazard<br/>and partial log likelihood"))),
   #Sidebar content of the dashboard
   sidebar <- dashboardSidebar(width=300,
                               br(),
@@ -257,7 +258,7 @@ ui <- dashboardPage(
                                 menuItem("Partial likelihood exercise",  startExpanded = FALSE,    icon = icon("bar-chart-o"),
                                          
                                          tags$div(
-                                           textInput(inputId="guess", label='Enter a guess at Hazard Ratio (Defaulted to null)', width = '90%' , value="1"),
+                                           textInput(inputId="guess", label='Enter a guess at Hazard Ratio (defaulted to null)', width = '90%' , value="1"),
                                          ),
                                          
                                          menuSubItem("Partial log likelihood reveal",  tabName = "partial")
@@ -352,7 +353,10 @@ ui <- dashboardPage(
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
-                  ,plotlyOutput("plot1", height = "720px")
+                  ,plotlyOutput("plot1", height = "720px"),
+                  verbatimTextOutput("help2") ,
+                  p("zzzzzzzzzzzzzzz"),
+                  h5(textOutput("Staff_name"))
                 )
                 
                 ,box(
@@ -424,7 +428,7 @@ ranks of the event times, not their numerical values!"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   , DT::dataTableOutput("exercise2")
-                  , p("xxxxxxxxxxxxxxxx")
+                 # , verbatimTextOutput("help2") 
                 ))),        
       
       
@@ -442,7 +446,7 @@ ranks of the event times, not their numerical values!"
                   ,collapsible = TRUE ,
                   textOutput("help"),
                   #      br(),
-                  textOutput("help2"),
+                  #textOutput("help2"),
                   withMathJax(),  # need this to be stated
                   #  p(strong("To do spieglehalter explanantion/ equations and partial likelihood example/cox paper link")) ,
                   
@@ -910,9 +914,16 @@ server <- function(input, output) {
     
     f <- dat()$f1  # Get the  obj
     
+    sf  <- dat()$sf
+    X <- as.numeric(as.character(sf[2,c("Effect")]))
+    Y <- as.numeric(as.character(sf[2,c("Lower 0.95")]))
+    Z <- as.numeric(as.character(sf[2,c("Upper 0.95")]))
+    
     p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
-                     palette = c("orange", "purple") #,#conf.int = TRUE,
-                     # ggtheme = theme_bw() # Change ggplot2 theme
+                     palette = c("orange", "purple") 
+                     , xlab= paste0("Time: HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," )" )
+                     #,#conf.int = TRUE,
+                     # ggtheme = theme_bw() # Change ggplot2  
     )
     ggplotly(p1[[1]])
     
@@ -922,7 +933,9 @@ server <- function(input, output) {
     
     f <- dat()$np  # Get the  data
     
-    survdiffplot(f, col='darkgreen' , xlab="Time")
+    
+    
+    survdiffplot(f, col='darkgreen' , xlab= "Time")
     
     # survplot(f, conf='diffbands',col='purple',cex.aehaz=5,
     #         col.fill='blue'
@@ -1190,9 +1203,32 @@ server <- function(input, output) {
   output$help <- renderText({
     HTML(" ")
   })
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$help2 <- renderText({
-    HTML(" ")
+    
+    sf  <- dat()$sf
+    X <- as.numeric(as.character(sf[2,c("Effect")]))
+    Y <- as.numeric(as.character(sf[2,c("Lower 0.95")]))
+    Z <- as.numeric(as.character(sf[2,c("Upper 0.95")]))
+   
+    HTML(paste("HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," ) "))
   })
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  output$Staff_name <- renderText({  
+    
+    sf  <- dat()$sf
+    X <- as.numeric(as.character(sf[2,c("Effect")]))
+    Y <- as.numeric(as.character(sf[2,c("Lower 0.95")]))
+    Z <- as.numeric(as.character(sf[2,c("Upper 0.95")]))
+    
+     
+     paste("HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," ) ")
+    
+    })
+  
   
 }
 
