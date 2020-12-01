@@ -284,6 +284,7 @@ ui <- dashboardPage(
                                 ),
                                 
                                 menuItem("References", icon = icon("bar-chart-o"),
+                                         
                                          menuSubItem(h5(HTML( "Regression Models and Life-Tables")),  
                                                      icon = icon("send",lib='glyphicon'), 
                                                      href = "http://www.stat.cmu.edu/~ryantibs/journalclub/cox_1972.pdf"),
@@ -294,9 +295,17 @@ ui <- dashboardPage(
                                                      href = "https://jme.bmj.com/content/medethics/31/12/703.full.pdf") ,
                                          #dashboardHeader(title = h4(HTML("This title<br/>is just way too long")))
                                          
-                                          menuSubItem( h5(HTML("Can we say whether a drug would <br/>have enabled someone to <br/>live longer? Sadly not.")),  
+                                          menuSubItem( h5(HTML("Can we say whether a drug would <br/>have enabled someone to <br/>live longer? Sadly not")),  
                                                       icon = icon("send",lib='glyphicon'), 
-                                                      href = "https://understandinguncertainty.org/node/759")
+                                                      href = "https://understandinguncertainty.org/node/759"),
+                                         
+                                       menuSubItem( h5(HTML("Analysis of time-to-event for observational studies <br/>Guidance to the use of intensity models")),  
+                                                      icon = icon("send",lib='glyphicon'), 
+                                                      href = "https://github.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/blob/master/Analysis%20of%20time-to-event%20for%20observational%20studies.pdf")
+                                         
+                                         
+                                         
+                                         
                                 )
                                 
                                 
