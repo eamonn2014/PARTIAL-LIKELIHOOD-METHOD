@@ -126,7 +126,7 @@ coxdata2 <- function(n, allocation, hr, baseline) {
   
   dd <<- datadist(d)
   options(datadist='dd')
-
+  
   f0 <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
   f0 <- f0$coefficients[[1]]
   f1 <- survfit(Surv(dt,e) ~ trt, data = d)
@@ -281,6 +281,22 @@ ui <- dashboardPage(
                                          # menuSubItem("Click for bells and whistles main app.",  
                                          #             icon = icon("send",lib='glyphicon'), 
                                          #             href = "https://eamonn3.shinyapps.io/LoQs/")
+                                ),
+                                
+                                menuItem("References", icon = icon("bar-chart-o"),
+                                         menuSubItem(h5(HTML( "Regression Models and Life-Tables")),  
+                                                     icon = icon("send",lib='glyphicon'), 
+                                                     href = "http://www.stat.cmu.edu/~ryantibs/journalclub/cox_1972.pdf"),
+                                         
+                                         
+                                         menuSubItem(h5(HTML( "Individual survival time prediction <br/>using statistical models")),
+                                                     icon = icon("send",lib='glyphicon'), 
+                                                     href = "https://jme.bmj.com/content/medethics/31/12/703.full.pdf") ,
+                                         #dashboardHeader(title = h4(HTML("This title<br/>is just way too long")))
+                                         
+                                          menuSubItem( h5(HTML("Can we say whether a drug would <br/>have enabled someone to <br/>live longer? Sadly not.")),  
+                                                      icon = icon("send",lib='glyphicon'), 
+                                                      href = "https://understandinguncertainty.org/node/759")
                                 )
                                 
                                 
@@ -353,7 +369,7 @@ ui <- dashboardPage(
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
-                    ,plotlyOutput("plot5b", height = "720px")
+                  ,plotlyOutput("plot5b", height = "720px")
                 ))),   
       
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -881,7 +897,7 @@ server <- function(input, output) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # MAIN PLOT! updated with log transformation  option
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   output$plot1 <- renderPlotly({
+  output$plot1 <- renderPlotly({
     
     f <- dat()$f1  # Get the  obj
     
@@ -947,7 +963,7 @@ server <- function(input, output) {
   })
   
   output$plot5a <- renderPlotly({
- 
+    
     f <- dat2()$f1  # Get the  obj
     f0 <- dat2()$f0
     p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
@@ -957,7 +973,7 @@ server <- function(input, output) {
     
     
   })
-
+  
   output$plot5b <- renderPlotly({
     
     f <- dat2()$f2 # Get the  obj
@@ -970,7 +986,7 @@ server <- function(input, output) {
     
   })
   
-   
+  
   
   
   
