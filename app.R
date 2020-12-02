@@ -1233,16 +1233,21 @@ server <- function(input, output) {
     wordup <- ifelse(X>1,"higher", "")
     
     
-     paste0( "The estimated hazard ratio is "
+     paste0( "As shown in the green box above, the estimated hazard ratio is "
      , formatz2(X),", 95%CI ( ",formatz2(Y),", ",formatz2(Z),
      " ) comparing treatment 1 to 0. 
      
  A hazard ratio of  ", formatz2(X)," means that, in each unit of time, someone 
 treated in group 1 has ", formatz00(abs(X/1-1)*100),"% ", wordup ," of the chance of experiencing the event of interest
 in the following unit of time as they would were they taking treatment 0.
-          The hazard ratio can be reformulated, possibly more intuitively, as
+
+
+Equivalently, the hazard ratio is equal to the odds that a patient in treatment group 1 experiences the event of interest before a
+ a patient in treatment group 0.
+
+          Therefore we can reformulate the hazard ratio, possibly more intuitively, as
       the probability that a patient in treatment 
-      group 1 experiences the event before a patient in treatment group 0 which is "
+      group 1 experiences the event before a patient in treatment group 0, which is: "
      , formatz2(Xp),", 95%CI ( ",formatz2(Yp),", ",formatz2(Zp),").")
     
     })
