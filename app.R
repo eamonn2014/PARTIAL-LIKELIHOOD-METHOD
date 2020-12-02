@@ -2,60 +2,60 @@
 # load the required packages
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-set.seed(333) # reproducible
-library(shiny)
-require(shinydashboard)
-library(ggplot2)
-library(dplyr)
-library(directlabels)
-library(shiny) 
-library(shinyalert)
-library(Hmisc)
-library(rms)
-library(ggplot2)
-library(tidyverse)
-library(plotly)
-library(survminer)
-library(rms)
-library(scales) # For the trans_format function
-library(DT)
-library(survival)
-options(max.print=1000000)    
+  set.seed(333) # reproducible
+  library(shiny)
+  require(shinydashboard)
+  library(ggplot2)
+  library(dplyr)
+  library(directlabels)
+  library(shiny) 
+  library(shinyalert)
+  library(Hmisc)
+  library(rms)
+  library(ggplot2)
+  library(tidyverse)
+  library(plotly)
+  library(survminer)
+  library(rms)
+  library(scales) # For the trans_format function
+  library(DT)
+  library(survival)
+  options(max.print=1000000)    
 
 # https://stackoverflow.com/questions/3245862/format-numbers-to-significant-figures-nicely-in-r
-formatz <- function(x){
-  
-  if (!is.na(x)  ) {
+  formatz <- function(x){
     
-    formatC(signif(x,digits=5), digits=5,format="fg", flag="#",big.mark=",")
+    if (!is.na(x)  ) {
+      
+      formatC(signif(x,digits=5), digits=5,format="fg", flag="#",big.mark=",")
+      
+    }
     
   }
   
-}
-
-formatz0 <- function(x){
-  sprintf(x, fmt = '%s')  
-}
-formatz1 <- function(x){
-  sprintf(x, fmt = '%#.1f')  
-}
-formatz2 <- function(x){
-  sprintf(x, fmt = '%#.2f')  
-}
-formatz00 <- function(x){
-  round(x,0) 
-}
-formatz4 <- function(x){
-  sprintf(x, fmt = '%#.4f')  
-}
+  formatz0 <- function(x){
+    sprintf(x, fmt = '%s')  
+  }
+  formatz1 <- function(x){
+    sprintf(x, fmt = '%#.1f')  
+  }
+  formatz2 <- function(x){
+    sprintf(x, fmt = '%#.2f')  
+  }
+  formatz00 <- function(x){
+    round(x,0) 
+  }
+  formatz4 <- function(x){
+    sprintf(x, fmt = '%#.4f')  
+  }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-logit <- function(p) log(1/(1/p-1))
-expit <- function(x) 1/(1/exp(x) + 1)
-inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
-is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
-
-options(width=200)
-options(scipen=999)
+  logit <- function(p) log(1/(1/p-1))
+  expit <- function(x) 1/(1/exp(x) + 1)
+  inv_logit <- function(logit) exp(logit) / (1 + exp(logit))
+  is.even <- function(x){ x %% 2 == 0 } # function to identify odd maybe useful
+  
+  options(width=200)
+  options(scipen=999)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function to create data and analyse
@@ -205,26 +205,18 @@ ui <- dashboardPage(
   dashboardHeader(title = h4(HTML("Cox proportional hazards<br/>and partial log likelihood"))),
   #Sidebar content of the dashboard
   sidebar <- dashboardSidebar(width=300,
-                              # br(),
-                              # tags$head(
-                              #   tags$style(HTML('#resample{background-color:palegreen}'))
-                              # ),
-                              # actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  ),
-                              
-                              sidebarMenu(
+                            
+                               sidebarMenu(
                                 
                                 id = "tabs",
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                
-                                
-                                
                                 br(),
                                 tags$head(
                                   tags$style(HTML('#resample{background-color:palegreen}'))
                                 ),
                                 actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  ),
-                                
-                                
+                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 
                                 menuItem("Define parameters ", icon = icon("bar-chart-o"),
                                          splitLayout(
@@ -252,9 +244,8 @@ ui <- dashboardPage(
                                 ),
                                 
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                
-                                
                                 menuItem("Survival analysis", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
+                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("Cox PH actual time does not matter", tabName = "OVERVIEW2",  icon = icon("bar-chart-o"), selected = FALSE),
                                 
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -290,9 +281,7 @@ ui <- dashboardPage(
                                          menuSubItem("R",  
                                                      icon = icon("send",lib='glyphicon'), 
                                                      href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/cox%20calculations.R") 
-                                         
-                                         
-                                ),
+                                  ),
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                
                                 
@@ -315,22 +304,15 @@ ui <- dashboardPage(
                                          menuSubItem( h5(HTML("Analysis of time-to-event for observational studies <br/>Guidance to the use of intensity models")),  
                                                       icon = icon("send",lib='glyphicon'), 
                                                       href = "https://github.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/blob/master/Analysis%20of%20time-to-event%20for%20observational%20studies.pdf")
-                                         
-                                         
-                                         
-                                         
+                                         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                          
                                 )
-                                
-                                
-                              )
+                             )
                               
-                              
-  ),
+    ),
   
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  
   dashboardBody(
     # https://stackoverflow.com/questions/54876731/inline-latex-equations-in-shiny-app-with-mathjax
     tags$head(
@@ -382,17 +364,7 @@ ui <- dashboardPage(
                 ),  # box end
               )
       ),
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("OVERVIEW",
               fluidRow(
                 box(
@@ -406,7 +378,7 @@ ui <- dashboardPage(
                   #p("zzzzzzzzzzzzzzz"),
                   h5(textOutput("Staff_name"))
                 )
-                
+                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
                   title='Difference in two Kaplan-Meier estimates with approximate confidence bands for differences'
                   ,status = "primary"
@@ -446,11 +418,12 @@ ui <- dashboardPage(
                 #)
                 
                 #,
+                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 box(width=8,
                     title = "Partial Likelihood by hand! Here we show how to calculate the log likelihood given the actual model HR. 
                 In reality a starting HR is supplied and an iterative process used to search for the value that maximises the log partial likelihood function.
                So the Beta obtained is the value that maximizes log PL. Note the estimate depends only on the
-ranks of the event times, not their numerical values!"
+                ranks of the event times, not their numerical values!"
                     ,status = "primary"
                     ,solidHeader = TRUE 
                     ,collapsible = TRUE 
@@ -469,7 +442,7 @@ ranks of the event times, not their numerical values!"
                   ,collapsible = TRUE 
                   , DT::dataTableOutput("exercise")
                 )
-                
+                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
                   width=5,
                   title='Small example of N=10 exemplifying partial likelihood calculations'
@@ -479,9 +452,7 @@ ranks of the event times, not their numerical values!"
                   , DT::dataTableOutput("exercise2")
                   # , verbatimTextOutput("help2") 
                 ))),        
-      
-      
-      
+          
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("HELP", 
               fluidRow(
@@ -501,11 +472,11 @@ ranks of the event times, not their numerical values!"
                   
                   p("$$\\begin{align}
                      h_{i}  {(t)} = h_{0} {(t)} {exp} ({\\beta_1}{x_{i1}} + \\cdots{\\beta_k}{x_{ik}})
-                      \\end{align}$$"),
+                     \\end{align}$$"),
                   
                   p("where $h_{i}  {(t)}$ is the dependent variable (operationalized as the hazard rate at time t for subject i), ${x_{1}}$  to 
-               ${x_{k}}$  are k independent variables or covariates,
-               and $\\beta_{1}$ to $\\beta_{k}$ are the regression coefficients; $h_{0} {(t)}$ is a baseline hazard
+                ${x_{k}}$  are k independent variables or covariates,
+                and $\\beta_{1}$ to $\\beta_{k}$ are the regression coefficients; $h_{0} {(t)}$ is a baseline hazard
                 function and is left unspecified. The baseline hazard function can be
                 thought of as the hazard function for an individual whose covariates all
                 have values of 0."),  
@@ -544,16 +515,15 @@ ranks of the event times, not their numerical values!"
                        \\frac{  
                           h_{0} (t) {exp} ({\\beta_1}{x_{i1}} + \\cdots+{\\beta_k}{x_{ik}})}
                        {  h_{0} (t) {exp} ({\\beta_1}{x_{j1}} + \\cdots+{\\beta_k}{x_{jk}})}
-         \\end{align}$$"),
+                      \\end{align}$$"),
+                  
                   p("rearranging:"),   
                   
                   p("$$\\begin{align}
-                     
-                          {exp} ({\\beta_1}({x_{i1}}-{x_{j1}} +\\cdots+{\\beta_k}{x_{ik}}-{x_{jk}} ))
-          \\end{align}$$"),
+                           {exp} ({\\beta_1}({x_{i1}}-{x_{j1}} +\\cdots+{\\beta_k}{x_{ik}}-{x_{jk}} ))
+                     \\end{align}$$"),
                   
-                  
-                )
+                 )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
                   title='Partial likelihood'
@@ -562,114 +532,99 @@ ranks of the event times, not their numerical values!"
                   ,collapsible = TRUE ,
                   # ,plotOutput("plot4", height = "720px")
                   p("Now we develop the partial likelihood function. First sort the data
-             in an ascending order by the study time, so that the first subject in our
-             sample has the shortest study time or highest hazard rate $h_{1}$, the second
-             subject has the next shortest study time or second highest hazard rate $h_{2}$,
-             and so on, until the last or the $\\it{n}$th subject who has the longest study time
-             or lowest hazard rate $h_{n}$"),
-                  
+                in an ascending order by the study time, so that the first subject in our
+                 sample has the shortest study time or highest hazard rate $h_{1}$, the second
+                 subject has the next shortest study time or second highest hazard rate $h_{2}$,
+                 and so on, until the last or the $\\it{n}$th subject who has the longest study time
+                 or lowest hazard rate $h_{n}$"),
+                    
                   
                   p("$$\\begin{align}
-                     
-                          {h_{1} (t)} = {h_{0} (t)} exp({\\beta}{x_{1}})
-          \\end{align}$$"),
+                           {h_{1} (t)} = {h_{0} (t)} exp({\\beta}{x_{1}})
+                      \\end{align}$$"),
                   
                   p("where x1 denotes the value of x for subject 1. Likewise, we can have a
-         similar expression of hazard functions for all subjects. Taking the sum of
-         hazards over all sample subjects, we obtain a risk set as:"),
-                  
+                   similar expression of hazard functions for all subjects. Taking the sum of
+                   hazards over all sample subjects, we obtain a risk set as:"),
+                            
                   p("$$\\begin{align}
-                     
-                          {h_{1} (t)} + {h_{2} (t)} + {h_{3} (t)} + \\cdots+  {h_{n} (t)}
-          \\end{align}$$"),
+                           {h_{1} (t)} + {h_{2} (t)} + {h_{3} (t)} + \\cdots+  {h_{n} (t)}
+                   \\end{align}$$"),
                   
                   p("The likelihood for individual 1 to have the event at time t is simply the
-ratio of hazard over the risk set, or is the hazard for subject 1 at time t
-divided by the sum of the hazards for all subjects who are at risk of having
-the event at time t. That is,"),
+                    ratio of hazard over the risk set, or is the hazard for subject 1 at time t
+                    divided by the sum of the hazards for all subjects who are at risk of having
+                    the event at time t. That is,"),
                   
                   
                   p("$$\\begin{align}
                      {L_{1}} = \\frac{h_{1} (t)}    {  {h_{1} (t)} + {h_{2} (t)} + {h_{3} (t)} + \\cdots+  {h_{n} (t)} }
-          \\end{align}$$"),
+                   \\end{align}$$"),
                   
                   p("For the 2nd subject, note the first subject is no longer in the risk set"),
                   
                   p("$$\\begin{align}
                     {L_{2}} = \\frac{h_{2} (t)}    {  {h_{2} (t)} + {h_{3} (t)} + {h_{4} (t)} + \\cdots+  {h_{n} (t)} }
-          \\end{align}$$"),
+                   \\end{align}$$"),
                   
                   p("Substituting and cancelling all $h_{0} {(t)}$ for subject 1"),
                   
                   p("$$\\begin{align}
                    {L_{1}} = \\frac {exp({\\beta}{x_{1}})}    {  
-           exp({\\beta}{x_{1}}) + exp({\\beta}{x_{2}}) + exp({\\beta}{x_{3}}) + \\cdots+  exp({\\beta}{x_{n}}) 
+                   exp({\\beta}{x_{1}}) + exp({\\beta}{x_{2}}) + exp({\\beta}{x_{3}}) + \\cdots+  exp({\\beta}{x_{n}}) 
                      }
-          \\end{align}$$"),
+                   \\end{align}$$"),
                   
                   p("Substituting and cancelling all $h_{0} {(t)}$ for subject 2, note the first subject is no longer in the risk set"),
                   
                   p("$$\\begin{align}
                    {L_{2}} =  \\frac {exp({\\beta}{x_{2}})}    {  
-           exp({\\beta}{x_{2}}) + exp({\\beta}{x_{3}}) + exp({\\beta}{x_{4}}) + \\cdots+  exp({\\beta}{x_{n}}) 
+                  exp({\\beta}{x_{2}}) + exp({\\beta}{x_{3}}) + exp({\\beta}{x_{4}}) + \\cdots+  exp({\\beta}{x_{n}}) 
                      }
-          \\end{align}$$"),
+                 \\end{align}$$"),
                   
                   
                   p("Three points to note (a) the
-baseline hazard is canceled out; (b) as a result, the likelihood function
-is solely expressed by $\\beta—the coefficient to be estimated and the
-predictor; and (c) the model takes the information of censored
-cases into account when building the likelihood function—censored
-cases are not excluded, and their information (i.e., the hazard functions)
-is built into the construction of the risk set"),
-                  
-                  
+                    baseline hazard is canceled out; (b) as a result, the likelihood function
+                    is solely expressed by $\\beta—the coefficient to be estimated and the
+                    predictor; and (c) the model takes the information of censored
+                    cases into account when building the likelihood function—censored
+                    cases are not excluded, and their information (i.e., the hazard functions)
+                    is built into the construction of the risk set"),
                   
                   p("Writing the partial likelihoods for each of the n subjects and multiplying all
-         these partial likelihoods together, we obtain the sample partial likelihood:"),
-                  
-                  
+                     these partial likelihoods together, we obtain the sample partial likelihood:"),
                   
                   p("$$\\begin{align}
-             {  \\it{PL} = \\prod_{i=1}^n {L_i} =  {L_1} \\times {L_2} \\times \\cdots \\times {L_n} }
-              \\end{align}$$"),
-                  
-                  
+                          {  \\it{PL} = \\prod_{i=1}^n {L_i} =  {L_1} \\times {L_2} \\times \\cdots \\times {L_n} }
+                     \\end{align}$$"),
+
                   p("Each censored subject $\\it{j}$ contributes a likelihood of value 1, or $L_{j}^0=1$"),
                   
-                  
-                  
                   p("$$\\begin{align}
-            
-             
-              
- {\\it{PL} = \\prod_{i=1}^n }
-   \\left[ 
-     \\frac{
-       e^{\\beta x}
-     }{
-       
-       \\sum_{j=1}^n {Y_{ij}}
-       e^{\\beta x}
-       }
-       
-   \\right]^{\\delta_i}
- 
-        \\end{align}$$"),
+                 {\\it{PL} = \\prod_{i=1}^n }
+                   \\left[ 
+                    \\frac{
+                 e^{\\beta x}
+                       }{
+                    \\sum_{j=1}^n {Y_{ij}}
+                e^{\\beta x}
+                   }
+                  \\right]^{\\delta_i}
+                  \\end{align}$$"),
                   
                   
                   p("
-       where ${Y_{ij} =1}$ if ${t_{j}} \\gt {t_{i}}$; and ${Y_{ij} =0}$ if ${t_{j}} \\lt {t_{i}}$. 
-       Here ${Y_{ij}}$ serves as a switcher (i.e., on
-and off), indicates that the study times are rank ordered, and signifies that
-the estimating algorithm should not use the information for those whose
-events occurred at a point earlier than the current ith subject in the calculation of the risk set 
-(i.e., the formation of denominators). This makes sense
-because those who already had the events have exited the set and are no
-longer elements of the risk set.  $\\delta_i$ is the censoring code
-and takes the value of 0 or 1. If $\\delta_i=0$ (i.e., the study time is censored), then
-the whole partial likelihood for this subject equals value 1 otherwise a non one value. "),
+                   where ${Y_{ij} =1}$ if ${t_{j}} \\gt {t_{i}}$; and ${Y_{ij} =0}$ if ${t_{j}} \\lt {t_{i}}$. 
+                   Here ${Y_{ij}}$ serves as a switcher (i.e., on
+                  and off), indicates that the study times are rank ordered, and signifies that
+                  the estimating algorithm should not use the information for those whose
+                  events occurred at a point earlier than the current ith subject in the calculation of the risk set 
+                  (i.e., the formation of denominators). This makes sense
+                  because those who already had the events have exited the set and are no
+                  longer elements of the risk set.  $\\delta_i$ is the censoring code
+                  and takes the value of 0 or 1. If $\\delta_i=0$ (i.e., the study time is censored), then
+                  the whole partial likelihood for this subject equals value 1 otherwise a non one value. "),
                   
                   
                   
@@ -678,44 +633,37 @@ the whole partial likelihood for this subject equals value 1 otherwise a non one
                   
                   
                   p("$$\\begin{align}
-            
-             
-              
-           {log\\it{PL} = 
- \\sum_{i=1}^n }  {\\delta_i}
-   \\left[ 
-      
-       {\\beta x_i} - log(
-          
-       \\sum_{j=1}^n {Y_{ij}}
-       e^{\\beta x_j})
-       
-   \\right]^{\\delta_i}
-        \\end{align}$$"),
+                    {log\\it{PL} = 
+                   \\sum_{i=1}^n }  {\\delta_i}
+                   \\left[ 
+                  {\\beta x_i} - log(
+                  \\sum_{j=1}^n {Y_{ij}}
+                   e^{\\beta x_j})
+                  \\right]^{\\delta_i}
+                  \\end{align}$$"),
                   
                   
                   p("With this log partial likelihood function, we can search for the
-best estimate of $\\beta$. Typically a starting value of $\\beta$ is plugged 
-into the right-hand side of the equation to obtain a first 'guess’ of log
-PL. Through several iterations, we should fing that further modification of $\\beta$ is no longer necessary because the difference between the
-current log PL and the log PL obtained from the previous iteration is
-less than a predetermined value called the convergence criterion,
-typically a very small value such as .000001. We stop
-searching, and the $\\beta$ so obtained is the best that maximizes log PL.
-Using this $\\beta$, the likelihood of reproducing the sample data is maximum or optimal")
-                  
+                    best estimate of $\\beta$. Typically a starting value of $\\beta$ is plugged 
+                    into the right-hand side of the equation to obtain a first 'guess’ of log
+                    PL. Through several iterations, we should fing that further modification of $\\beta$ is no longer necessary because the difference between the
+                    current log PL and the log PL obtained from the previous iteration is
+                    less than a predetermined value called the convergence criterion,
+                    typically a very small value such as .000001. We stop
+                    searching, and the $\\beta$ so obtained is the best that maximizes log PL.
+                    Using this $\\beta$, the likelihood of reproducing the sample data is maximum or optimal")
+                                      
                 ),  # box end
                 
               )
               
       ),
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      
-      tabItem("RESULTS3",
+       tabItem("RESULTS3",
               fluidRow(
                 box(
                   title = "Log-log survivor plot; log[-log S(t)] as the vertical axis, and
-log time as the horizontal axis"
+                                log time as the horizontal axis"
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
@@ -724,7 +672,7 @@ log time as the horizontal axis"
                 
                 ,box(
                   title='
-Repeated Cox regression coefficients estimates and confidence limits within time intervals. 
+                Repeated Cox regression coefficients estimates and confidence limits within time intervals. 
                The log hazard ratios are plotted against the mean failure/censoring time within the interval'
                   ,status = "primary"
                   ,solidHeader = TRUE 
@@ -737,7 +685,7 @@ Repeated Cox regression coefficients estimates and confidence limits within time
   ))
 
 
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # create the server functions for the dashboard  
 server <- function(input, output) { 
   
@@ -1073,10 +1021,8 @@ server <- function(input, output) {
                          'Treatment'='trt',
                          'HR'='expB',
                          'Individual likelihoods' ='likelihoodi',
-                         # 'A'='part1',
                          'logHR x trt'='part2',
                          'Log(exp HR) of each risk set'='part3',
-                         
                          'Sum the Individual likelihoods to give log likelihood' ='LL'
               ),
               
@@ -1113,10 +1059,8 @@ server <- function(input, output) {
                          'Event or censored' = 'e', 
                          'Treat.'='trt',
                          'Model Hazard Ratio'='hr',
-                         
                          'Null Log Likelihood'='lognull',
                          'Maximised Log Likelihood'='lognmax',
-                         
                          'HR guess' ='guess',
                          'Individual likelihoods' ='likelihoodi',
                          'Sum the Individual likelihoods to give log likelihood based on guess' ='L'
@@ -1145,10 +1089,8 @@ server <- function(input, output) {
   
   output$exercise2 <- DT::renderDataTable({
     
-    
     sample <- random.sample()
-    #n=         sample$n
-    
+
     allocation=sample$allocation
     hr=        sample$hr
     baseline=  sample$baseline
@@ -1180,11 +1122,9 @@ server <- function(input, output) {
                          'Treat.'='trt',
                          'Num.'='Numerator',
                          'Den.'='Denominator',
-                         
                          'Individual likelihoods'='Li',
                          'log of product of Individual likelihoods to give maximizes log likelihood' ='LL'
-                         
-                         
+
               ),
               
               options = list(
@@ -1198,8 +1138,8 @@ server <- function(input, output) {
                    'Individual likelihoods', 'log of product of Individual likelihoods to give maximizes log likelihood'
         ),
         digits=4 ) %>%
-      formatRound(
-        columns= c( 'Event or censored',
+         formatRound(
+         columns= c( 'Event or censored',
                     'Treat.'), 
         digits=0 )
   })
@@ -1227,18 +1167,15 @@ server <- function(input, output) {
     paste0( "As shown in the green box above, the estimated hazard ratio is "
             , formatz2(X),", 95%CI ( ",formatz2(Y),", ",formatz2(Z),
             " ) comparing treatment 1 to 0. 
-         
-     A hazard ratio of  ", formatz2(X)," means that, in each unit of time, someone 
-    treated in group 1 has ", formatz00(abs(X/1-1)*100),"% ", wordup ," of the chance of experiencing the event of interest
-    in the following unit of time as they would were they taking treatment 0.
-
-
-    Equivalently, the hazard ratio is equal to the odds that a patient in treatment group 1 experiences the event of interest before a
-    a patient in treatment group 0.
+             A hazard ratio of  ", formatz2(X)," means that, in each unit of time, someone 
+            treated in group 1 has ", formatz00(abs(X/1-1)*100),"% ", wordup ," of the chance of experiencing the event of interest
+            in the following unit of time as they would were they taking treatment 0.
+            Equivalently, the hazard ratio is equal to the odds that a patient in treatment group 1 experiences the event of interest before a
+            a patient in treatment group 0.
            Therefore we can reformulate the hazard ratio, possibly more intuitively, as
-      the probability that a patient in treatment 
-      group 1 experiences the event before a patient in treatment group 0, which is: "
-            , formatz2(Xp),", 95%CI ( ",formatz2(Yp),", ",formatz2(Zp),").")
+            the probability that a patient in treatment 
+            group 1 experiences the event before a patient in treatment group 0, which is: "
+                  , formatz2(Xp),", 95%CI ( ",formatz2(Yp),", ",formatz2(Zp),").")
     
   })
   
