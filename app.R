@@ -23,31 +23,31 @@ library(survival)
 options(max.print=1000000)    
 
 # https://stackoverflow.com/questions/3245862/format-numbers-to-significant-figures-nicely-in-r
-formatz <- function(x){
-  
-  if (!is.na(x)  ) {
+  formatz <- function(x){
     
-    formatC(signif(x,digits=5), digits=5,format="fg", flag="#",big.mark=",")
+    if (!is.na(x)  ) {
+      
+      formatC(signif(x,digits=5), digits=5,format="fg", flag="#",big.mark=",")
+      
+    }
     
   }
   
-}
-
-formatz0 <- function(x){
-  sprintf(x, fmt = '%s')  
-}
-formatz1 <- function(x){
-  sprintf(x, fmt = '%#.1f')  
-}
-formatz2 <- function(x){
-  sprintf(x, fmt = '%#.2f')  
-}
-formatz00 <- function(x){
-  round(x,0) 
-}
-formatz4 <- function(x){
-  sprintf(x, fmt = '%#.4f')  
-}
+  formatz0 <- function(x){
+    sprintf(x, fmt = '%s')  
+  }
+  formatz1 <- function(x){
+    sprintf(x, fmt = '%#.1f')  
+  }
+  formatz2 <- function(x){
+    sprintf(x, fmt = '%#.2f')  
+  }
+  formatz00 <- function(x){
+    round(x,0) 
+  }
+  formatz4 <- function(x){
+    sprintf(x, fmt = '%#.4f')  
+  }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 logit <- function(p) log(1/(1/p-1))
 expit <- function(x) 1/(1/exp(x) + 1)
@@ -132,7 +132,8 @@ coxdata2 <- function(n, allocation, hr, baseline) {
   f1 <- survfit(Surv(dt,e) ~ trt, data = d)
   
   d <- plyr::arrange(d,dt)
-  d$dt <- sort(runif(nrow(d), min(d$dt), max(d$dt)))  #
+  d$dt <- sort(runif(nrow(d), min(d$dt), max(d$dt)))  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  d$dt <- sort(2*rexp(nrow(d)))#
   
   dx <<- datadist(d)
   options(datadist='dx')
@@ -277,11 +278,7 @@ ui <- dashboardPage(
                                                      icon = icon("send",lib='glyphicon'), 
                                                      href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/cox%20calculations.R") 
                                          
-                                         
-                                         
-                                         # menuSubItem("Click for bells and whistles main app.",  
-                                         #             icon = icon("send",lib='glyphicon'), 
-                                         #             href = "https://eamonn3.shinyapps.io/LoQs/")
+                                          
                                 ),
                                 
                                 menuItem("References", icon = icon("bar-chart-o"),
@@ -371,7 +368,7 @@ ui <- dashboardPage(
       tabItem("OVERVIEW2",
               fluidRow(
                 box(
-                  title =   "Kaplan-Meier Curve"   # uiOutput('product'), 
+                  title =   "Kaplan-Meier curve"   # uiOutput('product'), 
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
@@ -379,11 +376,12 @@ ui <- dashboardPage(
                 )
                 
                 ,box(
-                  title="Kaplan-Meier Curve repeat, same order by all times are perturbed"
+                  title="KM, rank order of events preserved, sorted random values replace original numerical event times"
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
-                  ,plotlyOutput("plot5b", height = "720px")
+                  ,plotlyOutput("plot5b", height = "720px"),
+                  h5(textOutput("info"))
                 ))),   
       
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -436,8 +434,6 @@ ranks of the event times, not their numerical values!"
       
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("HELP", 
-              
-              
               fluidRow(
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 box(  
@@ -506,35 +502,9 @@ ranks of the event times, not their numerical values!"
                           {exp} ({\\beta_1}({x_{i1}}-{x_{j1}} +\\cdots+{\\beta_k}{x_{ik}}-{x_{jk}} ))
           \\end{align}$$"),
                   
-                  
-                  # p("$$\\begin{equation}
-                  #             
-                  #                  {exp} ({\\beta_1}({x_{i1}}-{x_{j1}} +\\cdots+{\\beta_k}{x_{ik}}-{x_{jk}} ))
-                  #                   \\label{eq:sample}
-                  #  \\end{equation}$$"),
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
+         
                 )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                
-                
-                
                 ,box(
                   title='Partial likelihood'
                   ,status = "primary"
@@ -686,11 +656,7 @@ Using this $\\beta$, the likelihood of reproducing the sample data is maximum or
                   
                 ),  # box end
                 
-                
               )
-              
-              
-              
               
       ),
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -716,10 +682,7 @@ Repeated Cox regression coefficients estimates and confidence limits within time
                   ,plotOutput("plot4", height = "720px")
                 )))
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      
-      
-      
-      
+     
     )
   ))
 
@@ -808,10 +771,7 @@ server <- function(input, output) {
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  
+
   setUpByName <- reactive ({
     f <-dat()$np  # Get the  data
     f <-  f$n[1]
@@ -839,7 +799,6 @@ server <- function(input, output) {
     y <- as.numeric(as.character(f))
     return(y)
   })
-  
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
@@ -880,9 +839,8 @@ server <- function(input, output) {
     return(y)
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  
-  setUpByName3 <- reactive ({
+
+    setUpByName3 <- reactive ({
     f <- dat()$f  # Get the  data
     y <- as.numeric(as.character(f$coefficients))
     return(y)
@@ -985,6 +943,7 @@ server <- function(input, output) {
     return(list(f1=res$f1, f2=res$f2, f0a=res$f0a, f0=res$f0))  #HRs
     
   })
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$plot5a <- renderPlotly({
     
@@ -997,6 +956,7 @@ server <- function(input, output) {
     
     
   })
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$plot5b <- renderPlotly({
     
@@ -1009,14 +969,6 @@ server <- function(input, output) {
     ggplotly(p1[[1]])
     
   })
-  
-  
-  
-  
-  
-  
-  
-  
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$mytable <- DT::renderDataTable({
@@ -1205,19 +1157,8 @@ server <- function(input, output) {
   output$help <- renderText({
     HTML(" ")
   })
-  
-  
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # output$help2 <- renderText({
-  #   
-  #   sf  <- dat()$sf
-  #   X <- as.numeric(as.character(sf[2,c("Effect")]))
-  #   Y <- as.numeric(as.character(sf[2,c("Lower 0.95")]))
-  #   Z <- as.numeric(as.character(sf[2,c("Upper 0.95")]))
-  #  
-  #   HTML(paste("HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," ) "))
-  # })
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$Staff_name <- renderText({  
     
@@ -1236,24 +1177,39 @@ server <- function(input, output) {
      paste0( "As shown in the green box above, the estimated hazard ratio is "
      , formatz2(X),", 95%CI ( ",formatz2(Y),", ",formatz2(Z),
      " ) comparing treatment 1 to 0. 
-     
- A hazard ratio of  ", formatz2(X)," means that, in each unit of time, someone 
-treated in group 1 has ", formatz00(abs(X/1-1)*100),"% ", wordup ," of the chance of experiencing the event of interest
-in the following unit of time as they would were they taking treatment 0.
+         
+     A hazard ratio of  ", formatz2(X)," means that, in each unit of time, someone 
+    treated in group 1 has ", formatz00(abs(X/1-1)*100),"% ", wordup ," of the chance of experiencing the event of interest
+    in the following unit of time as they would were they taking treatment 0.
 
 
-Equivalently, the hazard ratio is equal to the odds that a patient in treatment group 1 experiences the event of interest before a
- a patient in treatment group 0.
-
-          Therefore we can reformulate the hazard ratio, possibly more intuitively, as
+    Equivalently, the hazard ratio is equal to the odds that a patient in treatment group 1 experiences the event of interest before a
+    a patient in treatment group 0.
+           Therefore we can reformulate the hazard ratio, possibly more intuitively, as
       the probability that a patient in treatment 
       group 1 experiences the event before a patient in treatment group 0, which is: "
      , formatz2(Xp),", 95%CI ( ",formatz2(Yp),", ",formatz2(Zp),").")
     
     })
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  output$info <- renderText({  
+  
+      c("The regression coefficients of the proportional hazards 
+      model are estimated without having to specify the 
+      baseline hazard function (distribution-free approach), 
+      and the estimates depend only on the
+      ranks of the event times, not their numerical values. Because the model
+      depends only on ranks, any monotonic transformation of the event
+      times will leave the coefficient estimates unchanged as seen above.")
+  
+  })
+    
   
 }
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+ 
 
 shinyApp(ui, server)
