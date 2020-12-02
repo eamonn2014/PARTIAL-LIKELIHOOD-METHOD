@@ -23,31 +23,31 @@ library(survival)
 options(max.print=1000000)    
 
 # https://stackoverflow.com/questions/3245862/format-numbers-to-significant-figures-nicely-in-r
-  formatz <- function(x){
+formatz <- function(x){
+  
+  if (!is.na(x)  ) {
     
-    if (!is.na(x)  ) {
-      
-      formatC(signif(x,digits=5), digits=5,format="fg", flag="#",big.mark=",")
-      
-    }
+    formatC(signif(x,digits=5), digits=5,format="fg", flag="#",big.mark=",")
     
   }
   
-  formatz0 <- function(x){
-    sprintf(x, fmt = '%s')  
-  }
-  formatz1 <- function(x){
-    sprintf(x, fmt = '%#.1f')  
-  }
-  formatz2 <- function(x){
-    sprintf(x, fmt = '%#.2f')  
-  }
-  formatz00 <- function(x){
-    round(x,0) 
-  }
-  formatz4 <- function(x){
-    sprintf(x, fmt = '%#.4f')  
-  }
+}
+
+formatz0 <- function(x){
+  sprintf(x, fmt = '%s')  
+}
+formatz1 <- function(x){
+  sprintf(x, fmt = '%#.1f')  
+}
+formatz2 <- function(x){
+  sprintf(x, fmt = '%#.2f')  
+}
+formatz00 <- function(x){
+  round(x,0) 
+}
+formatz4 <- function(x){
+  sprintf(x, fmt = '%#.4f')  
+}
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 logit <- function(p) log(1/(1/p-1))
 expit <- function(x) 1/(1/exp(x) + 1)
@@ -201,19 +201,31 @@ loglike2 <- function(x, dat, dead, indep , time) {
 ui <- dashboardPage( 
   
   # Dashboard header carrying the title of the dashboard,
-
-  dashboardHeader(title = h4(HTML("Cox proportional hazard<br/>and partial log likelihood"))),
+  
+  dashboardHeader(title = h4(HTML("Cox proportional hazards<br/>and partial log likelihood"))),
   #Sidebar content of the dashboard
   sidebar <- dashboardSidebar(width=300,
-                              br(),
-                              tags$head(
-                                tags$style(HTML('#resample{background-color:palegreen}'))
-                              ),
-                              actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  ),
+                              # br(),
+                              # tags$head(
+                              #   tags$style(HTML('#resample{background-color:palegreen}'))
+                              # ),
+                              # actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  ),
                               
                               sidebarMenu(
+                                
                                 id = "tabs",
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               
+                                
+                                
+                                br(),
+                                tags$head(
+                                  tags$style(HTML('#resample{background-color:palegreen}'))
+                                ),
+                                actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  ),
+                                
+                                
+                                
                                 menuItem("Define parameters ", icon = icon("bar-chart-o"),
                                          splitLayout(
                                            
@@ -266,9 +278,10 @@ ui <- dashboardPage(
                                          
                                 ),
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                
-                                
-                                menuItem("Code", icon = icon("bar-chart-o"),
+                               
+                                menuItem("Wiki", tabName = "Wiki",  icon = icon("bar-chart-o"), selected = FALSE),
+                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               menuItem("Code", icon = icon("bar-chart-o"),
                                          menuSubItem("Shiny",  
                                                      icon = icon("send",lib='glyphicon'), 
                                                      href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/app.R"),
@@ -278,8 +291,10 @@ ui <- dashboardPage(
                                                      icon = icon("send",lib='glyphicon'), 
                                                      href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/cox%20calculations.R") 
                                          
-                                          
+                                         
                                 ),
+                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               
                                 
                                 menuItem("References", icon = icon("bar-chart-o"),
                                          
@@ -293,11 +308,11 @@ ui <- dashboardPage(
                                                      href = "https://jme.bmj.com/content/medethics/31/12/703.full.pdf") ,
                                          #dashboardHeader(title = h4(HTML("This title<br/>is just way too long")))
                                          
-                                          menuSubItem( h5(HTML("Can we say whether a drug would <br/>have enabled someone to <br/>live longer? Sadly not")),  
+                                         menuSubItem( h5(HTML("Can we say whether a drug would <br/>have enabled someone to <br/>live longer? Sadly not")),  
                                                       icon = icon("send",lib='glyphicon'), 
                                                       href = "https://understandinguncertainty.org/node/759"),
                                          
-                                       menuSubItem( h5(HTML("Analysis of time-to-event for observational studies <br/>Guidance to the use of intensity models")),  
+                                         menuSubItem( h5(HTML("Analysis of time-to-event for observational studies <br/>Guidance to the use of intensity models")),  
                                                       icon = icon("send",lib='glyphicon'), 
                                                       href = "https://github.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/blob/master/Analysis%20of%20time-to-event%20for%20observational%20studies.pdf")
                                          
@@ -342,7 +357,42 @@ ui <- dashboardPage(
     ),
     
     tabItems(
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      
+      tabItem("Wiki", 
+              fluidRow(
+                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                box(  
+                  title='Wiki'
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                  #textOutput("help"),
+                  , p("Exploring the Cox proportinal hazards model and the partial likelihoof function"),
+                )
+                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                ,box(
+                  title=' '
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE ,
+                  # ,plotOutput("plot4", height = "720px")
+                  p("xxxxxxxxxxxxxxxxxxxx"),
+                ),  # box end
+              )
+      ),
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("OVERVIEW",
               fluidRow(
                 box(
@@ -427,7 +477,7 @@ ranks of the event times, not their numerical values!"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   , DT::dataTableOutput("exercise2")
-                 # , verbatimTextOutput("help2") 
+                  # , verbatimTextOutput("help2") 
                 ))),        
       
       
@@ -502,7 +552,7 @@ ranks of the event times, not their numerical values!"
                           {exp} ({\\beta_1}({x_{i1}}-{x_{j1}} +\\cdots+{\\beta_k}{x_{ik}}-{x_{jk}} ))
           \\end{align}$$"),
                   
-         
+                  
                 )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
@@ -682,7 +732,7 @@ Repeated Cox regression coefficients estimates and confidence limits within time
                   ,plotOutput("plot4", height = "720px")
                 )))
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     
+      
     )
   ))
 
@@ -771,7 +821,7 @@ server <- function(input, output) {
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+  
   setUpByName <- reactive ({
     f <-dat()$np  # Get the  data
     f <-  f$n[1]
@@ -839,8 +889,8 @@ server <- function(input, output) {
     return(y)
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    setUpByName3 <- reactive ({
+  
+  setUpByName3 <- reactive ({
     f <- dat()$f  # Get the  data
     y <- as.numeric(as.character(f$coefficients))
     return(y)
@@ -881,7 +931,7 @@ server <- function(input, output) {
     p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
                      palette = c("orange", "purple") 
                      , xlab= paste0("Time" )
-                    # , xlab= paste0("Time: HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," )" )
+                     # , xlab= paste0("Time: HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," )" )
                      #,#conf.int = TRUE,
                      # ggtheme = theme_bw() # Change ggplot2  
     )
@@ -1157,7 +1207,7 @@ server <- function(input, output) {
   output$help <- renderText({
     HTML(" ")
   })
- 
+  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$Staff_name <- renderText({  
@@ -1170,13 +1220,13 @@ server <- function(input, output) {
     Xp  <- X/(X+1)
     Yp  <- Y/(Y+1)
     Zp  <- Z/(Z+1)
-   
+    
     wordup <- ifelse(X>1,"higher", "")
     
     
-     paste0( "As shown in the green box above, the estimated hazard ratio is "
-     , formatz2(X),", 95%CI ( ",formatz2(Y),", ",formatz2(Z),
-     " ) comparing treatment 1 to 0. 
+    paste0( "As shown in the green box above, the estimated hazard ratio is "
+            , formatz2(X),", 95%CI ( ",formatz2(Y),", ",formatz2(Z),
+            " ) comparing treatment 1 to 0. 
          
      A hazard ratio of  ", formatz2(X)," means that, in each unit of time, someone 
     treated in group 1 has ", formatz00(abs(X/1-1)*100),"% ", wordup ," of the chance of experiencing the event of interest
@@ -1188,28 +1238,28 @@ server <- function(input, output) {
            Therefore we can reformulate the hazard ratio, possibly more intuitively, as
       the probability that a patient in treatment 
       group 1 experiences the event before a patient in treatment group 0, which is: "
-     , formatz2(Xp),", 95%CI ( ",formatz2(Yp),", ",formatz2(Zp),").")
+            , formatz2(Xp),", 95%CI ( ",formatz2(Yp),", ",formatz2(Zp),").")
     
-    })
+  })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$info <- renderText({  
-  
-      c("The regression coefficients of the proportional hazards 
+    
+    c("The regression coefficients of the proportional hazards 
       model are estimated without having to specify the 
       baseline hazard function (distribution-free approach), 
       and the estimates depend only on the
       ranks of the event times, not their numerical values. Because the model
       depends only on ranks, any monotonic transformation of the event
       times will leave the coefficient estimates unchanged as seen above.")
-  
-  })
     
+  })
+  
   
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- 
+
 
 shinyApp(ui, server)
