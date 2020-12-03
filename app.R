@@ -214,17 +214,19 @@ ui <- dashboardPage(
                                 ),
                                 
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                menuItem("Survival analysis", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
+                                menuItem("Cox proportional hazards", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                menuItem("Cox PH actual time does not matter", tabName = "OVERVIEW2",  icon = icon("bar-chart-o"), selected = FALSE),
+                              
                                 
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("More",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                          
                                          
+                                         
                                          menuSubItem("Diagnostics",               tabName = "RESULTS3"),
                                          menuSubItem("Diagnostics cont'd",        tabName = "RESULTS2"),
                                          menuSubItem("Partial log likelihood",    tabName = "RESULTS1"),
+                                         menuItem("Only ranks of event times needed!", tabName = "OVERVIEW2",  icon = icon("bar-chart-o"), selected = FALSE),
                                          menuSubItem("Explanation",               tabName = "HELP")
                                          
                                 ),
@@ -274,7 +276,20 @@ ui <- dashboardPage(
                                          
                                          menuSubItem( h5(HTML("Analysis of time-to-event for observational studies <br/>Guidance to the use of intensity models")),  
                                                       icon = icon("send",lib='glyphicon'), 
-                                                      href = "https://github.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/blob/master/Analysis%20of%20time-to-event%20for%20observational%20studies.pdf")
+                                                      href = "https://github.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/blob/master/Analysis%20of%20time-to-event%20for%20observational%20studies.pdf"),
+                                         
+                                         menuSubItem( h5(HTML("Cox's proportional hazards regression")),  
+                                                      icon = icon("send",lib='glyphicon'), 
+                                                      href = "https://influentialpoints.com/Training/coxs_proportional_hazards_regression_model-principles-properties-assumptions.htm"),
+                                         
+                                         menuSubItem( h5(HTML("Frank Harrell cph function")),  
+                                                      icon = icon("send",lib='glyphicon'), 
+                                                      href = "https://rdrr.io/cran/rms/man/cph.html")
+                                         
+                                         
+                                         
+                                         
+                                         
                                          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                           
                                 )
@@ -422,7 +437,28 @@ ui <- dashboardPage(
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   , DT::dataTableOutput("exercise2")
-                  # , verbatimTextOutput("help2") 
+                  ,p("")
+                  ,p("
+                In this small dataset we can look at the calculations in detail.
+                Above time is sorted. The individual likelihood is overridden 
+                if a patient is censored. As we are not working on the log scale 
+                here the indivdual likelihoods column equals 1 (Log scale this would be 0).
+                
+                For a non censored patient the numerator is the (maximised) 
+                HR x treatment indicator and the denominator is the sum of the 
+                numerator columns for patients still in the risk set. 
+                For example for the first patient (who is not censored) we sum all numerator 10 values. 
+                The individual likelihoods are then Num./Den. Hence the censored individuals are included 
+                in the summation over the risk sets at event times that occur before a censored time.
+                 
+                Because we have not logged the data, multiply all individual likelihoods 
+                to give the log likelihood. This should be ok with 10 samples but will 
+                cause numerical problems with more patients, so it is advisable to do the 
+                calculations on the log scale.
+                 
+                Note the last patient always contributes 1 as they are the only person in their risk set.
+                
+                Here we only log the final column.")
                 ))),        
           
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
