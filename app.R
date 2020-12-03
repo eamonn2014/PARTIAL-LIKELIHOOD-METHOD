@@ -8,10 +8,8 @@
   library(ggplot2)
   library(dplyr)
   library(directlabels)
-  library(shiny) 
-  library(shinyalert)
+ #library(shinyalert)
   library(Hmisc)
-  library(rms)
   library(ggplot2)
   library(tidyverse)
   library(plotly)
@@ -87,7 +85,7 @@ coxdata <- function(n, allocation, hr, baseline) {
   
   # S <- Surv(dt,e)
   f <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
-  
+  f0 <- f$coefficients[[1]] #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   LL1 <- f$loglik[2]
   LL0 <- f$loglik[1]
   
@@ -99,40 +97,10 @@ coxdata <- function(n, allocation, hr, baseline) {
   
   S <- Surv(d$dt, d$e)
   
-  return(list(f=f, d=d, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0, S=S))
-  
-}
-
-coxdata2 <- function(n, allocation, hr, baseline) { 
-  
-  #n=1000; allocation =.5; hr=2; baseline=.4
-  
-  trt <- sample(0:1, n,  rep=TRUE, prob=c(1-allocation, allocation))
-  
-  cens <- 15*runif(n)
-  
-  h <- baseline*exp(log(hr)*(trt==1))
-  
-  dt <- -log(runif(n))/h
-  label(dt) <- 'Follow-up Time'
-  
-  e <- ifelse(dt <= cens,1,0)
-  
-  dt <- pmin(dt, cens)
-  
-  units(dt) <- "Year"
-  
-  d <<- data.frame(cbind(dt,e,trt=trt))  ##why the << required to circumvent error?
-  
-  dd <<- datadist(d)
-  options(datadist='dd')
-  
-  f0 <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
-  f0 <- f0$coefficients[[1]]
-  f1 <- survfit(Surv(dt,e) ~ trt, data = d)
+  #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   
   d <- plyr::arrange(d,dt)
-  d$dt <- sort(runif(nrow(d), min(d$dt), max(d$dt)))  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  d$dt <- dd<- NULL
   d$dt <- sort(2*rexp(nrow(d)))#
   
   dx <<- datadist(d)
@@ -141,9 +109,55 @@ coxdata2 <- function(n, allocation, hr, baseline) {
   f0a <- f0a$coefficients[[1]]
   f2 <- survfit(Surv(dt ,e)  ~ trt, data = d)
   
-  return(list(  f1=f1 , f2=f2, f0a=f0a, f0=f0))
+  #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  
+  return(list(f=f, d=d, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0, S=S,                  
+              
+         f0=f0,  f2=f2, f0a=f0a))
   
 }
+
+# coxdata2 <- function(n, allocation, hr, baseline) { 
+#   
+#   #n=1000; allocation =.5; hr=2; baseline=.4
+#   
+#   trt <- sample(0:1, n,  rep=TRUE, prob=c(1-allocation, allocation))
+#   
+#   cens <- 15*runif(n)
+#   
+#   h <- baseline*exp(log(hr)*(trt==1))
+#   
+#   dt <- -log(runif(n))/h
+#   label(dt) <- 'Follow-up Time'
+#   
+#   e <- ifelse(dt <= cens,1,0)
+#   
+#   dt <- pmin(dt, cens)
+#   
+#   units(dt) <- "Year"
+#   
+#   d <<- data.frame(cbind(dt,e,trt=trt))  ##why the << required to circumvent error?
+#   
+#   dd <<- datadist(d)
+#   options(datadist='dd')
+#   
+#   f0 <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
+#   f0 <- f0$coefficients[[1]]
+#   f1 <- survfit(Surv(dt,e) ~ trt, data = d)
+#   
+#   d <- plyr::arrange(d,dt)
+#   d$dt <- sort(runif(nrow(d), min(d$dt), max(d$dt)))  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#   d$dt <- sort(2*rexp(nrow(d)))#
+#   
+#   dx <<- datadist(d)
+#   options(datadist='dx')
+#   f0a <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
+#   f0a <- f0a$coefficients[[1]]
+#   f2 <- survfit(Surv(dt ,e)  ~ trt, data = d)
+#   
+#   return(list(  f1=f1 , f2=f2, f0a=f0a, f0=f0))
+#   
+# }
 
 
 
@@ -395,6 +409,7 @@ ui <- dashboardPage(
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   ,plotlyOutput("plot5a", height = "720px")
+                  ,h5(textOutput("info2"))
                 )
                 
                 ,box(
@@ -764,7 +779,12 @@ server <- function(input, output) {
     
     res <- coxdata(n, allocation, hr, baseline)
     
-    return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np , LL1=res$LL1, LL0=res$LL0, S=res$S, res=res))
+    return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np , LL1=res$LL1, LL0=res$LL0, S=res$S, res=res
+                  
+                  
+                  ,f0a=res$f0a, f0=res$f0, f2=res$f2 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      
+                  
+                  ))
     
   })
   
@@ -867,7 +887,7 @@ server <- function(input, output) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # MAIN PLOT! updated with log transformation  option
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  output$plot1 <- renderPlotly({
+  output$plot5a <- output$plot1 <- renderPlotly({
     
     f <- dat()$f1  # Get the  obj
     
@@ -875,17 +895,27 @@ server <- function(input, output) {
     X <- as.numeric(as.character(sf[2,c("Effect")]))
     Y <- as.numeric(as.character(sf[2,c("Lower 0.95")]))
     Z <- as.numeric(as.character(sf[2,c("Upper 0.95")]))
+    f0 <- dat()$f0
     
     p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
                      palette = c("orange", "purple") 
-                     , xlab= paste0("Time" )
+                    # , xlab= paste0("Time" )
+                     ,xlab=paste0("Time : HR=",formatz4(exp(f0)) )
                      # , xlab= paste0("Time: HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," )" )
                      #,#conf.int = TRUE,
                      # ggtheme = theme_bw() # Change ggplot2  
+                  #   ,text = paste0("wt: ", round(wt), "</br></br>qsec: ", round(qsec))
     )
     ggplotly(p1[[1]])
     
   })
+  
+  # p <- ggplot(mtcars, 
+  #             aes(x = wt, y = qsec, 
+  #                 text = paste0("wt: ", round(wt), "</br></br>qsec: ", round(qsec)))) +
+  #   geom_point()
+  # 
+  # ggplotly(p, tooltip = "text")
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$plot2<-renderPlot({     
     
@@ -927,40 +957,40 @@ server <- function(input, output) {
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  dat2 <- reactive({
-    
-    sample <- random.sample()
-    
-    n=         sample$n
-    allocation=sample$allocation
-    hr=        sample$hr
-    baseline=  sample$baseline
-    
-    res <- coxdata2(n, allocation, hr, baseline)
-    
-    return(list(f1=res$f1, f2=res$f2, f0a=res$f0a, f0=res$f0))  #HRs
-    
-  })
+  # dat2 <- reactive({
+  #   
+  #   sample <- random.sample()
+  #   
+  #   n=         sample$n
+  #   allocation=sample$allocation
+  #   hr=        sample$hr
+  #   baseline=  sample$baseline
+  #   
+  #   res <- coxdata2(n, allocation, hr, baseline)
+  #   
+  #   return(list(f1=res$f1, f2=res$f2, f0a=res$f0a, f0=res$f0))  #HRs
+  #   
+  # })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  output$plot5a <- renderPlotly({
-    
-    f <- dat2()$f1  # Get the  obj
-    f0 <- dat2()$f0
-    p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
-                     palette = c("orange", "purple")  , xlab=paste0("Time : HR=",formatz4(exp(f0)) )
-    )
-    ggplotly(p1[[1]])
-    
-    
-  })
+  # output$plot5a <- renderPlotly({
+  #   
+  #   f <- dat()$f1  # Get the  obj
+  #   f0 <- dat()$f0
+  #   p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
+  #                    palette = c("orange", "purple")  , xlab=paste0("Time : HR=",formatz4(exp(f0)) )
+  #   )
+  #   ggplotly(p1[[1]])
+  #   
+  #   
+  # })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$plot5b <- renderPlotly({
     
-    f <- dat2()$f2 # Get the  obj
-    f0a <- dat2()$f0a
-    p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
+    fx <-  dat()$f2 # Get the  obj #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    f0a <- dat()$f0a              #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    p1 <- ggsurvplot(fx, main = "Kaplan-Meier Curve", 
                      palette = c("orange", "purple")  , xlab=paste0("Time : HR=", formatz4(exp(f0a)))
                      # ggtheme = theme_bw() # Change ggplot2 theme
     )
@@ -1164,7 +1194,7 @@ server <- function(input, output) {
     wordup <- ifelse(X>1,"higher", "")
     
     
-    paste0( "As shown in the green box above, the estimated hazard ratio is "
+    paste0( "The estimated hazard ratio is "
             , formatz2(X),", 95%CI ( ",formatz2(Y),", ",formatz2(Z),
             " ) comparing treatment 1 to 0. 
              A hazard ratio of  ", formatz2(X)," means that, in each unit of time, someone 
@@ -1183,16 +1213,21 @@ server <- function(input, output) {
   
   output$info <- renderText({  
     
-    c("The regression coefficients of the proportional hazards 
-      model are estimated without having to specify the 
-      baseline hazard function (distribution-free approach), 
-      and the estimates depend only on the
-      ranks of the event times, not their numerical values. Because the model
+    c("Because the model
       depends only on ranks, any monotonic transformation of the event
       times will leave the coefficient estimates unchanged as seen above.")
     
   })
   
+  output$info2 <- renderText({  
+    
+    c("The regression coefficients of the proportional hazards 
+      model are estimated without having to specify the 
+      baseline hazard function (distribution-free approach), 
+      and the estimates depend only on the
+      ranks of the event times, not their numerical values.")
+    
+  })
   
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
