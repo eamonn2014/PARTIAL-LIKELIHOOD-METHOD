@@ -117,50 +117,6 @@ coxdata <- function(n, allocation, hr, baseline) {
   
 }
 
-# coxdata2 <- function(n, allocation, hr, baseline) { 
-#   
-#   #n=1000; allocation =.5; hr=2; baseline=.4
-#   
-#   trt <- sample(0:1, n,  rep=TRUE, prob=c(1-allocation, allocation))
-#   
-#   cens <- 15*runif(n)
-#   
-#   h <- baseline*exp(log(hr)*(trt==1))
-#   
-#   dt <- -log(runif(n))/h
-#   label(dt) <- 'Follow-up Time'
-#   
-#   e <- ifelse(dt <= cens,1,0)
-#   
-#   dt <- pmin(dt, cens)
-#   
-#   units(dt) <- "Year"
-#   
-#   d <<- data.frame(cbind(dt,e,trt=trt))  ##why the << required to circumvent error?
-#   
-#   dd <<- datadist(d)
-#   options(datadist='dd')
-#   
-#   f0 <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
-#   f0 <- f0$coefficients[[1]]
-#   f1 <- survfit(Surv(dt,e) ~ trt, data = d)
-#   
-#   d <- plyr::arrange(d,dt)
-#   d$dt <- sort(runif(nrow(d), min(d$dt), max(d$dt)))  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#   d$dt <- sort(2*rexp(nrow(d)))#
-#   
-#   dx <<- datadist(d)
-#   options(datadist='dx')
-#   f0a <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
-#   f0a <- f0a$coefficients[[1]]
-#   f2 <- survfit(Surv(dt ,e)  ~ trt, data = d)
-#   
-#   return(list(  f1=f1 , f2=f2, f0a=f0a, f0=f0))
-#   
-# }
-
-
-
 # dummy <- coxdata(n=1000, allocation =.5, hr=2, baseline=.4)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -267,6 +223,7 @@ ui <- dashboardPage(
                                          
                                          
                                          menuSubItem("Diagnostics",               tabName = "RESULTS3"),
+                                         menuSubItem("Diagnostics cont'd",        tabName = "RESULTS2"),
                                          menuSubItem("Partial log likelihood",    tabName = "RESULTS1"),
                                          menuSubItem("Explanation",               tabName = "HELP")
                                          
@@ -693,8 +650,32 @@ ui <- dashboardPage(
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   ,plotOutput("plot4", height = "720px")
-                )))
+                ))),
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   tabItem("RESULTS2",
+        #   fluidRow(
+             box(
+               title = "Log-log survivor plot; log[-log S(t)] as the vertical axis, and
+                                log time as the horizontal axis"
+               ,status = "primary"
+               ,solidHeader = TRUE 
+               ,collapsible = TRUE 
+               ,plotlyOutput("plot99", height = "720px")
+             )
+             
+             # ,box(
+             #   title='
+             #    Repeated Cox regression coefficients estimates and confidence limits within time intervals. 
+             #   The log hazard ratios are plotted against the mean failure/censoring time within the interval'
+             #   ,status = "primary"
+             #   ,solidHeader = TRUE 
+             #   ,collapsible = TRUE 
+             #   ,plotOutput("plot4", height = "720px")
+             # ))
+   )
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       
     )
   ))
@@ -888,26 +869,26 @@ server <- function(input, output) {
   # MAIN PLOT! updated with log transformation  option
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$plot5a <- output$plot1 <- renderPlotly({
-    
+
     f <- dat()$f1  # Get the  obj
-    
+
     sf  <- dat()$sf
     X <- as.numeric(as.character(sf[2,c("Effect")]))
     Y <- as.numeric(as.character(sf[2,c("Lower 0.95")]))
     Z <- as.numeric(as.character(sf[2,c("Upper 0.95")]))
     f0 <- dat()$f0
-    
-    p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
-                     palette = c("orange", "purple") 
+
+    p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve",
+                     palette = c("orange", "purple")
                     # , xlab= paste0("Time" )
                      ,xlab=paste0("Time : HR=",formatz4(exp(f0)) )
                      # , xlab= paste0("Time: HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," )" )
                      #,#conf.int = TRUE,
-                     # ggtheme = theme_bw() # Change ggplot2  
+                     # ggtheme = theme_bw() # Change ggplot2
                   #   ,text = paste0("wt: ", round(wt), "</br></br>qsec: ", round(qsec))
     )
     ggplotly(p1[[1]])
-    
+
   })
   
   # p <- ggplot(mtcars, 
@@ -916,6 +897,48 @@ server <- function(input, output) {
   #   geom_point()
   # 
   # ggplotly(p, tooltip = "text")
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  output$plot99 <- renderPlotly({
+    
+    f <- dat()$f1  # Get the survfit obj
+    
+ # glist <- list(
+  p1 <-  ggsurvplot(f, fun = "event",   main = "Cumulative proportion")#,
+  ggplotly(p1[[1]])
+   # ggsurvplot(f, fun = "cumhaz",  main = "Cumulative Hazard"),
+    #ggsurvplot(f, fun = "cloglog", main = "Complementary log−log")
+  #)
+ 
+  #arrange_ggsurvplots(glist, print = TRUE, ncol = 3, nrow = 1)
+ 
+  })
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$plot2<-renderPlot({     
     
@@ -956,34 +979,7 @@ server <- function(input, output) {
     
   })
   
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # dat2 <- reactive({
-  #   
-  #   sample <- random.sample()
-  #   
-  #   n=         sample$n
-  #   allocation=sample$allocation
-  #   hr=        sample$hr
-  #   baseline=  sample$baseline
-  #   
-  #   res <- coxdata2(n, allocation, hr, baseline)
-  #   
-  #   return(list(f1=res$f1, f2=res$f2, f0a=res$f0a, f0=res$f0))  #HRs
-  #   
-  # })
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  # output$plot5a <- renderPlotly({
-  #   
-  #   f <- dat()$f1  # Get the  obj
-  #   f0 <- dat()$f0
-  #   p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve", 
-  #                    palette = c("orange", "purple")  , xlab=paste0("Time : HR=",formatz4(exp(f0)) )
-  #   )
-  #   ggplotly(p1[[1]])
-  #   
-  #   
-  # })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$plot5b <- renderPlotly({
@@ -1214,8 +1210,8 @@ server <- function(input, output) {
   output$info <- renderText({  
     
     c("Because the model
-      depends only on ranks, any monotonic transformation of the event
-      times will leave the coefficient estimates unchanged as seen above.")
+      depends only on ranks, any transformation of the event
+      times that preserves the order will leave the coefficient estimates unchanged as seen above.")
     
   })
   
