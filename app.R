@@ -655,26 +655,34 @@ ui <- dashboardPage(
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    tabItem("RESULTS2",
-        #   fluidRow(
-             box(
-               title = "Log-log survivor plot; log[-log S(t)] as the vertical axis, and
-                                log time as the horizontal axis"
+           fluidRow(
+             box(width=4,
+               title = "Cumulative proportion" 
                ,status = "primary"
                ,solidHeader = TRUE 
                ,collapsible = TRUE 
-               ,plotlyOutput("plot99", height = "720px")
+               ,plotlyOutput("plot99a", height = "720px")
              )
              
-             # ,box(
-             #   title='
-             #    Repeated Cox regression coefficients estimates and confidence limits within time intervals. 
-             #   The log hazard ratios are plotted against the mean failure/censoring time within the interval'
-             #   ,status = "primary"
-             #   ,solidHeader = TRUE 
-             #   ,collapsible = TRUE 
-             #   ,plotOutput("plot4", height = "720px")
-             # ))
-   )
+             ,box(width=4,
+               title="Cumulative Hazard" 
+               ,status = "primary"
+               ,solidHeader = TRUE
+               ,collapsible = TRUE
+               ,plotlyOutput("plot99b", height = "720px")
+             ) 
+             
+             ,box(width=4,
+               title="Complementary log−log" 
+               ,status = "primary"
+               ,solidHeader = TRUE
+               ,collapsible = TRUE
+               ,plotlyOutput("plot99c", height = "720px")
+             ) 
+             
+             
+             )  #fluidrow
+   ) #tabitem
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       
     )
@@ -694,7 +702,7 @@ server <- function(input, output) {
                       ,style = "font-size: 100%;")
       ,subtitle = tags$p('N; Events (a); Exposure (b); Median surv.; Hazard (a/b)', style = "font-size: 150%;")
       ,icon = icon("stats",lib='glyphicon')
-      ,color = "yellow" )
+      ,color = "teal" )
     
   })
   
@@ -705,7 +713,7 @@ server <- function(input, output) {
                       ,style = "font-size: 100%;")
       ,subtitle = tags$p('N; Events (a); Exposure (b); Median surv.; Hazard (a/b)', style = "font-size: 150%;")
       ,icon = icon("stats",lib='glyphicon')
-      ,color = "purple")
+      ,color = "red")
     
   })
   
@@ -879,7 +887,8 @@ server <- function(input, output) {
     f0 <- dat()$f0
 
     p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve",
-                     palette = c("orange", "purple")
+                     #palette = c("orange", "purple")
+                     legend.title = "Trt."
                     # , xlab= paste0("Time" )
                      ,xlab=paste0("Time : HR=",formatz4(exp(f0)) )
                      # , xlab= paste0("Time: HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," )" )
@@ -900,45 +909,46 @@ server <- function(input, output) {
   
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  output$plot99 <- renderPlotly({
+  output$plot99a <- renderPlotly({
     
     f <- dat()$f1  # Get the survfit obj
-    
- # glist <- list(
-  p1 <-  ggsurvplot(f, fun = "event",   main = "Cumulative proportion")#,
-  ggplotly(p1[[1]])
-   # ggsurvplot(f, fun = "cumhaz",  main = "Cumulative Hazard"),
-    #ggsurvplot(f, fun = "cloglog", main = "Complementary log−log")
-  #)
  
-  #arrange_ggsurvplots(glist, print = TRUE, ncol = 3, nrow = 1)
+  p1 <-  ggsurvplot(f, fun = "event",   main = "Cumulative proportion",  
+                    legend.title = "Trt.")#
+                  #  palette = c("orange", "purple"))
+  ggplotly(p1[[1]])
+   
  
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    output$plot99b <- renderPlotly({
+    
+    f <- dat()$f1  # Get the survfit obj
+   
+    
+    p1 <- ggsurvplot(f, fun = "cumhaz",  main = "Cumulative Hazard"  ,
+                     legend.title = "Trt.")
+                    # palette = c("orange", "purple"))
+    ggplotly(p1[[1]])
+    
+    
+  })
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    output$plot99c <- renderPlotly({
+      
+      f <- dat()$f1  # Get the survfit obj
+      
+      p1 <- ggsurvplot(f, fun = "cloglog",  
+                       main = "Complementary log−log" ,
+                       legend.title = "Trt.")
+                      # legend.labs = c("0", "1")) 
+                      #palette = c("jco"))
+      ggplotly(p1[[1]])
+    
+  })
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+    
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$plot2<-renderPlot({     
     
@@ -966,7 +976,11 @@ server <- function(input, output) {
     f <- dat()$f
     
     #plot(survfit(S~ d$trt), col=c("purple", "orange"), fun="cloglog", xlab="Time", ylab="log(-log(Survival)" , lwd=3)
-    survplot(f,logt=TRUE, loglog=TRUE, col=c("orange", "purple"))   #Check for Weibull-ness (linearity)
+    survplot(f,logt=TRUE, loglog=TRUE, 
+             col=c("lightblue", "red")
+             
+           # col=c("orange", "purple")
+             )   #Check for Weibull-ness (linearity)
     
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -986,8 +1000,9 @@ server <- function(input, output) {
     
     fx <-  dat()$f2 # Get the  obj #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     f0a <- dat()$f0a              #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    p1 <- ggsurvplot(fx, main = "Kaplan-Meier Curve", 
-                     palette = c("orange", "purple")  , xlab=paste0("Time : HR=", formatz4(exp(f0a)))
+    p1 <- ggsurvplot(fx, main = "Kaplan-Meier Curve", legend.title = "Trt.",
+                    # palette = c("orange", "purple")  ,
+                     xlab=paste0("Time : HR=", formatz4(exp(f0a)))
                      # ggtheme = theme_bw() # Change ggplot2 theme
     )
     ggplotly(p1[[1]])
