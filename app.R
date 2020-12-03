@@ -15,7 +15,7 @@
   library(plotly)
   library(survminer)
   library(rms)
-  library(scales) # For the trans_format function
+ # library(scales) # For the trans_format function
   library(DT)
   library(survival)
   options(max.print=1000000)    
@@ -83,6 +83,7 @@ coxdata <- function(n, allocation, hr, baseline) {
   dd <<- datadist(d)
   options(datadist='dd')
   
+  foo <-d
   # S <- Surv(dt,e)
   f <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
   f0 <- f$coefficients[[1]] #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -113,7 +114,7 @@ coxdata <- function(n, allocation, hr, baseline) {
   
   return(list(f=f, d=d, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0, S=S,                  
               
-         f0=f0,  f2=f2, f0a=f0a))
+         f0=f0,  f2=f2, f0a=f0a, foo=foo))
   
 }
 
@@ -216,9 +217,6 @@ ui <- dashboardPage(
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("Cox proportional hazards", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                              
-                                
-                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("More",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                          
                                          
@@ -227,20 +225,19 @@ ui <- dashboardPage(
                                          menuSubItem("Diagnostics cont'd",        tabName = "RESULTS2"),
                                          menuSubItem("Partial log likelihood",    tabName = "RESULTS1"),
                                          menuItem("Only ranks of event times needed!", tabName = "OVERVIEW2",  icon = icon("bar-chart-o"), selected = FALSE),
-                                         menuSubItem("Explanation",               tabName = "HELP")
+                                         menuSubItem("Explanation",               tabName = "HELP"),
+                                         menuSubItem("KM LIFETABLE",               tabName = "KMTABLE"),
+                                         menuItem("Partial likelihood exercise",  startExpanded = FALSE,    icon = icon("bar-chart-o"),
+                                                  
+                                                  tags$div(
+                                                    textInput(inputId="guess", label='Enter a guess at Hazard Ratio (defaulted to null)', width = '90%' , value="1"),
+                                                  ),
+                                                  
+                                                  menuSubItem("Partial log likelihood reveal",  tabName = "partial")
+                                         )
                                          
                                 ),
                                 
-                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                menuItem("Partial likelihood exercise",  startExpanded = FALSE,    icon = icon("bar-chart-o"),
-                                         
-                                         tags$div(
-                                           textInput(inputId="guess", label='Enter a guess at Hazard Ratio (defaulted to null)', width = '90%' , value="1"),
-                                         ),
-                                         
-                                         menuSubItem("Partial log likelihood reveal",  tabName = "partial")
-                                         
-                                ),
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                
                                 menuItem("Wiki", tabName = "Wiki",  icon = icon("bar-chart-o"), selected = FALSE),
@@ -250,15 +247,12 @@ ui <- dashboardPage(
                                                      icon = icon("send",lib='glyphicon'), 
                                                      href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/app.R"),
                                          
-                                         
                                          menuSubItem("R",  
                                                      icon = icon("send",lib='glyphicon'), 
                                                      href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/cox%20calculations.R") 
                                   ),
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                               
-                                
-                                menuItem("References", icon = icon("bar-chart-o"),
+                                         menuItem("References", icon = icon("bar-chart-o"),
                                          
                                          menuSubItem(h5(HTML( "Regression Models and Life-Tables")),  
                                                      icon = icon("send",lib='glyphicon'), 
@@ -285,18 +279,12 @@ ui <- dashboardPage(
                                          menuSubItem( h5(HTML("Frank Harrell cph function")),  
                                                       icon = icon("send",lib='glyphicon'), 
                                                       href = "https://rdrr.io/cran/rms/man/cph.html")
-                                         
-                                         
-                                         
-                                         
-                                         
                                          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                           
                                 )
                              )
                               
     ),
-  
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   dashboardBody(
@@ -456,7 +444,9 @@ ui <- dashboardPage(
                 cause numerical problems with more patients, so it is advisable to do the 
                 calculations on the log scale.
                  
-                Note the last patient always contributes 1 as they are the only person in their risk set.
+                Note the last person in the study always contributes 1 as they are the only person in their risk set. Therefore there is no 
+                effect on the HR estimate whether
+                they experience the event or are censored!
                 
                 Here we only log the final column.")
                 ))),        
@@ -517,7 +507,6 @@ ui <- dashboardPage(
               the baseline hazard function cancels out from the formula
               expressing a hazard ratio for any two individuals i and j, as follows (we can cross out the $h_{0} {(t)}$:"),
                   
-                  
                   p("$$\\begin{align}
                      \\frac{ h_{i} (t)}  {h_{j} (t)} = 
                        \\frac{  
@@ -546,7 +535,6 @@ ui <- dashboardPage(
                  and so on, until the last or the $\\it{n}$th subject who has the longest study time
                  or lowest hazard rate $h_{n}$"),
                     
-                  
                   p("$$\\begin{align}
                            {h_{1} (t)} = {h_{0} (t)} exp({\\beta}{x_{1}})
                       \\end{align}$$"),
@@ -563,7 +551,6 @@ ui <- dashboardPage(
                     ratio of hazard over the risk set, or is the hazard for subject 1 at time t
                     divided by the sum of the hazards for all subjects who are at risk of having
                     the event at time t. That is,"),
-                  
                   
                   p("$$\\begin{align}
                      {L_{1}} = \\frac{h_{1} (t)}    {  {h_{1} (t)} + {h_{2} (t)} + {h_{3} (t)} + \\cdots+  {h_{n} (t)} }
@@ -590,7 +577,6 @@ ui <- dashboardPage(
                   exp({\\beta}{x_{2}}) + exp({\\beta}{x_{3}}) + exp({\\beta}{x_{4}}) + \\cdots+  exp({\\beta}{x_{n}}) 
                      }
                  \\end{align}$$"),
-                  
                   
                   p("Three points to note (a) the
                     baseline hazard is canceled out; (b) as a result, the likelihood function
@@ -621,7 +607,6 @@ ui <- dashboardPage(
                   \\right]^{\\delta_i}
                   \\end{align}$$"),
                   
-                  
                   p("
                    where ${Y_{ij} =1}$ if ${t_{j}} \\gt {t_{i}}$; and ${Y_{ij} =0}$ if ${t_{j}} \\lt {t_{i}}$. 
                    Here ${Y_{ij}}$ serves as a switcher (i.e., on
@@ -634,12 +619,8 @@ ui <- dashboardPage(
                   and takes the value of 0 or 1. If $\\delta_i=0$ (i.e., the study time is censored), then
                   the whole partial likelihood for this subject equals value 1 otherwise a non one value. "),
                   
-                  
-                  
                   p("To avoid numerical problems we work on the log scale and so the partial log likelihood becomes: "),
-                  
-                  
-                  
+
                   p("$$\\begin{align}
                     {log\\it{PL} = 
                    \\sum_{i=1}^n }  {\\delta_i}
@@ -649,7 +630,6 @@ ui <- dashboardPage(
                    e^{\\beta x_j})
                   \\right]^{\\delta_i}
                   \\end{align}$$"),
-                  
                   
                   p("With this log partial likelihood function, we can search for the
                     best estimate of $\\beta$. Typically a starting value of $\\beta$ is plugged 
@@ -687,7 +667,33 @@ ui <- dashboardPage(
                   ,collapsible = TRUE 
                   ,plotOutput("plot4", height = "720px")
                 ))),
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+   tabItem("KMTABLE",
+           fluidRow(
+             box(
+               width=6,
+               # background = "green",
+               title = "KM survival table"
+               ,status = "primary"
+               ,solidHeader = TRUE 
+               ,collapsible = TRUE 
+               , DT::dataTableOutput("KM")
+             )
+             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+             ,box(
+               width=6,
+               title='Cumulative hazard'
+               ,status = "primary"
+               ,solidHeader = TRUE 
+               ,collapsible = TRUE 
+              , DT::dataTableOutput("CHAZ")
+               ,p("")
+               ,p("
+                xxxxxxxxxxxxxxxxxxxx")
+             ))),        
+   
+   
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    tabItem("RESULTS2",
@@ -723,7 +729,6 @@ ui <- dashboardPage(
       
     )
   ))
-
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # create the server functions for the dashboard  
@@ -762,9 +767,7 @@ server <- function(input, output) {
       ,icon = icon("education",lib='glyphicon')
       ,color = "green")
     
-  })
-  
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  }) 
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # This is where a new sample is instigated and inputs converted to numeric
@@ -923,6 +926,9 @@ server <- function(input, output) {
     f0 <- dat()$f0
 
     p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve",
+                     
+                   #  text = paste("Time: ", time),
+                     
                      #palette = c("orange", "purple")
                      legend.title = "Trt."
                     # , xlab= paste0("Time" )
@@ -932,7 +938,7 @@ server <- function(input, output) {
                      # ggtheme = theme_bw() # Change ggplot2
                   #   ,text = paste0("wt: ", round(wt), "</br></br>qsec: ", round(qsec))
     )
-    ggplotly(p1[[1]])
+    ggplotly(p1[[1]] )
 
   })
   
@@ -956,7 +962,6 @@ server <- function(input, output) {
    
  
   })
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     output$plot99b <- renderPlotly({
     
@@ -984,7 +989,6 @@ server <- function(input, output) {
     
   })
   
-    
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$plot2<-renderPlot({     
     
@@ -1003,7 +1007,6 @@ server <- function(input, output) {
     
     
   })
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$plot3 <- renderPlot({
     
@@ -1028,8 +1031,7 @@ server <- function(input, output) {
     hazard.ratio.plot(d$trt, S, e=20, legendloc='ll', xlab='Time', antilog=FALSE, col='blue', smooth=TRUE)
     
   })
-  
-  
+
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$plot5b <- renderPlotly({
@@ -1067,6 +1069,62 @@ server <- function(input, output) {
         columns= c("Time" ), 
         digits=4 )
   })
+  
+  #~~~~~~~~~~~~~~~~~~~~~~KM table
+  output$KM <- DT::renderDataTable({
+    
+    library(survminer)
+    
+    require(ggfortify)
+    d=dat()$d
+    
+    KM_fit <- survfit(Surv(dt, e) ~ trt ,data = d)
+    
+    KM <- fortify(KM_fit) # fortify(KM_fit, fun = "cumhaz")'
+    
+    DT::datatable(KM, rownames=FALSE,
+                  plugins = 'natural',
+               #   colnames=c('Time' = 'dt', 'Event or censored' = 'e', 
+               #              'Treatment'='trt'),
+                  
+                  options = list(
+                    #  dom = 't',
+                    columnDefs = list(list(type = 'natural', targets = c(1,2)))
+                  )
+    ) %>%
+      
+      formatRound(
+        columns= c("time" ,"surv","std.err","upper","lower"), 
+        digits=4 )
+  })
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  output$CHAZ <- DT::renderDataTable({
+    
+    library(survminer)
+    
+    require(ggfortify)
+    d=dat()$d
+    
+    KM_fit <- survfit(Surv(dt, e) ~ trt ,data = d)
+    
+    KM <-  fortify(KM_fit, fun = "cumhaz")
+    
+    DT::datatable(KM, rownames=FALSE,
+                  plugins = 'natural',
+                  #   colnames=c('Time' = 'dt', 'Event or censored' = 'e', 
+                  #              'Treatment'='trt'),
+                  
+                  options = list(
+                    #  dom = 't',
+                    columnDefs = list(list(type = 'natural', targets = c(1,2)))
+                  )
+    ) %>%
+      
+      formatRound(
+        columns= c("time" ,"surv","std.err","upper","lower"), 
+        digits=4 )
+  })
+  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~maximum likelihood
   
   output$mytable2 <- DT::renderDataTable({
