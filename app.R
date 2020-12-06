@@ -218,18 +218,17 @@ ui <- dashboardPage(
                                 ),
                                 
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                menuItem("Cox proportional hazards", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
+                                menuItem("Kaplan Meier", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("More",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                          
-                                         
-                                         
-                                         menuSubItem("Diagnostics",               tabName = "RESULTS3"),
-                                         menuSubItem("Diagnostics cont'd",        tabName = "RESULTS2"),
-                                         menuSubItem("Partial log likelihood",    tabName = "RESULTS1"),
+                                         menuSubItem("Cox proportional hazards",       tabName = "RESULTS3"),
+                                         menuSubItem("Hazard ratio over time",         tabName = "RESULTS4"),
+                                         menuSubItem("KM diagnostics",                 tabName = "RESULTS2"),
+                                         menuSubItem("Partial log likelihood",         tabName = "RESULTS1"),
                                          menuItem("Only ranks of event times needed!", tabName = "OVERVIEW2",  icon = icon("bar-chart-o"), selected = FALSE),
-                                         menuSubItem("Explanation",               tabName = "HELP"),
-                                         menuSubItem("KM LIFETABLE",               tabName = "KMTABLE"),
+                                         menuSubItem("Explanation",                    tabName = "HELP"),
+                                         menuSubItem("KM lifetable",                   tabName = "KMTABLE"),
                                          menuItem("Partial likelihood exercise",  startExpanded = FALSE,    icon = icon("bar-chart-o"),
                                                   
                                                   tags$div(
@@ -310,7 +309,7 @@ ui <- dashboardPage(
     ),
     
     fluidRow(
-      valueBoxOutput("value1")
+       valueBoxOutput("value1")
       ,valueBoxOutput("value2")
       ,valueBoxOutput("value3")
     ),
@@ -652,16 +651,31 @@ ui <- dashboardPage(
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
        tabItem("RESULTS3",
               fluidRow(
-                box(
+                
+                box(width=6,
+                  title = "Plot estimated survival curve from Cox proportional hazards"
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                  ,plotOutput("plot2x", height = "720px")
+                ),
+                
+                box(width=6,
                   title = "Log-log survivor plot; log[-log S(t)] as the vertical axis, and
-                                log time as the horizontal axis"
+                                log time as the horizontal axis based on Cox PH model"
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   ,plotOutput("plot3", height = "720px")
                 )
-                
-                ,box(
+ 
+                )),
+   
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+   tabItem("RESULTS4",
+           fluidRow(
+           
+             box(width=6,
                   title='
                 Repeated Cox regression coefficients estimates and confidence limits within time intervals. 
                The log hazard ratios are plotted against the mean failure/censoring time within the interval'
@@ -669,7 +683,15 @@ ui <- dashboardPage(
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   ,plotOutput("plot4", height = "720px")
-                ))),
+             )
+             
+             ,box(width=6,
+                  title='Plot of how the log HR is estimated to vary over time, based on the Schoenfeld residuals'
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                  ,plotOutput("plot2y", height = "720px")
+             ))),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
    tabItem("KMTABLE",
@@ -729,11 +751,16 @@ ui <- dashboardPage(
                ,collapsible = TRUE
                ,plotlyOutput("plot99c", height = "720px")  
                ,p("
-The function g(u) = log(-log(u)) is called the complementary log-log transformation, 
+                  The function g(u) = log(-log(u)) is called the complementary log-log transformation, 
                   and has the effect of changing the range from (0,1) for u 
                   to (-$\\infty$ to $\\infty$) for g(u). A plot of g[$S_1$(t)] and g[$S_0$(t)] 
                   versus t or log(t) will yield two parallel curves separated by $\\beta$ if the 
-                  proportional hazards assumption is correct.")
+                  proportional hazards assumption is correct.
+                  
+                  Since the survival functions are less than 1, their logarithms are negative.
+                  Thus, we must negate them before we take a second logarithm.
+
+                  ")
              ) 
              
              
@@ -1028,7 +1055,33 @@ server <- function(input, output) {
     
     
   })
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   output$plot2x <-renderPlot({     # Cox
+    
+    d <- dat()$d
+    
+    fit <- cph(Surv(dt, e) ~ trt, data = d, x=TRUE, y=TRUE, surv=TRUE)
+    
+    survplot(fit, type="kaplan-meier", conf.int = TRUE, 
+             col.fill=c("firebrick1","cyan2"), grid=TRUE, what='survival')
+    
+  })
+  
+  
+  
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   output$plot2y <-renderPlot({     # Cox
+     
+     d <- dat()$d
+     
+     fit <- cph(Surv(dt, e) ~ trt, data = d, x=TRUE, y=TRUE, surv=TRUE)
+     
+     plot(cox.zph(fit, transform="identity" ))
+     
+   })
+   
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$plot3 <- renderPlot({
     
     d <- dat()$d  # Get the  obj
@@ -1342,7 +1395,8 @@ server <- function(input, output) {
     
     c("Because the model
       depends only on ranks, any transformation of the event
-      times that preserves the order will leave the coefficient estimates unchanged as seen above.")
+      times that preserves the order will leave the coefficient
+      estimates unchanged as seen above.")
     
   })
   
@@ -1363,8 +1417,10 @@ server <- function(input, output) {
     hr=        sample$hr
     baseline=  sample$baseline
     
-    c(paste0("For treatment group 0 we add a red dotted line, the slope of which equals the true baseline cumulative hazard ",baseline
-             ," and a blue dotted line, the slope of which equals the true cumulative hazard in treatment group 1...the slope being the true baseline x true hr ", 
+    c(paste0("For treatment group 0 we add a red dotted line, 
+             the slope of which equals the true baseline cumulative hazard ",baseline
+             ," and a blue dotted line, the slope of which equals the true
+             cumulative hazard in treatment group 1...the slope being the true baseline x true hr ", 
              baseline*hr,""))
     
  
