@@ -2,6 +2,8 @@
 # load the required packages
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# https://thestatsgeek.com/2014/03/28/interpreting-changes-in-hazard-and-hazard-ratios/
+
   set.seed(333) # reproducible
   library(shiny)
   require(shinydashboard)
@@ -58,7 +60,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 # function to create data and analyse
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+#
 coxdata <- function(n, allocation, hr, baseline) { 
   
   #n=1000; allocation =.5; hr=2; baseline=.4
@@ -67,9 +69,10 @@ coxdata <- function(n, allocation, hr, baseline) {
   
   cens <- 15*runif(n)
   
-  h <- baseline*exp(log(hr)*(trt==1))
+  h <- baseline*exp(log(hr)*(trt==1))  # hazard function h(t)
   
   dt <- -log(runif(n))/h
+  
   label(dt) <- 'Follow-up Time'
   
   e <- ifelse(dt <= cens,1,0)
@@ -712,14 +715,25 @@ ui <- dashboardPage(
                ,solidHeader = TRUE
                ,collapsible = TRUE
                ,plotlyOutput("plot99b", height = "720px")
-             ) 
+              # ,p("We add a red dotted line the slope of which equals the true baseline cumulative hazard in treatment group 0 
+               #   and a blue dashed line the slope of which equals the true cumulative hazard in treatment group 1...the slope equals true baseline x true hr")
+             
+               ,h5(textOutput("info3"))
+               
+               ) 
              
              ,box(width=4,
                title="Complementary log−log" 
                ,status = "primary"
                ,solidHeader = TRUE
                ,collapsible = TRUE
-               ,plotlyOutput("plot99c", height = "720px")
+               ,plotlyOutput("plot99c", height = "720px")  
+               ,p("
+The function g(u) = log(-log(u)) is called the complementary log-log transformation, 
+                  and has the effect of changing the range from (0,1) for u 
+                  to (-$\\infty$ to $\\infty$) for g(u). A plot of g[$S_1$(t)] and g[$S_0$(t)] 
+                  versus t or log(t) will yield two parallel curves separated by $\\beta$ if the 
+                  proportional hazards assumption is correct.")
              ) 
              
              
@@ -743,7 +757,7 @@ server <- function(input, output) {
                       ,style = "font-size: 100%;")
       ,subtitle = tags$p('N; Events (a); Exposure (b); Median surv.; Hazard (a/b)', style = "font-size: 150%;")
       ,icon = icon("stats",lib='glyphicon')
-      ,color = "teal" )
+      ,color = "red" )
     
   })
   
@@ -754,7 +768,7 @@ server <- function(input, output) {
                       ,style = "font-size: 100%;")
       ,subtitle = tags$p('N; Events (a); Exposure (b); Median surv.; Hazard (a/b)', style = "font-size: 150%;")
       ,icon = icon("stats",lib='glyphicon')
-      ,color = "red")
+      ,color = "teal")
     
   })
   
@@ -967,10 +981,17 @@ server <- function(input, output) {
     
     f <- dat()$f1  # Get the survfit obj
    
+    sample <- random.sample()
+    
+    hr=        sample$hr
+    baseline=  sample$baseline
     
     p1 <- ggsurvplot(f, fun = "cumhaz",  main = "Cumulative Hazard"  ,
-                     legend.title = "Trt.")
-                    # palette = c("orange", "purple"))
+                    legend.title = "Trt.")  
+    
+    p1$plot <- p1$plot + ggplot2::geom_abline(intercept = 0, slope = baseline, linetype="dotted", col='red') 
+    p1$plot <- p1$plot + ggplot2::geom_abline(intercept = 0, slope = baseline*hr, linetype="dotted", col='blue')
+
     ggplotly(p1[[1]])
     
     
@@ -1016,7 +1037,7 @@ server <- function(input, output) {
     
     #plot(survfit(S~ d$trt), col=c("purple", "orange"), fun="cloglog", xlab="Time", ylab="log(-log(Survival)" , lwd=3)
     survplot(f,logt=TRUE, loglog=TRUE, 
-             col=c("lightblue", "red")
+             col=c("red", "lightblue")
              
            # col=c("orange", "purple")
              )   #Check for Weibull-ness (linearity)
@@ -1048,6 +1069,7 @@ server <- function(input, output) {
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
   output$mytable <- DT::renderDataTable({
     
     d=dat()$d
@@ -1333,6 +1355,22 @@ server <- function(input, output) {
       ranks of the event times, not their numerical values.")
     
   })
+  
+  output$info3 <- renderText({  
+    
+    sample <- random.sample()
+    
+    hr=        sample$hr
+    baseline=  sample$baseline
+    
+    c(paste0("For treatment group 0 we add a red dotted line, the slope of which equals the true baseline cumulative hazard ",baseline
+             ," and a blue dotted line, the slope of which equals the true cumulative hazard in treatment group 1...the slope being the true baseline x true hr ", 
+             baseline*hr,""))
+    
+ 
+    
+  })
+  
   
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
