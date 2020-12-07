@@ -218,10 +218,10 @@ ui <- dashboardPage(
                                 ),
                                 
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                menuItem("Kaplan Meier", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
+                               
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                menuItem("Further analyses",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
-                                         
+                                menuItem("Analyses",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
+                                         menuItem("Kaplan Meier",                      tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                                          menuSubItem("Cox proportional hazards",       tabName = "RESULTS3"),
                                          menuSubItem("Hazard ratio over time",         tabName = "RESULTS4"),
                                          menuSubItem("KM diagnostics",                 tabName = "RESULTS2"),
@@ -327,7 +327,7 @@ ui <- dashboardPage(
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   #textOutput("help"),
-                  , p("Exploring the Cox proportional hazards model and the partial likelihoof function"),
+                  , p("Exploring the Cox proportional hazards model and the partial likelihood function"),
                 )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
