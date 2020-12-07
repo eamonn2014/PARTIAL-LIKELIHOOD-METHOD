@@ -10,17 +10,21 @@
   library(ggplot2)
   library(dplyr)
   library(directlabels)
- #library(shinyalert)
   library(Hmisc)
   library(ggplot2)
   library(tidyverse)
   library(plotly)
   library(survminer)
   library(rms)
- # library(scales) # For the trans_format function
+  # library(scales) # For the trans_format function
+  # library(shinyalert)
   library(DT)
   library(survival)
   options(max.print=1000000)    
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # function to format 
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # https://stackoverflow.com/questions/3245862/format-numbers-to-significant-figures-nicely-in-r
   formatz <- function(x){
@@ -48,6 +52,7 @@
   formatz4 <- function(x){
     sprintf(x, fmt = '%#.4f')  
   }
+  
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   logit <- function(p) log(1/(1/p-1))
   expit <- function(x) 1/(1/exp(x) + 1)
@@ -164,7 +169,7 @@ loglike2 <- function(x, dat, dead, indep , time) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   dd <- as.data.frame(dd)
   dd$dead <- dd$indep <- dd$part1 <- dd$part2 <- dd$part3 <- NULL
-  # return(head(dd))
+   
   return(dd)
   
 }
@@ -172,8 +177,7 @@ loglike2 <- function(x, dat, dead, indep , time) {
 # Start app
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ui <- dashboardPage( 
-  
+ui <- dashboardPage(  title="Survival Analysis",
   # Dashboard header carrying the title of the dashboard,
   
   dashboardHeader(title = h4(HTML("Cox proportional hazards<br/>and partial log likelihood"))),
@@ -217,32 +221,30 @@ ui <- dashboardPage(
                                          ) 
                                 ),
                                 
-                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                               
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("Analyses",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                          menuItem("Kaplan Meier",                      tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
-                                         menuSubItem("Cox proportional hazards",       tabName = "RESULTS3"),
-                                         menuSubItem("Hazard ratio over time",         tabName = "RESULTS4"),
-                                         menuSubItem("KM diagnostics",                 tabName = "RESULTS2"),
-                                         menuSubItem("Partial log likelihood",         tabName = "RESULTS1"),
+                                         menuSubItem("KM diagnostics",                 tabName = "RESULTS2",  icon = icon("bar-chart-o")),
+                                         menuSubItem("Cox proportional hazards",       tabName = "RESULTS3",  icon = icon("bar-chart-o")),
+                                         menuSubItem("Hazard ratio over time",         tabName = "RESULTS4",  icon = icon("bar-chart-o")),
+                                         menuSubItem("Partial log likelihood",         tabName = "RESULTS1",  icon = icon("table")),
                                          menuItem("Only ranks of event times needed!", tabName = "OVERVIEW2",  icon = icon("bar-chart-o"), selected = FALSE),
-                                         menuSubItem("Explanation",                    tabName = "HELP"),
-                                         menuSubItem("KM lifetable",                   tabName = "KMTABLE"),
-                                         menuItem("Partial likelihood exercise",  startExpanded = FALSE,    icon = icon("bar-chart-o"),
+                                       
+                                         menuSubItem("KM lifetable",                   tabName = "KMTABLE",  icon = icon("list-alt")),
+                                         menuItem("Partial likelihood exercise",  startExpanded = FALSE,    icon = icon("table"),
+                                                 
                                                   
                                                   tags$div(
                                                     textInput(inputId="guess", label='Enter a guess at Hazard Ratio (defaulted to null)', width = '90%' , value="1"),
                                                   ),
                                                   
                                                   menuSubItem("Partial log likelihood reveal",  tabName = "partial")
-                                         )
-                                         
+                                         ),
+                                         menuSubItem("Explanation",                    tabName = "HELP")
                                 ),
                                 
-                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                               
-                                menuItem("Wiki", tabName = "Wiki",  icon = icon("bar-chart-o"), selected = FALSE),
+                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               menuItem("Wiki", tabName = "Wiki",  icon = icon("bar-chart-o"), selected = FALSE),
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                menuItem("Code", icon = icon("bar-chart-o"),
                                          menuSubItem("Shiny",  
@@ -259,7 +261,6 @@ ui <- dashboardPage(
                                          menuSubItem(h5(HTML( "Regression Models and Life-Tables")),  
                                                      icon = icon("send",lib='glyphicon'), 
                                                      href = "http://www.stat.cmu.edu/~ryantibs/journalclub/cox_1972.pdf"),
-                                         
                                          
                                          menuSubItem(h5(HTML( "Individual survival time prediction <br/>using statistical models")),
                                                      icon = icon("send",lib='glyphicon'), 
@@ -730,8 +731,6 @@ ui <- dashboardPage(
                 xxxxxxxxxxxxxxxxxxxx")
              ))),        
    
-   
-   
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    tabItem("RESULTS2",
            fluidRow(
@@ -773,7 +772,7 @@ ui <- dashboardPage(
                   Thus, we must negate them before we take a second logarithm.
 
                   ")
-             ) 
+                ) 
              
              
              )  #fluidrow
@@ -1013,7 +1012,6 @@ server <- function(input, output) {
                   #  palette = c("orange", "purple"))
   ggplotly(p1[[1]])
    
- 
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     output$plot99b <- renderPlotly({
@@ -1032,7 +1030,6 @@ server <- function(input, output) {
     p1$plot <- p1$plot + ggplot2::geom_abline(intercept = 0, slope = baseline*hr, linetype="dotted", col='blue')
 
     ggplotly(p1[[1]])
-    
     
   })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1053,9 +1050,6 @@ server <- function(input, output) {
   output$plot2<-renderPlot({     
     
     f <- dat()$np  # Get the  data
-    
-    
-    
     survdiffplot(f, col='darkgreen' , xlab= "Time")
     
     # survplot(f, conf='diffbands',col='purple',cex.aehaz=5,
@@ -1120,7 +1114,6 @@ server <- function(input, output) {
   })
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
   output$plot5b <- renderPlotly({
     
     fx <-  dat()$f2 # Get the  obj #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -1135,7 +1128,6 @@ server <- function(input, output) {
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
   output$mytable <- DT::renderDataTable({
     
     d=dat()$d
@@ -1235,8 +1227,6 @@ server <- function(input, output) {
     d$likelihoodi <- d$e*(d$part2 - d$part3)
     d$LL <- sum(d$likelihoodi)
     
-    
-    
     datatable(d, rownames=FALSE,
               plugins = 'natural',
               colnames=c('Time' = 'dt', 
@@ -1308,8 +1298,7 @@ server <- function(input, output) {
     
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
+
   output$exercise2 <- DT::renderDataTable({
     
     sample <- random.sample()
@@ -1386,7 +1375,6 @@ server <- function(input, output) {
     
     wordup <- ifelse(X>1,"higher", "")
     
-    
     paste0( "The estimated hazard ratio is "
             , formatz2(X),", 95%CI ( ",formatz2(Y),", ",formatz2(Z),
             " ) comparing treatment 1 to 0. 
@@ -1435,15 +1423,11 @@ server <- function(input, output) {
              ," and a blue dotted line, the slope of which equals the true
              cumulative hazard in treatment group 1...the slope being the true baseline x true hr ", 
              baseline*hr,""))
-    
- 
-    
+  
   })
   
   
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 shinyApp(ui, server)
