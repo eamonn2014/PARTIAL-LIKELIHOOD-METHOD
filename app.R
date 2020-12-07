@@ -220,7 +220,7 @@ ui <- dashboardPage(
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("Kaplan Meier", tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                menuItem("More",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
+                                menuItem("Further analyses",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                          
                                          menuSubItem("Cox proportional hazards",       tabName = "RESULTS3"),
                                          menuSubItem("Hazard ratio over time",         tabName = "RESULTS4"),
@@ -658,15 +658,27 @@ ui <- dashboardPage(
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   ,plotOutput("plot2x", height = "720px")
+                  ,h5(textOutput("Staff_name2"))
                 ),
                 
                 box(width=6,
-                  title = "Log-log survivor plot; log[-log S(t)] as the vertical axis, and
-                                log time as the horizontal axis based on Cox PH model"
+                  title = "Log-log survivor plot; log[-log S(t)] against
+                                log time based on Cox PH model"
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   ,plotOutput("plot3", height = "720px")
+                  ,p("
+                  The function g(u) = log(-log(u)) is called the complementary log-log transformation, 
+                  and has the effect of changing the range from (0,1) for u 
+                  to (-$\\infty$ to $\\infty$) for g(u). A plot of g[$S_1$(t)] and g[$S_0$(t)] 
+                  versus t or log(t) will yield two parallel curves separated by $\\beta$ if the 
+                  proportional hazards assumption is correct.
+                  
+                  Since the survival functions are less than 1, their logarithms are negative.
+                  Thus, we must negate them before we take a second logarithm.
+
+                  ")
                 )
  
                 )),
@@ -677,12 +689,12 @@ ui <- dashboardPage(
            
              box(width=6,
                   title='
-                Repeated Cox regression coefficients estimates and confidence limits within time intervals. 
-               The log hazard ratios are plotted against the mean failure/censoring time within the interval'
+                Repeated Cox regression coefficients estimates and confidence limits within time intervals'
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   ,plotOutput("plot4", height = "720px")
+                 ,p("The log hazard ratios are plotted against the mean failure/censoring time within the interval")
              )
              
              ,box(width=6,
@@ -1076,7 +1088,7 @@ server <- function(input, output) {
      
      fit <- cph(Surv(dt, e) ~ trt, data = d, x=TRUE, y=TRUE, surv=TRUE)
      
-     plot(cox.zph(fit, transform="identity" ))
+     plot(cox.zph(fit, transform="identity" ), ylim=c(-4,4))
      
    })
    
@@ -1102,7 +1114,8 @@ server <- function(input, output) {
     d <- dat()$d  # Get the  obj
     S <- dat()$S
     
-    hazard.ratio.plot(d$trt, S, e=20, legendloc='ll', xlab='Time', antilog=FALSE, col='blue', smooth=TRUE)
+    hazard.ratio.plot(d$trt, S, e=20, legendloc='ll', xlab='Time', antilog=FALSE, col='blue', smooth=TRUE,
+                      ylim=c(-4,4))
     
   })
 
@@ -1360,7 +1373,7 @@ server <- function(input, output) {
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  output$Staff_name <- renderText({  
+  output$Staff_name2 <- output$Staff_name <- renderText({  
     
     sf  <- dat()$sf
     X <- as.numeric(as.character(sf[2,c("Effect")]))
