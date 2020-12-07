@@ -229,7 +229,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                          menuSubItem("Hazard ratio over time",         tabName = "RESULTS4",  icon = icon("bar-chart-o")),
                                          menuSubItem("Partial log likelihood",         tabName = "RESULTS1",  icon = icon("table")),
                                          menuItem("Only ranks of event times needed!", tabName = "OVERVIEW2",  icon = icon("bar-chart-o"), selected = FALSE),
-                                       
+                                         menuItem("Model assumptions", tabName = "OVERVIEW3",  icon = icon("bar-chart-o"), selected = FALSE),
                                          menuSubItem("KM lifetable",                   tabName = "KMTABLE",  icon = icon("list-alt")),
                                          menuItem("Partial likelihood exercise",  startExpanded = FALSE,    icon = icon("table"),
                                                  
@@ -384,6 +384,29 @@ ui <- dashboardPage(  title="Survival Analysis",
                   h5(textOutput("info"))
                 ))),   
       
+   
+   tabItem("OVERVIEW3",
+           fluidRow(
+             box(
+               title =   "Altschuler-Nelson-Fleming-Harrington non parametric survival estimates and Cox-Breslow estimates"   # uiOutput('product'), 
+               ,status = "primary"
+               ,solidHeader = TRUE 
+               ,collapsible = TRUE 
+               ,plotOutput("FH", height = "720px")
+               #,h5(textOutput("info2"))
+             )
+             
+             ,box(
+               title=" "
+               ,status = "primary"
+               ,solidHeader = TRUE 
+               ,collapsible = TRUE 
+               ,p("If the predicted survival curves from the fitted Cox model are in good agreement
+               with the nonparametric estimates, this is evidence of verifying the PH assumption
+for for these data")
+              # ,plotlyOutput("plot5b", height = "720px"),
+               #h5(textOutput("info"))
+             ))),   
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("RESULTS1",
               fluidRow(        
@@ -1298,7 +1321,6 @@ server <- function(input, output) {
     
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
   output$exercise2 <- DT::renderDataTable({
     
     sample <- random.sample()
@@ -1361,7 +1383,6 @@ server <- function(input, output) {
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
   output$Staff_name2 <- output$Staff_name <- renderText({  
     
     sf  <- dat()$sf
@@ -1390,6 +1411,48 @@ server <- function(input, output) {
     
   })
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # frank Harrell page 479
+   output$FH <- renderPlot({
+  
+     
+     sample <- random.sample()
+     
+    d <- dat()$d
+
+    
+    trt <-  d$trt
+    e <-    d$e
+    dt <-   d$dt
+    d <-    d$d
+    
+    limx <- quantile(dt, prob=.99)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    S <- Surv(dt,e)
+    f <- npsurv(S ~ trt)
+    
+    for (meth in c('exact','breslow','efron')) {
+      
+      g <- cph(S  ~ trt, method=meth, surv=TRUE, x=TRUE, y=TRUE)
+      
+    }
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    f.exp  <- psm(S  ~ trt, dist ='exponential')
+    fw    <-  psm(S  ~ trt,  dist ='weibull')
+    phform <- pphsm(fw)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    co <- gray(c(0,.8))
+    survplot(f, lty=c(1,1)   , lwd=c(1,3), col=co, label.curves=FALSE, conf='none')
+    survplot(g, lty=c(3,3)   , lwd=c(1,3), col=co, add=TRUE, label.curves=FALSE, conf.type='none')
+    legend(c(limx,160),c(.38,.94),
+      c('Nonparametric estimates', 'Cox-Breslow Estimates'), lty=c(1,3), cex=.8, bty='n')
+    legend(c(limx,160),c(.18,.84), cex=.8,
+           c('Group 1','Group 2'), lwd=c(1,3), col=co, bty='n')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+  })
+ 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$info <- renderText({  
