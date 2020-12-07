@@ -327,7 +327,7 @@ ui <- dashboardPage(
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   #textOutput("help"),
-                  , p("Exploring the Cox proportinal hazards model and the partial likelihoof function"),
+                  , p("Exploring the Cox proportional hazards model and the partial likelihoof function"),
                 )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
@@ -1079,8 +1079,17 @@ server <- function(input, output) {
     
   })
   
-  
-  
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   output$plot4<-renderPlot({     
+     
+     d <- dat()$d  # Get the  obj
+     S <- dat()$S
+     
+     hazard.ratio.plot(d$trt, S, e=20, legendloc='ll', xlab='Time', antilog=FALSE, col='blue', smooth=TRUE,
+                       ylim=c(-4,4), ylab=c("Log hazard ratio"))
+     
+   })
+
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    output$plot2y <-renderPlot({     # Cox
      
@@ -1088,13 +1097,12 @@ server <- function(input, output) {
      
      fit <- cph(Surv(dt, e) ~ trt, data = d, x=TRUE, y=TRUE, surv=TRUE)
      
-     plot(cox.zph(fit, transform="identity" ), ylim=c(-4,4))
+     plot(cox.zph(fit, transform="identity" ), ylim=c(-4,4), ylab=c("Log hazard ratio"))
      
    })
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  output$plot3 <- renderPlot({
+   output$plot3 <- renderPlot({
     
     d <- dat()$d  # Get the  obj
     S <- dat()$S
@@ -1106,16 +1114,6 @@ server <- function(input, output) {
              
            # col=c("orange", "purple")
              )   #Check for Weibull-ness (linearity)
-    
-  })
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  output$plot4<-renderPlot({     
-    
-    d <- dat()$d  # Get the  obj
-    S <- dat()$S
-    
-    hazard.ratio.plot(d$trt, S, e=20, legendloc='ll', xlab='Time', antilog=FALSE, col='blue', smooth=TRUE,
-                      ylim=c(-4,4))
     
   })
 
