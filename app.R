@@ -105,7 +105,7 @@ coxdata <- function(n, allocation, hr, baseline) {
   
   d <- plyr::arrange(d,dt)
   d$dt <- dd<- NULL
-  d$dt <- sort(2*rexp(nrow(d)))#
+  d$dt <- sort(2*rexp(nrow(d)))# new times
   
   dx <<- datadist(d)
   options(datadist='dx')
@@ -1083,7 +1083,9 @@ server <- function(input, output) {
    output$plot4<-renderPlot({     
      
      d <- dat()$d  # Get the  obj
-     S <- dat()$S
+     #S <- dat()$S
+     
+     S <- Surv(d$dt, d$e)
      
      hazard.ratio.plot(d$trt, S, e=20, legendloc='ll', xlab='Time', antilog=FALSE, col='blue', smooth=TRUE,
                        ylim=c(-4,4), ylab=c("Log hazard ratio"))
