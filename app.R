@@ -762,6 +762,7 @@ for for these data")
                ,solidHeader = TRUE 
                ,collapsible = TRUE 
                ,plotlyOutput("plot99a", height = "720px")
+               ,p("This presentation is the the KM plot but with 1-survival probabilty on the y axis.")
              )
              
              ,box(width=4,
@@ -774,7 +775,38 @@ for for these data")
                #   and a blue dashed line the slope of which equals the true cumulative hazard in treatment group 1...the slope equals true baseline x true hr")
              
                ,h5(textOutput("info3"))
-               
+               ,p("It is advisable to carry out the above graphical procedure before fitting a Cox regression model. 
+               The Stata manual's interpretation of cumulative hazards: 'The cumulative hazard function, $H(t)$, has much more to offer than merely an
+                  intermediate calculation to derive a 
+survivor function from a hazard function. Hazards are rates, and in that respect they are not unlike the 
+RPM-revolutions per minute-of an automobile engine. 
+Cumulative hazards are the integral from zero to t of the hazard rates. 
+Because an integral is really just a sum, a cumulative hazard is like the total number of revolutions
+an automobile's engine makes over a given period. 
+We could form the cumulative revolution function by integrating RPM over time. 
+If we let a car engine run at a constant 2,000 RPM for 2 minutes, then the cumulative revolution function at time 2
+minutes would be 4,000, meaning the engine would have revolved 4,000 times over that
+period. Similarly, if a person faced a constant hazard rate of 2,000/minute (a big risk)
+for 2 minutes, she would face a total hazard of 4,000. Going back to the car engine, if
+we raced the engine at 3,000 RPM for 1 minute and then let it idle at 1,000 for another,
+the total number of revolutions would still be 4,000. If our fictional risk taker faced a
+hazard of 3,000/minute for 1 minute and then a hazard of 1,000/minute for another,
+the total risk would still be 4,000.
+Now let's stick with our fictional friend. Whatever the profile of risk, 
+if the cumulative hazard is the same over a 2-minute period, then the probability of the event
+(presumably death) occurring during that 2-minute period is the same.
+Let's understand the units of this measurement of risk. In this, cumulative hazards
+are more easily understood than the hazard rates themselves. Remember that 
+$S(t) = \\exp( -H(t))$, so our fictional friend has a probability of surviving the 2-minute interval
+of $\\exp(-4000) = 0$: our friend is going to die. One may similarly calculate the probability
+of survival given other values for the cumulative hazard.
+Probabilities, however, are not the best way to think about cumulative hazards.
+Another interpretation of the cumulative hazard is that it records the number of times
+we would expect (mathematically) to observe failures over a given period, if only the
+failure event were repeatable. With our fictional friend, the cumulative hazard of 4,000
+over the 2-minute period means that we would expect him to die 4,000 times if, as in
+a video game, each time he died we could instantly resurrect him and let him continue
+on his risky path.'")
                ) 
              
              ,box(width=4,
@@ -1048,9 +1080,13 @@ server <- function(input, output) {
     p1 <- ggsurvplot(f, fun = "cumhaz",  main = "Cumulative Hazard"  ,
                     legend.title = "Trt.")  
     
-    p1$plot <- p1$plot + ggplot2::geom_abline(intercept = 0, slope = baseline, linetype="dotted", col='red') 
+    p1$plot <- p1$plot + ggplot2::geom_abline(intercept = 0, slope = baseline,    linetype="dotted", col='red') 
     p1$plot <- p1$plot + ggplot2::geom_abline(intercept = 0, slope = baseline*hr, linetype="dotted", col='blue')
 
+   # p1$plot <- p1$plot + scale_y_continuous(trans = 'log')
+    
+  
+    
     ggplotly(p1[[1]])
     
   })
@@ -1397,7 +1433,7 @@ server <- function(input, output) {
     
     wordup2 <- ifelse(X>1,"increase", "reduction")
     
-    paste0( "The estimated hazard ratio is "
+    paste0( "From the Cox model the estimated hazard ratio is "
             , formatz2(X),", 95%CI ( ",formatz2(Y),", ",formatz2(Z),
             " ) comparing treatment 1 to 0. 
             
@@ -1405,7 +1441,7 @@ server <- function(input, output) {
             treated in group 1 has ", formatz00(abs(X/1-1)*100),"% ", wordup ," of the chance of experiencing the event of interest
             in the following unit of time as they would were they taking treatment 0.
             
-            There is an estimated ", formatz00(abs(X/1-1)*100),"% ", wordup2 ," in the hazard of the outcome. 
+            There is an estimated ", formatz00(abs(X/1-1)*100),"% ", wordup2 ," in the hazard of the outcome by the Cox model. 
             
             Equivalently, the hazard ratio is equal to the odds that a patient in treatment group 1 experiences the event of interest before a
             a patient in treatment group 0.
