@@ -1447,7 +1447,7 @@ server <- function(input, output) {
     survplot(g, lty=c(3,3)   , lwd=c(1,3), col=co, add=TRUE, label.curves=FALSE, conf.type='none')
     legend(c(limx,160),c(.38,.99),
       c('Nonparametric estimates', 'Cox-Breslow estimates'),
-           lty=c(1,3), bty='n',  col=co,   cex=1.0)
+           lty=c(1,3), bty='n',    cex=1.0) # col=co 
     legend(c(limx,160),c(.18,.89), 
            c('Trt 0','Trt 1'), lwd=c(1,3), col=co, bty='n',  cex=1.0)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
