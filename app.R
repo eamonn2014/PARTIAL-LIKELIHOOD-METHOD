@@ -223,7 +223,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                 
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("Analyses",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
-                                         menuItem("Kaplan Meier",                      tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
+                                         menuItem("Kaplan Meier (landing page)",                      tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                                          menuSubItem("KM diagnostics",                 tabName = "RESULTS2",  icon = icon("bar-chart-o")),
                                          menuSubItem("Cox proportional hazards",       tabName = "RESULTS3",  icon = icon("bar-chart-o")),
                                          menuSubItem("Hazard ratio over time",         tabName = "RESULTS4",  icon = icon("bar-chart-o")),
@@ -1445,9 +1445,11 @@ server <- function(input, output) {
     co <- c("red", "lightblue")
     survplot(f, lty=c(1,1)   , lwd=c(1,3), col=co,           label.curves=FALSE, conf='none')
     survplot(g, lty=c(3,3)   , lwd=c(1,3), col=co, add=TRUE, label.curves=FALSE, conf.type='none')
+    
     legend(c(limx,160),c(.38,.99),
       c('Nonparametric estimates', 'Cox-Breslow estimates'),
            lty=c(1,3), bty='n',    cex=1.0) # col=co 
+    
     legend(c(limx,160),c(.18,.89), 
            c('Trt 0','Trt 1'), lwd=c(1,3), col=co, bty='n',  cex=1.0)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
