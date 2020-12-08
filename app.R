@@ -776,7 +776,9 @@ for for these data")
              
                ,h5(textOutput("info3"))
                ,p("It is advisable to carry out the above graphical procedure before fitting a Cox regression model. 
-               The Stata manual's interpretation of cumulative hazards: 'The cumulative hazard function, $H(t)$, has much more to offer than merely an
+               The interpretation of cumulative hazards $H(t)$ can be tricky, one way to think of cumulative hazards is the number of events  
+               exepected by time $t$ if the event were a repeatable process.
+               The Stata manual's interpretation of cumulative hazards has more: 'The cumulative hazard function, $H(t)$, has much more to offer than merely an
                   intermediate calculation to derive a 
 survivor function from a hazard function. Hazards are rates, and in that respect they are not unlike the 
 RPM-revolutions per minute-of an automobile engine. 
