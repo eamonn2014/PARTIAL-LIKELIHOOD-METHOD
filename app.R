@@ -233,7 +233,6 @@ ui <- dashboardPage(  title="Survival Analysis",
                                          menuSubItem("KM lifetable",                   tabName = "KMTABLE",  icon = icon("list-alt")),
                                          menuItem("Partial likelihood exercise",  startExpanded = FALSE,    icon = icon("table"),
                                                  
-                                                  
                                                   tags$div(
                                                     textInput(inputId="guess", label='Enter a guess at Hazard Ratio (defaulted to null)', width = '90%' , value="1"),
                                                   ),
@@ -1396,18 +1395,25 @@ server <- function(input, output) {
     
     wordup <- ifelse(X>1,"higher", "")
     
+    wordup2 <- ifelse(X>1,"increase", "reduction")
+    
     paste0( "The estimated hazard ratio is "
             , formatz2(X),", 95%CI ( ",formatz2(Y),", ",formatz2(Z),
             " ) comparing treatment 1 to 0. 
+            
              A hazard ratio of  ", formatz2(X)," means that, in each unit of time, someone 
             treated in group 1 has ", formatz00(abs(X/1-1)*100),"% ", wordup ," of the chance of experiencing the event of interest
             in the following unit of time as they would were they taking treatment 0.
+            
+            There is an estimated ", formatz00(abs(X/1-1)*100),"% ", wordup2 ," in the hazard of the outcome. 
+            
             Equivalently, the hazard ratio is equal to the odds that a patient in treatment group 1 experiences the event of interest before a
             a patient in treatment group 0.
+            
            Therefore we can reformulate the hazard ratio, possibly more intuitively, as
             the probability that a patient in treatment 
             group 1 experiences the event before a patient in treatment group 0, which is: "
-                  , formatz2(Xp),", 95%CI ( ",formatz2(Yp),", ",formatz2(Zp),").")
+                  , formatz2(Xp),", 95%CI ( ",formatz2(Yp),", ",formatz2(Zp),").        ")
     
   })
   
