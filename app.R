@@ -1412,21 +1412,20 @@ server <- function(input, output) {
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # frank Harrell page 479
+  # frank Harrell rms page 479
    output$FH <- renderPlot({
   
-     
-     sample <- random.sample()
+    sample <- random.sample()
      
     d <- dat()$d
 
-    
     trt <-  d$trt
-    e <-    d$e
-    dt <-   d$dt
-    d <-    d$d
+    e   <-  d$e
+    dt  <-  d$dt
+    d   <-  d$d
     
     limx <- quantile(dt, prob=.99)
+    limx <- max(dt)*.8
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     S <- Surv(dt,e)
     f <- npsurv(S ~ trt)
@@ -1443,12 +1442,14 @@ server <- function(input, output) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     co <- gray(c(0,.8))
-    survplot(f, lty=c(1,1)   , lwd=c(1,3), col=co, label.curves=FALSE, conf='none')
+    co <- c("red", "lightblue")
+    survplot(f, lty=c(1,1)   , lwd=c(1,3), col=co,           label.curves=FALSE, conf='none')
     survplot(g, lty=c(3,3)   , lwd=c(1,3), col=co, add=TRUE, label.curves=FALSE, conf.type='none')
-    legend(c(limx,160),c(.38,.94),
-      c('Nonparametric estimates', 'Cox-Breslow Estimates'), lty=c(1,3), cex=.8, bty='n')
-    legend(c(limx,160),c(.18,.84), cex=.8,
-           c('Group 1','Group 2'), lwd=c(1,3), col=co, bty='n')
+    legend(c(limx,160),c(.38,.99),
+      c('Nonparametric estimates', 'Cox-Breslow estimates'),
+           lty=c(1,3), bty='n',  col=co,   cex=1.0)
+    legend(c(limx,160),c(.18,.89), 
+           c('Trt 0','Trt 1'), lwd=c(1,3), col=co, bty='n',  cex=1.0)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
   })
