@@ -445,7 +445,7 @@ for for these data")
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
                   width=5,
-                  title='Small example of N=10 exemplifying partial likelihood calculations'
+                  title='Small sample of N=10 exemplifying partial likelihood calculations'
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
