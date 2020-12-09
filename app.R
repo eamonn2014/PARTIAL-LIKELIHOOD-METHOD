@@ -436,7 +436,7 @@ for for these data")
                 box(
                   width=7,
                   # background = "green",
-                  title = "Can you enter a HR that maximises the Log Likelihood? Hint: try thr model HR"
+                  title = "Can you enter a HR that maximises the Log Likelihood? Hint: try the model's estimate of the population HR"
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
