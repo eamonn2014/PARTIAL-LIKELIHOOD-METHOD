@@ -252,7 +252,8 @@ ui <- dashboardPage(  title="Survival Analysis",
                                                     textInput(inputId="hr2", label='Enter a hazard ratio', width = '90%' , value="1.2"),
                                                   ),
                                                   tags$div(
-                                                    textInput(inputId="per", label='Enter a survival probability', width = '90%' , value="0.70"),
+                                                    textInput(inputId="per", label='Enter a survival probability',        width = '90%' , value="0.70"),
+                                                    textInput(inputId="per2", label='Enter another survival probability', width = '90%' , value="0.50"),
                                                   ),
                                                   
                                                  menuSubItem("Change in hazard",  tabName = "Change")
@@ -756,22 +757,24 @@ for for these data")
              
              box(width=6,
                  title='
-                xxxxxxxxxxxxxxxxxxxx'
+                KM curve based on user inputs, reference curve in blue'
                  ,status = "primary"
                  ,solidHeader = TRUE 
                  ,collapsible = TRUE 
                  ,plotOutput("plot1c", height = "720px")
-                 ,p("The log hazard ratios are plotted against the mean failure/censoring time within the interval")
+                 ,p("KM curve based on user inputs, reference curve in blue")
              )
              
              ,box(width=6,
-                  title='xxxxxxxxxxxxxxxxxxxxxxxx'
+                  title='Exponential curve based on user inputs, reference curve in blue'
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
-                 # ,  withMathJax()
+                  ,plotOutput("plot1d", height = "720px")
                   ,h5(textOutput("info4"))
-                 ,h5(textOutput("info5"))
+                  ,h5(textOutput("info5"))
+                  # ,h5(textOutput("info4"))
+                  # ,h5(textOutput("info5"))
                  # ,plotOutput("plot2y", height = "720px")
              ))),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -947,6 +950,7 @@ server <- function(input, output) {
     cens <- as.numeric(input$cens)
     hr2 <-  as.numeric(input$hr2)
     per <-  as.numeric(input$per)
+    per2 <-  as.numeric(input$per2)
     ###############################################
     
     return(list(  
@@ -959,7 +963,8 @@ server <- function(input, output) {
       base =  base,
       cens =  cens,
       hr2  =  hr2,
-      per=per
+      per=per,
+      per2=per2
       
     ))
     
@@ -980,6 +985,10 @@ server <- function(input, output) {
     lambdaC =  sample$cens
     beta1 =   sample$hr2
     per = sample$per
+    per2 = sample$per2
+    
+   # n=1000; lambdaT=14.4; lambdaC=12; beta=1.2; per=0.7 ;
+    
     
     beta1 <- log(as.numeric(beta1))
      
@@ -994,24 +1003,56 @@ server <- function(input, output) {
     require(survival)
     f <- coxph(Surv(time, event)~ x1 , method="breslow")
     survfit <- survfit(Surv(time,event) ~ x1)
-    
+    #plot(survfit, ylab="Survival probability", xlab="Time", col=c('blue','red'))
     
     return(list(s=survfit, f=f  )) 
     
   })
     
-    
   
-  output$plot1c<-renderPlot({     
+  output$plot1d<-renderPlot({     
     
-    f <- datc()$f  # Get the  data
+    sample <- random.sample()
+    
+    n=          sample$n
+    
+    lambdaT =  sample$base
+    lambdaC =  sample$cens
+    beta1 =   sample$hr2
+    per=      sample$per
+    per2 =    sample$per2
+    
     s <- datc()$s
-    plot(s, ylab="Survival probability", xlab="Time")
+    
+    x<-curve(dweibull(x, shape=1, scale = lambdaT), from=0, to=max(s$time))
+    x$y <- x$y/max(x$y)    #scale the weibull to max of 1 
+    plot(x, type = "l", lty = 1, col='blue' , ylab="Survival probability", xlab="Time" , ylim=c(0,1))
+    
+    y <- x$y^(beta1)   # add another line based on S1(t) = S(0) ^exp(B)
+    lines(y~x$x, col='red')     
+    
+    
+  #  if (beta1 < 1) {
+      
+    arrows(                                  # x start
+      -log(per2) *lambdaT,    
+      per2 ,# 
+      -log(per2) *lambdaT ,  
+      per2^beta1 ,
+      col="black", lty=1 )       
+    
+    arrows(                                  # x start
+      -log(per) *lambdaT,    
+      per, # 
+      -log(per) *lambdaT ,  
+      per^beta1 ,
+      col="black", lty=1 )    
+    
+   
     
   })
   
-  
-  output$info4 <- renderText({  
+  output$plot1c<-renderPlot({     
     
     sample <- random.sample()
     
@@ -1023,16 +1064,89 @@ server <- function(input, output) {
     per=      sample$per
     
     
+    
+    f <- datc()$f  # Get the  data
+    s <- datc()$s
+    plot(s, ylab="Survival probability", xlab="Time", col=c('blue','red'))
+    # abline(h=.5,                lty=2, col='blue')
+    # abline(v=-log(.5)*lambdaT,  lty=2, col='blue')
+    # abline(h=per,               lty=2, col='red')
+    # abline(v=-log(per)*lambdaT, lty=2, col='red')
+    
+    
+    #lines(x=.5, y=-log(.5)*lambdaT , col="pink")
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+    
+ #   segments(0,                0.5, -log(.5)*lambdaT , 0.5 , col="blue", lty=2 ) #h
+    # segments( -log(.5)*lambdaT,  0, -log(.5)*lambdaT , 0.5 , col="blue", lty=2 ) #v
+    # 
+    # segments(0,                per , -log(per)*lambdaT , per , col="blue", lty=2 )  #h
+    # segments( -log(per)*lambdaT,  0, -log(per)*lambdaT , per , col="blue", lty=2 )  #v
+    # 
+    # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+    # 
+    # segments(0,                              # x start
+    #          per^beta1 ,                     # x finish
+    #          -log(per^beta1)*lambdaT ,       # y start 
+    #          per^beta1  , col="red", lty=2 ) # y finsh
+    # 
+    # 
+    # segments(0,                                   # x start
+    #          0.5^beta1,                           # x finish
+    #          -log(.5^beta1) *lambdaT ,            # y start
+    #          0.5^beta1 ,  col="red", lty=2 )      # y finish
+    
+    
+    # segments(                                  # x start
+    #          -log(.5) *lambdaT,    
+    #          0.5^beta1, # 
+    #           -log(.5) *lambdaT ,  
+    #          0.5 ,
+    #           col="purple", lty=1 )       
+    # 
+    # segments(                                  # x start
+    #   -log(per) *lambdaT,    
+    #   per^beta1, # 
+    #   -log(per) *lambdaT ,  
+    #   per ,
+    #   col="darkgreen", lty=1 )    
+    # 
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+    
+  })
+  
+  
+  output$info4 <- renderText({  
+    
+    sample <- random.sample()
+    
+    n = sample$n
+    
+    lambdaT =  sample$base
+    lambdaC =  sample$cens
+    beta1 =    sample$hr2
+    per=       sample$per
+    per2=       sample$per2
+    
     yo <- abs(100*((beta1/1)-1))
     
-    wordd <- ifelse(beta1 < 0,"will reduce", 
-                    ifelse(beta1 > 0, "will increase ","will not change")) 
+    wordd <- ifelse(beta1 < 1,"will reduce", 
+                    ifelse(beta1 > 1, "will increase ","will not change")) 
      
-    c(paste0("With an exponential baseline hazard of ",lambdaT," the time to reach median survival is equal to -log(0.5) x ",lambdaT,". 
-             The equates to a median survival of ",
-             formatz2(-log(.5)*lambdaT)," units of time. Further,
-               replacing 0.5 with a desired percentile will return the associated time, for example
-               the time at which survival probability is ",per*100,"% is ", formatz2(-log(per)*lambdaT)) )
+    c(paste0("A survival curve is created based on a Weibull distribution. Here we are measuring time in months. 
+    With a shape parameter of 1 and a scale parameter of ",lambdaT," 
+    the time to reach median survival is equal to -log(0.5) x ",lambdaT,". 
+             This equates to a median survival of ",
+             formatz2(-log(.5)*lambdaT)," months. 
+             
+             Replacing 0.5 with a desired survival percentile will return the associated time. Enter the survival probability
+              in the two boxes on the left. 
+              
+             The time at which the survival probability is ",per*100, "% is ",  formatz2(-log(per)* lambdaT), " months.
+             The time at which the survival probability is ",per2*100,"% is ",  formatz2(-log(per2)*lambdaT), " months"
+      ))
                
      
   })
@@ -1048,18 +1162,20 @@ server <- function(input, output) {
     lambdaC =  sample$cens
     beta1 =   sample$hr2
     per = sample$per
-    
+    per2 = sample$per2
     
     yo <- abs(100*((beta1/1)-1))
     
-    wordd <- ifelse(beta1 < 0,"will reduce", 
-                    ifelse(beta1 > 0, "will increase ","will not change")) 
+    wordd <- ifelse(beta1 < 1,"will reduce", 
+                    ifelse(beta1 > 1, "will increase ","will not change")) 
      
     
-    c(paste0("Now 
-               if we are postulating that a new treatment " ,wordd," the hazard by ",yo,"% we can use 
-               the fact S(t) = S0(t)exp Bx, with Bx=", (beta1)," and so the 
-              probability of survival becomes ",formatz2((.7)^(beta1)) ," and ", formatz2((.5)^(beta1)),"" ) )
+    c(paste0("Now if we are postulating that a new treatment " ,wordd," the hazard by ",yo,"% we can use 
+               the fact S1(t) = S0(t)exp Bx, with Bx=", (beta1)," and so the 
+              probability of survival at ",  formatz2(-log(per)*  lambdaT), " months becomes now ",formatz2((per)^(beta1)) ,".
+          The probability of survival at ",  formatz2(-log(per2)* lambdaT), " months becomes now ",formatz2((per2)^(beta1)) ,"
+          See the arrows in the plot showing the changes in survival. 
+             " ) )
     
   })
   
