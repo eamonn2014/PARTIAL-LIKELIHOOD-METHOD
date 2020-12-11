@@ -239,7 +239,28 @@ ui <- dashboardPage(  title="Survival Analysis",
                                                   
                                                   menuSubItem("Partial log likelihood reveal",  tabName = "partial")
                                          ),
-                                         menuSubItem("Explanation",                    tabName = "HELP")
+                                         
+                                         menuItem("Change in hazard",  startExpanded = FALSE,    icon = icon("table")  ,
+                                                  
+                                                  tags$div(
+                                                    textInput(inputId="base", label='Enter a baseline hazard', width = '90%' , value="14.4"),
+                                                  ),
+                                                  tags$div(
+                                                    textInput(inputId="cens", label='Enter a censoring hazard', width = '90%' , value="17.6"),
+                                                  ),
+                                                  tags$div(
+                                                    textInput(inputId="hr2", label='Enter a hazard ratio', width = '90%' , value="1.2"),
+                                                  ),
+                                                  tags$div(
+                                                    textInput(inputId="per", label='Enter a survival probability', width = '90%' , value="0.70"),
+                                                  ),
+                                                  
+                                                 menuSubItem("Change in hazard",  tabName = "Change")
+                                                  
+                                                   
+                                         ),
+                                         
+                                          menuSubItem("Explanation",                    tabName = "HELP")
                                 ),
                                 
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -729,6 +750,32 @@ for for these data")
              ))),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+   tabItem("Change",
+           fluidRow(
+             
+             box(width=6,
+                 title='
+                xxxxxxxxxxxxxxxxxxxx'
+                 ,status = "primary"
+                 ,solidHeader = TRUE 
+                 ,collapsible = TRUE 
+                 ,plotOutput("plot1c", height = "720px")
+                 ,p("The log hazard ratios are plotted against the mean failure/censoring time within the interval")
+             )
+             
+             ,box(width=6,
+                  title='xxxxxxxxxxxxxxxxxxxxxxxx'
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                 # ,  withMathJax()
+                  ,h5(textOutput("info4"))
+                 ,h5(textOutput("info5"))
+                 # ,plotOutput("plot2y", height = "720px")
+             ))),
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
    tabItem("KMTABLE",
            fluidRow(
              box(
@@ -877,6 +924,8 @@ server <- function(input, output) {
     
   }) 
   
+      
+  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # This is where a new sample is instigated and inputs converted to numeric
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -892,14 +941,201 @@ server <- function(input, output) {
     
     baseline <- as.numeric(input$baseline)
     
+    ###############################################
+    
+    base <- as.numeric(input$base)
+    cens <- as.numeric(input$cens)
+    hr2 <-  as.numeric(input$hr2)
+    per <-  as.numeric(input$per)
+    ###############################################
+    
     return(list(  
+      
       n=n,
       allocation =allocation,
       hr=hr,
-      baseline=baseline
+      baseline=baseline,
+      
+      base =  base,
+      cens =  cens,
+      hr2  =  hr2,
+      per=per
+      
     ))
     
   })
+  
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # The change tab
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  datc <- reactive({
+    
+    sample <- random.sample()
+    
+    n=          sample$n
+    
+    lambdaT =  sample$base
+    lambdaC =  sample$cens
+    beta1 =   sample$hr2
+    per = sample$per
+    
+    beta1 <- log(as.numeric(beta1))
+     
+    x1 = sample(0:1, n,replace=TRUE)
+    
+    # true event time
+    T = rweibull(n, shape=1, scale=lambdaT)*exp(-beta1*x1)
+    C = rweibull(n, shape=1, scale=lambdaC)                  #censoring time
+    time = pmin(T,C)  # observed time is min of censored and true
+    event = time==T   # set to 1 if event is observed
+    
+    require(survival)
+    f <- coxph(Surv(time, event)~ x1 , method="breslow")
+    survfit <- survfit(Surv(time,event) ~ x1)
+    
+    
+    return(list(s=survfit, f=f  )) 
+    
+  })
+    
+    
+  
+  output$plot1c<-renderPlot({     
+    
+    f <- datc()$f  # Get the  data
+    s <- datc()$s
+    plot(s, ylab="Survival probability", xlab="Time")
+    
+  })
+  
+  
+  output$info4 <- renderText({  
+    
+    sample <- random.sample()
+    
+    n=          sample$n
+    
+    lambdaT =  sample$base
+    lambdaC =  sample$cens
+    beta1 =   sample$hr2
+    per=      sample$per
+    
+    
+    yo <- abs(100*((beta1/1)-1))
+    
+    wordd <- ifelse(beta1 < 0,"will reduce", 
+                    ifelse(beta1 > 0, "will increase ","will not change")) 
+     
+    c(paste0("With an exponential baseline hazard of ",lambdaT," the time to reach median survival is equal to -log(0.5) x ",lambdaT,". 
+             The equates to a median survival of ",
+             formatz2(-log(.5)*lambdaT)," units of time. Further,
+               replacing 0.5 with a desired percentile will return the associated time, for example
+               the time at which survival probability is ",per*100,"% is ", formatz2(-log(per)*lambdaT)) )
+               
+     
+  })
+  
+  
+  output$info5 <- renderText({  
+    
+    sample <- random.sample()
+    
+    n=          sample$n
+    
+    lambdaT =  sample$base
+    lambdaC =  sample$cens
+    beta1 =   sample$hr2
+    per = sample$per
+    
+    
+    yo <- abs(100*((beta1/1)-1))
+    
+    wordd <- ifelse(beta1 < 0,"will reduce", 
+                    ifelse(beta1 > 0, "will increase ","will not change")) 
+     
+    
+    c(paste0("Now 
+               if we are postulating that a new treatment " ,wordd," the hazard by ",yo,"% we can use 
+               the fact S(t) = S0(t)exp Bx, with Bx=", (beta1)," and so the 
+              probability of survival becomes ",formatz2((.7)^(beta1)) ," and ", formatz2((.5)^(beta1)),"" ) )
+    
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+   
+    # theoretical median, self learning txt p301
+ #   -log(.5)*lambdaT   # qweibull(.5,1,15.6)           ## median
+  #  -log(.7)*lambdaT                                   ## survival prob 70%
+    
+    ## surv rates 5 year  survival 70%  
+    ## surv rates 10 year survival 50%
+    
+    ## detect 20% increase in haz rate, what does this inply for 5 n 10 year surv rates
+    ## S1(t) = So(t)expBx =0.7^1.2=65.2 
+    ###                    0.5^1.2=43.5%
+    ## so 5 yr drops to 65.2 and 10 yr drops to 43.5
+    
+    
+    #mfit$surv
+  #  survfit <- survfit(Surv(time,event) ~ x1)
+  #  plot(survfit, ylab="Survival probability", xlab="Time")
+    #survfit
+    #summary(survfit)
+   # quantile(survfit, probs = c(.3,.348,0.5, .565,0.7), conf.int = FALSE)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   # summary(survfit, times=5)
+  #  summary(survfit, times=10)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    #return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np , LL1=res$LL1, LL0=res$LL0, S=res$S, res=res
+                  
+                     
+  #  ))
+    
+  #})
+  
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # GENERATE THE DATA Execute analysis
