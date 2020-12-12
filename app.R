@@ -996,7 +996,7 @@ server <- function(input, output) {
     per = sample$per
     per2 = sample$per2
     
-   # n=1000; lambdaT=14.4; lambdaC=12; beta=1.2; per=0.7 ;
+   # n=1000; lambdaT=14.4; lambdaC=12; beta1=1.2; per=0.7 ;
     
     
     beta1 <- log(as.numeric(beta1))
@@ -1014,7 +1014,15 @@ server <- function(input, output) {
     survfit <- survfit(Surv(time,event) ~ x1)
     #plot(survfit, ylab="Survival probability", xlab="Time", col=c('blue','red'))
     
-    return(list(s=survfit, f=f  )) 
+    w <- survreg(formula = Surv(time, event) ~ x1, dist = "w", control = list(maxiter = 90) )
+
+    hr <-  (c(w$coefficient[2],  confint(w)[2,]))
+    hr <- exp(hr)      #exp(-coef(f))^exp(coef(f)["shape"])
+    
+    hrc <- exp(c(f$coefficient,  confint(f) ) )
+    
+  
+    return(list(s=survfit, f=f ,w=w , hr=hr, hrc=hrc)) 
     
   })
     
@@ -1032,7 +1040,7 @@ server <- function(input, output) {
     per2 =    sample$per2
     
     s <- datc()$s
-    
+   
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     yo <- abs(100*((beta1/1)-1))
     
@@ -1116,11 +1124,30 @@ server <- function(input, output) {
     beta1 =   sample$hr2
     per=      sample$per
     
+    hr <- datc()$hr 
+    
+    hrc <- datc()$hrc 
     
     
     f <- datc()$f  # Get the  data
     s <- datc()$s
     plot(s, ylab="Survival probability", xlab="Time", col=c('blue','red'))
+    
+    text(x = max(s$time)*.58, y = .99,                # Text with different color & size
+         paste0("HR from Weibull=",formatz2(1/hr[1])," 95%CI ( ",formatz2(1/hr[3]),", ",formatz2(1/hr[2])," )"),
+         col = "#1b98e0",
+         cex = 1)
+    text(x = max(s$time)*.58, y = .97,                # Text with different color & size
+         paste0("HR from Cox PH=",formatz2(hrc[1])," 95%CI ( ",formatz2(hrc[2]),", ",formatz2(hrc[3])," )"),
+         col = "#1b98e0",
+         cex = 1)
+    
+    
+    
+    
+    
+    
+    
     # abline(h=.5,                lty=2, col='blue')
     # abline(v=-log(.5)*lambdaT,  lty=2, col='blue')
     # abline(h=per,               lty=2, col='red')
@@ -1182,6 +1209,9 @@ server <- function(input, output) {
     beta1 =    sample$hr2
     per=       sample$per
     per2=       sample$per2
+    
+    s <- datC()$w
+    hr <- datC()$hr
     
     yo <- abs(100*((beta1/1)-1))
     
