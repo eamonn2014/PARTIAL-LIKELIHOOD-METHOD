@@ -1210,8 +1210,8 @@ server <- function(input, output) {
     per=       sample$per
     per2=       sample$per2
     
-    s <- datC()$w
-    hr <- datC()$hr
+    #s <-  datC()$w
+    #hr <- datC()$hr
     
     yo <- abs(100*((beta1/1)-1))
     
