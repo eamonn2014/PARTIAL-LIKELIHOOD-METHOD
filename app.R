@@ -223,48 +223,55 @@ ui <- dashboardPage(  title="Survival Analysis",
                                 
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("Analyses",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
-                                         menuItem("Kaplan Meier (landing page)",                      tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
+                                         #~~~~~~~~~~~~~~~~~~~~~~~~
+                                         menuSubItem("Kaplan Meier (landing page)",    tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                                          menuSubItem("KM diagnostics",                 tabName = "RESULTS2",  icon = icon("bar-chart-o")),
                                          menuSubItem("Cox proportional hazards",       tabName = "RESULTS3",  icon = icon("bar-chart-o")),
                                          menuSubItem("Hazard ratio over time",         tabName = "RESULTS4",  icon = icon("bar-chart-o")),
                                          menuSubItem("Partial log likelihood",         tabName = "RESULTS1",  icon = icon("table")),
-                                         menuItem("Only ranks of event times needed!", tabName = "OVERVIEW2",  icon = icon("bar-chart-o"), selected = FALSE),
-                                         menuItem("Model assumptions", tabName = "OVERVIEW3",  icon = icon("bar-chart-o"), selected = FALSE),
+                                         #~~~~~~~~~~~~~~~~~~~~~~~~
+                                         menuSubItem("Only ranks of event times needed!", tabName = "OVERVIEW2",  icon = icon("bar-chart-o"), selected = FALSE),
+                                         #~~~~~~~~~~~~~~~~~~~~~~~~
+                                         menuSubItem("Model assumptions", tabName = "OVERVIEW3",  icon = icon("bar-chart-o"), selected = FALSE),
+                                         #~~~~~~~~~~~~~~~~~~~~~~~~
                                          menuSubItem("KM lifetable",                   tabName = "KMTABLE",  icon = icon("list-alt")),
+                                         #~~~~~~~~~~~~~~~~~~~~~~~~
                                          menuItem("Partial likelihood exercise",  startExpanded = FALSE,    icon = icon("table"),
                                                  
                                                   tags$div(
                                                     textInput(inputId="guess", label='Enter a guess at Hazard Ratio (defaulted to null)', width = '90%' , value="1"),
                                                   ),
                                                   
-                                                  menuSubItem("Partial log likelihood reveal",  tabName = "partial")
-                                         ),
+                                                  menuSubItem("Hit to reveal Partial log likelihood",  tabName = "partial")
+                                         )
+                                         #~~~~~~~~~~~~~~~~~~~~~~~~
+                                       
                                          
-                                         menuItem("Change in hazard",  startExpanded = FALSE,    icon = icon("table")  ,
-                                                  
-                                                  tags$div(
-                                                    textInput(inputId="base", label='Enter a baseline hazard', width = '90%' , value="14.4"),
-                                                  ),
-                                                  tags$div(
-                                                    textInput(inputId="cens", label='Enter a censoring hazard', width = '90%' , value="17.6"),
-                                                  ),
-                                                  tags$div(
-                                                    textInput(inputId="hr2", label='Enter a hazard ratio', width = '90%' , value="1.2"),
-                                                  ),
-                                                  tags$div(
-                                                    textInput(inputId="per", label='Enter a survival probability',        width = '90%' , value="0.70"),
-                                                    textInput(inputId="per2", label='Enter another survival probability', width = '90%' , value="0.50"),
-                                                  ),
-                                                  
-                                                 menuSubItem("Change in hazard",  tabName = "Change")
-                                                  
-                                                   
-                                         ),
-                                         
-                                          menuSubItem("Explanation",                    tabName = "HELP")
-                                ),
-                                
+                                        
+                               ),
+                                #
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               menuItem("Change in hazard",  startExpanded = FALSE,    icon = icon("table")  ,
+                                        
+                                        tags$div(
+                                          textInput(inputId="base", label='Enter a baseline hazard', width = '90%' , value="14.4"),
+                                        ),
+                                        tags$div(
+                                          textInput(inputId="cens", label='Enter a censoring hazard', width = '90%' , value="17.6"),
+                                        ),
+                                        tags$div(
+                                          textInput(inputId="hr2", label='Enter a hazard ratio', width = '90%' , value="1.2"),
+                                        ),
+                                        tags$div(
+                                          textInput(inputId="per", label='Enter a survival probability',        width = '90%' , value="0.70"),
+                                          textInput(inputId="per2", label='Enter another survival probability', width = '90%' , value="0.50"),
+                                        ),
+                                        
+                                     menuSubItem("Hit to reveal change in hazard",  tabName = "Change")
+                                        
+                                        
+                               ),
+                               menuItem("Explanation",                    tabName = "HELP",icon = icon("bar-chart-o"), selected = FALSE),
                                menuItem("Wiki", tabName = "Wiki",  icon = icon("bar-chart-o"), selected = FALSE),
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                menuItem("Code", icon = icon("bar-chart-o"),
@@ -891,7 +898,9 @@ on his risky path.'")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # create the server functions for the dashboard  
 server <- function(input, output) { 
-  
+  output$res <- renderText({
+    paste("You've selected:", input$tabs)
+  })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # https://stackoverflow.com/questions/55043092/r-shinydashboard-display-sum-of-selected-input-in-a-valuebox
   output$value1 <- renderValueBox({
@@ -1028,7 +1037,7 @@ server <- function(input, output) {
     yo <- abs(100*((beta1/1)-1))
     
     wordd <- ifelse(beta1 < 1,"will reduce", 
-                    ifelse(beta1 > 1, "will increase ","will not change")) 
+                    ifelse(beta1 > 1, "will increase","will change")) 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     x<-curve(dweibull(x, shape=1, scale = lambdaT), from=0, to=max(s$time))
@@ -1040,32 +1049,38 @@ server <- function(input, output) {
          col = "#1b98e0",
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    text(x = max(s$time)*.66, y = .97,                # Text with different color & size
-         paste0(" At ",  formatz2(-log(per)* lambdaT), " months the survival probability is ",per* 100,"%"),
+    text(x = max(s$time)*.655, y = .97,                # Text with different color & size
+         paste0(" At ",  formatz1(-log(per)* lambdaT), " months the survival probability is ",per* 100,"%"),
          col = "#1b98e0",
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     text(x = max(s$time)*.66, y = .95,                # Text with different color & size
-         paste0(" At ",  formatz2(-log(per2)* lambdaT), " months the survival probability is ",per2* 100,"%"),
+         paste0(" At ",  formatz1(-log(per2)* lambdaT), " months the survival probability is ",per2* 100,"%"),
          col = "#1b98e0",
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    text(x = max(s$time)*.7, y = .92,                # Text with different color & size
+    
+    text(max(s$time)*.57, 0.92, expression( paste(
+      "Using S(1)t = S(0)t"^{exp(beta.x)}
+    )), cex = 1)
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    text(x = max(s$time)*.7, y = .88,                # Text with different color & size
          paste0(" Postulating treatment " ,wordd," the hazard by ",yo,"%"),
          col = "red",
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    text(x = max(s$time)*.695, y = .90,                # Text with different color & size
-         paste0(" At ",  formatz2(-log(per)*  lambdaT), " months the survival probability becomes ",formatz2((per)^(beta1)) ,""),
+    text(x = max(s$time)*.69, y = .86,                # Text with different color & size
+         paste0(" At ",  formatz1(-log(per)*  lambdaT), " months the survival probability becomes ",formatz00(100*(per)^(beta1)) ,"%"),
          col = "red",
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    text(x = max(s$time)*.695, y = .88,                # Text with different color & size
-         paste0(" At ",  formatz2(-log(per2)*  lambdaT), " months the survival probability becomes ",formatz2((per2)^(beta1)) ,""),
+    text(x = max(s$time)*.695, y = .84,                # Text with different color & size
+         paste0(" At ",  formatz1(-log(per2)*  lambdaT), " months the survival probability becomes ",formatz00(100*(per2)^(beta1)) ,"%"),
          col = "red",
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     
+  
     
     y <- x$y^(beta1)   # add another line based on S1(t) = S(0) ^exp(B)
     lines(y~x$x, col='red')     
@@ -1089,6 +1104,7 @@ server <- function(input, output) {
     
   })
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$plot1c<-renderPlot({     
     
     sample <- random.sample()
@@ -1208,10 +1224,10 @@ server <- function(input, output) {
      
     
     c(paste0("Now if we are postulating that a new treatment " ,wordd," the hazard by ",yo,"% we can use 
-               the fact S1(t) = S0(t)exp Bx, with Bx=", (beta1)," and so the 
-              probability of survival at ",  formatz2(-log(per)*  lambdaT), " months becomes now ",formatz2((per)^(beta1)) ,".
-          The probability of survival at ",  formatz2(-log(per2)* lambdaT), " months becomes now ",formatz2((per2)^(beta1)) ,"
-          See the arrows in the plot showing the changes in survival. 
+               the fact S1(t) = S0(t)exp Bx, with exp Bx=", (beta1)," the 
+              probability of survival at ",  formatz2(-log(per)*  lambdaT), " months now becomes ",formatz2((per)^(beta1)) ,".
+          The probability of survival at ",  formatz2(-log(per2)* lambdaT), " months now becomes ",formatz2((per2)^(beta1)) ,"
+          . See the arrows in the plot showing the changes in survival. 
              " ) )
     
   })
