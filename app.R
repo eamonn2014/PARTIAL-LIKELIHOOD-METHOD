@@ -1024,15 +1024,52 @@ server <- function(input, output) {
     
     s <- datc()$s
     
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    yo <- abs(100*((beta1/1)-1))
+    
+    wordd <- ifelse(beta1 < 1,"will reduce", 
+                    ifelse(beta1 > 1, "will increase ","will not change")) 
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
     x<-curve(dweibull(x, shape=1, scale = lambdaT), from=0, to=max(s$time))
     x$y <- x$y/max(x$y)    #scale the weibull to max of 1 
     plot(x, type = "l", lty = 1, col='blue' , ylab="Survival probability", xlab="Time" , ylim=c(0,1))
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    text(x = max(s$time)*.58, y = .99,                # Text with different color & size
+         paste0(" For the blue reference curve:"),
+         col = "#1b98e0",
+         cex = 1)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    text(x = max(s$time)*.66, y = .97,                # Text with different color & size
+         paste0(" At ",  formatz2(-log(per)* lambdaT), " months the survival probability is ",per* 100,"%"),
+         col = "#1b98e0",
+         cex = 1)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    text(x = max(s$time)*.66, y = .95,                # Text with different color & size
+         paste0(" At ",  formatz2(-log(per2)* lambdaT), " months the survival probability is ",per2* 100,"%"),
+         col = "#1b98e0",
+         cex = 1)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    text(x = max(s$time)*.7, y = .92,                # Text with different color & size
+         paste0(" Postulating treatment " ,wordd," the hazard by ",yo,"%"),
+         col = "red",
+         cex = 1)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    text(x = max(s$time)*.695, y = .90,                # Text with different color & size
+         paste0(" At ",  formatz2(-log(per)*  lambdaT), " months the survival probability becomes ",formatz2((per)^(beta1)) ,""),
+         col = "red",
+         cex = 1)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    text(x = max(s$time)*.695, y = .88,                # Text with different color & size
+         paste0(" At ",  formatz2(-log(per2)*  lambdaT), " months the survival probability becomes ",formatz2((per2)^(beta1)) ,""),
+         col = "red",
+         cex = 1)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     
     
     y <- x$y^(beta1)   # add another line based on S1(t) = S(0) ^exp(B)
     lines(y~x$x, col='red')     
-    
-    
-  #  if (beta1 < 1) {
+ 
       
     arrows(                                  # x start
       -log(per2) *lambdaT,    
@@ -1135,16 +1172,16 @@ server <- function(input, output) {
     wordd <- ifelse(beta1 < 1,"will reduce", 
                     ifelse(beta1 > 1, "will increase ","will not change")) 
      
-    c(paste0("A survival curve is created based on a Weibull distribution. Here we are measuring time in months. 
-    With a shape parameter of 1 and a scale parameter of ",lambdaT," 
-    the time to reach median survival is equal to -log(0.5) x ",lambdaT,". 
-             This equates to a median survival of ",
-             formatz2(-log(.5)*lambdaT)," months. 
+    c(paste0(" 
+    With a shape parameter of 1 and a scale parameter of ",lambdaT," a survival curve is created based on a Weibull distribution.
+    Here we are measuring time in months.
+    The time to reach median survival is equal to -log(0.5) x ",lambdaT,". 
+             This equates to a median survival of ", formatz2(-log(.5)*lambdaT)," months. 
              
-             Replacing 0.5 with a desired survival percentile will return the associated time. Enter the survival probability
-              in the two boxes on the left. 
-              
-             The time at which the survival probability is ",per*100, "% is ",  formatz2(-log(per)* lambdaT), " months.
+             Replacing 0.5 with a desired survival percentile will return the associated time. 
+             Enter survival probabilities in the two boxes on the left. 
+             
+             The time at which the survival probability is ",per* 100,"% is ",  formatz2(-log(per)* lambdaT), " months.
              The time at which the survival probability is ",per2*100,"% is ",  formatz2(-log(per2)*lambdaT), " months"
       ))
                
