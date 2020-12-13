@@ -1235,6 +1235,11 @@ server <- function(input, output) {
   })
   
   
+  
+  
+  
+  
+  
   output$info5 <- renderText({  
     
     sample <- random.sample()
@@ -1254,14 +1259,17 @@ server <- function(input, output) {
      
     
     c(paste0("Now if we are postulating that a new treatment " ,wordd," the hazard by ",yo,"% we can use 
-               the fact S1(t) = S0(t)exp Bx, with exp Bx=", (beta1)," the 
+               the fact S1(t) = S0(t)^exp Bx, with exp Bx=", (beta1)," the 
               probability of survival at ",  formatz2(-log(per)*  lambdaT), " months now becomes ",formatz2((per)^(beta1)) ,".
           The probability of survival at ",  formatz2(-log(per2)* lambdaT), " months now becomes ",formatz2((per2)^(beta1)) ,"
           . See the arrows in the plot showing the changes in survival. 
              " ) )
     
-  })
   
+  
+    
+    
+    })
   
   
   
