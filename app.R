@@ -267,8 +267,9 @@ ui <- dashboardPage(  title="Survival Analysis",
                                           textInput(inputId="per2", label='Enter another survival probability', width = '90%' , value="0.50"),
                                         ),
                                         
-                                     menuSubItem("Hit to reveal change in hazard",  tabName = "Change")
-                                        
+                                     menuSubItem("Hit to reveal change in hazard",  tabName = "Change"),
+                                     menuSubItem("Hit to reveal hazard",  tabName = "Changeh")    ,
+                                     menuSubItem("Hit to reveal Kaplan-Meier and smoothed survival curve",  tabName = "Changeh2") 
                                         
                                ),
                                menuItem("Explanation",                    tabName = "HELP",icon = icon("bar-chart-o"), selected = FALSE),
@@ -784,6 +785,60 @@ for for these data")
                   # ,h5(textOutput("info5"))
                  # ,plotOutput("plot2y", height = "720px")
              ))),
+   
+   
+   tabItem("Changeh",
+           fluidRow(
+             
+             box(width=6,
+                 title='
+                xxxxxxxxxxxxxxxxxxxxxxxx'
+                 ,status = "primary"
+                 ,solidHeader = TRUE 
+                 ,collapsible = TRUE 
+                 ,plotOutput("ploth", height = "720px")
+                 #,p("KM curve based on user inputs, reference curve in blue")
+             )
+             
+             ,box(width=6,
+                  title='Smoothed and step function estimates of the hazard function'
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                  #,plotOutput("plot1d", height = "720px")
+                  #,h5(textOutput("info4"))
+                  #,h5(textOutput("info5"))
+                  # ,h5(textOutput("info4"))
+                  # ,h5(textOutput("info5"))
+                  ,plotOutput("ploth1", height = "720px")
+             ))),
+   
+   
+   tabItem("Changeh2",
+           fluidRow(
+             
+             box(width=6,
+                 title=' Kaplan-Meier and smoothed survival curve estimate'
+                 ,status = "primary"
+                 ,solidHeader = TRUE 
+                 ,collapsible = TRUE 
+                 ,plotOutput("ploth2", height = "720px")
+                 #,p("KM curve based on user inputs, reference curve in blue")
+             )
+             
+             ,box(width=6,
+                  title='xxxxxxxxxxxxxxxxxxxxxxxxxx'
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                  #,plotOutput("plot1d", height = "720px")
+                  #,h5(textOutput("info4"))
+                  #,h5(textOutput("info5"))
+                  # ,h5(textOutput("info4"))
+                  # ,h5(textOutput("info5"))
+                #  ,plotOutput("ploth2", height = "720px")
+             ))),
+   
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
    tabItem("KMTABLE",
@@ -979,76 +1034,122 @@ server <- function(input, output) {
     
   })
   
-  
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # The change tab
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # The change in  hazard tab, data generation
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   datc <- reactive({
     
     sample <- random.sample()
     
-    n=          sample$n
+    n =        sample$n
+    lambdaT =  sample$base  # event hazard
+    lambdaC =  sample$cens  # censoring haz
+    beta1 =    sample$hr2   # hr
+    per =      sample$per   # survival probability
+    per2 =     sample$per2  # survival probability
     
-    lambdaT =  sample$base
-    lambdaC =  sample$cens
-    beta1 =   sample$hr2
-    per = sample$per
-    per2 = sample$per2
+ #  n=800; lambdaT=14.4; lambdaC=12; beta1=1.2; per=0.7 ;  # use this for on the fly
     
-   # n=1000; lambdaT=14.4; lambdaC=12; beta1=1.2; per=0.7 ;
-    
-    
-    beta1 <- log(as.numeric(beta1))
+    beta1 <- log(as.numeric(beta1))  # log hr
      
-    x1 = sample(0:1, n,replace=TRUE)
+    x1 = sample(0:1, n,replace=TRUE)  # assign trt randomly
     
-    # true event time
-    T = rweibull(n, shape=1, scale=lambdaT)*exp(-beta1*x1)
-    C = rweibull(n, shape=1, scale=lambdaC)                  #censoring time
-    time = pmin(T,C)  # observed time is min of censored and true
+    # create distributions
+    T = rweibull(n, shape=1, scale=1/lambdaT)*exp(-beta1*x1)   # say if lambda is entered as 14 big hazard need to use 1/14 here?
+    C = rweibull(n, shape=1, scale=1/lambdaC)                  #censoring time
+    time = pmin(T,C)  # observed time is min of censored and true, pmin useful here
     event = time==T   # set to 1 if event is observed
     
+    # run cox regression
     require(survival)
     f <- coxph(Surv(time, event)~ x1 , method="breslow")
     survfit <- survfit(Surv(time,event) ~ x1)
+   # f
     #plot(survfit, ylab="Survival probability", xlab="Time", col=c('blue','red'))
-    
+    #run weibull regression
     w <- survreg(formula = Surv(time, event) ~ x1, dist = "w", control = list(maxiter = 90) )
-
+    
+    # grab the hr estimates from weibull
     hr <-  (c(w$coefficient[2],  confint(w)[2,]))
     hr <- exp(hr)      #exp(-coef(f))^exp(coef(f)["shape"])
-    
+    # grab the hr estimates from Cox
     hrc <- exp(c(f$coefficient,  confint(f) ) )
     
-  
-    return(list(s=survfit, f=f ,w=w , hr=hr, hrc=hrc)) 
+    # capture for later
+    ss <- Surv(time, event)
+    
+    #  for practice run parametric regression using harrell package
+    dd <<- datadist( x1=x1)
+    options(datadist='dd')
+    f.exp  <- psm(ss  ~ x1, dist ='exponential')
+    fw    <-  psm(ss  ~ x1,  dist ='weibull')
+ 
+    d <- table(x1,event)
+    ev <- d[,"TRUE"]  # number of events
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # new, plotting the hazard, Dirk F moore page 38
+    
+    library(muhaz)
+    
+    # plotH
+    result.simple <- muhaz(time, event, max.time=max(time),
+                           bw.grid=2.25, bw.method="global", b.cor="none")
+    
+    
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # PlotH1
+    result.pe5 <- pehaz(time, event, width=5, max.time=max(time))  # in the text these are months, so will need to adjust? 
+    result.pe1 <- pehaz(time, event, width=1, max.time=max(time))
+    
+    result.smooth <- muhaz(time, event, bw.smooth=max(time),
+                           b.cor="left", max.time=max(time))
+    
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #One use of smoothing the hazard function is to obtain a smooth estimate of the
+    # survival function
+    
+    haz <- result.smooth$haz.est
+    times <- result.smooth$est.grid
+    survx <- exp(-cumsum(haz[1:(length(haz)-1)]*diff(times)))
+    
+   # We may compare our
+   # smoothed survival estimate to the Kaplan-Meier estimate as follows:
+    result.km <- survfit(Surv(time, event) ~ 1,
+                           conf.type="none")
+    
+    return(list(s=survfit, f=f ,w=w , hr=hr, hrc=hrc, ev=ev, d=d, result.simple=result.simple,
+                result.pe5= result.pe5,result.pe1=result.pe1,result.smooth=result.smooth,  result.km= result.km,
+               time=time, event=event , survx=survx, times=times)) 
     
   })
     
-  
+  # right plot....................., 
   output$plot1d<-renderPlot({     
     
     sample <- random.sample()
     
-    n=          sample$n
+    n =        sample$n
+    lambdaT =  sample$base  # event hazard
+    lambdaC =  sample$cens  # censoring haz
+    beta1 =    sample$hr2   # hr
+    per =      sample$per   # survival probability
+    per2 =     sample$per2  # survival probability
     
-    lambdaT =  sample$base
-    lambdaC =  sample$cens
-    beta1 =   sample$hr2
-    per=      sample$per
-    per2 =    sample$per2
+    s <- datc()$s  # survfit object
     
-    s <- datc()$s
-   
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     yo <- abs(100*((beta1/1)-1))
     
     wordd <- ifelse(beta1 < 1,"will reduce", 
-                    ifelse(beta1 > 1, "will increase","will change")) 
+                    ifelse(beta1 > 1, "will increase","will not change")) 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    x<-curve(dweibull(x, shape=1, scale = lambdaT), from=0, to=max(s$time))
+    # plot weibull density
+    x <- curve(dweibull(x, shape=1, scale = 1/lambdaT), from=0, to=max(s$time))  
     x$y <- x$y/max(x$y)    #scale the weibull to max of 1 
     plot(x, type = "l", lty = 1, col='blue' , ylab="Survival probability", xlab="Time" , ylim=c(0,1))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1089,22 +1190,22 @@ server <- function(input, output) {
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-    
+    # with the effect of trt and plot
     y <- x$y^(beta1)   # add another line based on S1(t) = S(0) ^exp(B)
     lines(y~x$x, col='red')     
  
-      
+    # add arrows to explain  
     arrows(                                  # x start
-      -log(per2) *lambdaT,    
-      per2 ,# 
-      -log(per2) *lambdaT ,  
+      -log(per2) *1/lambdaT,                   # time  
+      per2 ,#                                # surv prob  
+      -log(per2) *1/lambdaT ,  
       per2^beta1 ,
       col="black", lty=1 )       
     
     arrows(                                  # x start
-      -log(per) *lambdaT,    
+      -log(per) *1/lambdaT,    
       per, # 
-      -log(per) *lambdaT ,  
+      -log(per) *1/lambdaT ,  
       per^beta1 ,
       col="black", lty=1 )    
     
@@ -1113,25 +1214,31 @@ server <- function(input, output) {
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # left plot
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
   output$plot1c<-renderPlot({     
     
     sample <- random.sample()
     
-    n=          sample$n
+    n =        sample$n
+    lambdaT =  sample$base  # event hazard
+    lambdaC =  sample$cens  # censoring haz
+    beta1 =    sample$hr2   # hr
+    per =      sample$per   # survival probability
+   # per2 =     sample$per2  # survival probability
     
-    lambdaT =  sample$base
-    lambdaC =  sample$cens
-    beta1 =   sample$hr2
-    per=      sample$per
+    hr <- datc()$hr     # Weibull hr
+    hrc <- datc()$hrc   # cox hr
     
-    hr <- datc()$hr 
+    ev <- datc()$ev    # events
     
-    hrc <- datc()$hrc 
+    N <- datc()$d      # sample size
     
+    f <- datc()$f      # Get the data
+    s <- datc()$s      # survfit object
     
-    f <- datc()$f  # Get the  data
-    s <- datc()$s
-    plot(s, ylab="Survival probability", xlab="Time", col=c('blue','red'))
+    plot(s, ylab="Survival probability", xlab="Time", col=c('blue','red'))  # plot the survfit object
     
     text(x = max(s$time)*.58, y = .99,                # Text with different color & size
          paste0("HR from Weibull=",formatz2(1/hr[1])," 95%CI ( ",formatz2(1/hr[3]),", ",formatz2(1/hr[2])," )"),
@@ -1141,8 +1248,31 @@ server <- function(input, output) {
          paste0("HR from Cox PH=",formatz2(hrc[1])," 95%CI ( ",formatz2(hrc[2]),", ",formatz2(hrc[3])," )"),
          col = "#1b98e0",
          cex = 1)
+    text(x = max(s$time)*.54, y = .95,                # Text with different color & size
+         paste0( "Actual N= ",sum(N), ", Actual events= ",sum(ev)),
+         col = "#1b98e0",
+         cex = 1)
     
     
+    ## power 
+    A <- 0.05 # alpha
+    B <- 0.1  # beta
+    
+    s1=per
+    s2=per^(beta1)
+    
+   # (-log(per)* lambdaT)  # time of s1 s2
+    
+    f <- ((qnorm(1-A/2))+qnorm(1-B))^2
+    d1 <- (4*f)/ (log(beta1)^2)
+     
+    N2 <- d1/(1-(s1+s2)/2)
+
+    
+    text(x = max(s$time)*.667, y = .93,                # Text with different color & size
+         paste0( "Alpha 2 sided ",A," Power ",1-B," events required= ",ceiling(d1), ", N= ",ceiling(N2)),
+         col = "#1b98e0",
+         cex = 1)
     
     
     
@@ -1197,7 +1327,63 @@ server <- function(input, output) {
     
   })
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
   
+  # estimating hazard plot
+  output$ploth <-renderPlot({     
+ 
+    H=datc()$result.simple
+    plot(H)
+  })
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+  output$ploth1 <-renderPlot({     
+    
+    H=datc()$result.pe5
+    H1=datc()$result.pe1
+    HS=datc()$result.smooth
+    
+    
+    plot(H,  col="black")
+    lines(H1)
+    lines(HS)
+    
+    
+  })
+  
+  output$ploth2 <-renderPlot({     
+    
+    H2=datc()$result.km
+      
+    surv=datc()$survx
+    times=datc()$times
+    
+    plot(H2, conf.int=T, mark="|", xlab="Time",
+         #xlim=c(0,30), 
+         ylab="Survival probability")
+    lines(surv ~ times[1:(length(times) - 1)])
+    
+  })
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+  
+  
+  
+ 
+  
+  
+  
+  
+  
+  
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+  
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # text below right plot in changing hazard 
   output$info4 <- renderText({  
     
     sample <- random.sample()
@@ -1234,11 +1420,8 @@ server <- function(input, output) {
      
   })
   
-  
-  
-  
-  
-  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+  # another piece of text below right plot in changing hazard 
   
   output$info5 <- renderText({  
     
@@ -1265,21 +1448,9 @@ server <- function(input, output) {
           . See the arrows in the plot showing the changes in survival. 
              " ) )
     
-  
-  
-    
-    
     })
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+     
    
     # theoretical median, self learning txt p301
  #   -log(.5)*lambdaT   # qweibull(.5,1,15.6)           ## median
@@ -1305,43 +1476,15 @@ server <- function(input, output) {
    # summary(survfit, times=5)
   #  summary(survfit, times=10)
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     #return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np , LL1=res$LL1, LL0=res$LL0, S=res$S, res=res
                   
                      
   #  ))
     
   #})
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
