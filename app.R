@@ -254,10 +254,10 @@ ui <- dashboardPage(  title="Survival Analysis",
                                menuItem("Change in hazard",  startExpanded = FALSE,    icon = icon("table")  ,
                                         
                                         tags$div(
-                                          textInput(inputId="base", label='Enter a baseline hazard', width = '90%' , value="14.4"),
+                                          textInput(inputId="base", label='Enter a baseline hazard', width = '90%' , value="0.03"),
                                         ),
                                         tags$div(
-                                          textInput(inputId="cens", label='Enter a censoring hazard', width = '90%' , value="17.6"),
+                                          textInput(inputId="cens", label='Enter a censoring hazard', width = '90%' , value="0.02"),
                                         ),
                                         tags$div(
                                           textInput(inputId="hr2", label='Enter a hazard ratio', width = '90%' , value="1.2"),
@@ -1351,15 +1351,20 @@ server <- function(input, output) {
     
     
   })
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
   
   output$ploth2 <-renderPlot({     
     
     H2=datc()$result.km
       
-    surv=datc()$survx
     times=datc()$times
+    result.smooth=datc()$result.smooth
     
-    plot(H2, conf.int=T, mark="|", xlab="Time",
+    haz <- result.smooth$haz.est
+    times <- result.smooth$est.grid
+    surv <- exp(-cumsum(haz[1:(length(haz)-1)]*diff(times)))
+    
+    plot(H2, conf.int=F, mark="|", xlab="Time",  # confint true throws an error
          #xlim=c(0,30), 
          ylab="Survival probability")
     lines(surv ~ times[1:(length(times) - 1)])
