@@ -795,15 +795,13 @@ for for these data")
                  ,solidHeader = TRUE 
                  ,collapsible = TRUE 
                  ,plotOutput("survhaz", height = "720px")
-                 ,p("The exponential distribution, the simplest survival distribution, has a constant hazard.
-                 
-                 The
-exponential distribution is a special case of the Weibull distribution with shape =1. It is monotone increasing
+                 ,p("The exponential distribution, the simplest survival distribution, has a constant hazard. The
+exponential distribution is a special case of the Weibull distribution with shape =1. The shape of the hazard is monotone increasing
 for shape > 1 and monotone decreasing for shape < 1.
-                 
                  The exponential distribution is easy to work with, but the constant hazard
 assumption is not often appropriate for describing the lifetimes. The Weibull distribution offers more flexibility in modeling survival
-data")
+data. Other
+parametric families of survival distributions include the gamma, log-normal, log-logistic, Pareto, and many more.")
              )
              
              ,box(width=6,
@@ -813,7 +811,7 @@ data")
                   ,collapsible = TRUE 
                   ,plotOutput("survhaz2", height = "720px")
                   ,p("To plot the hazard function with shape and scale, as shown by the left curve
-we define the hazard function as the p.d.f. divided by the survival function,")
+we define the hazard function as the p.d.f. divided by the survival function.")
              ))),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
    tabItem("Change",
@@ -1441,20 +1439,25 @@ server <- function(input, output) {
     curve(weibSurv(x, shape=alpha, scale=1/lambda), from=0, to=2/lambda,
           ylim=c(0,1), ylab='Survival probability', xlab='Time')
     
-    text(x = 2/lambda*.695, y = .9,                # Text with different color & size
-         paste0(" Shape ", alpha, "; Scale ", lambda ,""),
+    text(x = 2/lambda*.85, y = .95,                # Text with different color & size
+         paste0(" Shape ", alpha,  ""),
+         col = "blue",
+         cex = 1.2)
+    
+    text(x = 2/lambda*.85, y = .9,                # Text with different color & size
+         paste0("  Scale ", lambda ,""),
          col = "blue",
          cex = 1.2)
     
     
-    text(x = 2/lambda*.695, y = .85,                # Text with different color & size
+    text(x = 2/lambda*.85, y = .85,                # Text with different color & size
          paste0(" Mean ", formatz2(gamma(1 + 1/alpha)/lambda),  ""),
          col = "blue",
          cex = 1.2)
     
     
     
-    text(x = 2/lambda*.695, y = .8,                # Text with different color & size
+    text(x = 2/lambda*.85, y = .8,                # Text with different color & size
          paste0( " Median ",  formatz2((log(2)^(1/alpha))/lambda ),""),
          col = "blue",
          cex = 1.2)
@@ -1818,6 +1821,9 @@ server <- function(input, output) {
    output$plot2x <-renderPlot({     # Cox
     
     d <- dat()$d
+    
+    dd <<- datadist(d)
+    options(datadist='dd')
     
     fit <- cph(Surv(dt, e) ~ trt, data = d, x=TRUE, y=TRUE, surv=TRUE)
     
