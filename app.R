@@ -269,9 +269,36 @@ ui <- dashboardPage(  title="Survival Analysis",
                                         
                                      menuSubItem("Hit to reveal change in hazard",  tabName = "Change"),
                                      menuSubItem("Hit to reveal hazard",  tabName = "Changeh")    ,
-                                     menuSubItem("Hit to reveal Kaplan-Meier and smoothed survival curve",  tabName = "Changeh2") 
-                                        
-                               ),
+                                     menuSubItem("Hit to reveal KM & smoothed survival curve",  tabName = "Changeh2") 
+                            ),
+                               
+                               
+                               
+                            menuItem("Parametric Survival Distributions",  startExpanded = FALSE,    icon = icon("table"),
+                                     
+                                     tags$div(
+                                       textInput(inputId="shape", label='Weibull shape', width = '90%' , value="1"),
+                                     ),
+                                     
+                                     tags$div(
+                                       textInput(inputId="scale", label='Weibull scale', width = '90%' , value="0.03"),
+                                     ),
+                                     
+                                     menuSubItem("Hit to reveal Survival hazard relationship",  tabName = "survhaz")
+                            ),
+                               
+                               
+                               
+                               
+                               
+                               
+                               
+                               
+                               
+                               
+                               
+                               
+                               
                                menuItem("Explanation",                    tabName = "HELP",icon = icon("bar-chart-o"), selected = FALSE),
                                menuItem("Wiki", tabName = "Wiki",  icon = icon("bar-chart-o"), selected = FALSE),
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -758,7 +785,36 @@ for for these data")
                   ,plotOutput("plot2y", height = "720px")
              ))),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   
+   tabItem("survhaz",
+           fluidRow(
+             
+             box(width=6,
+                 title='
+               Survival probability'
+                 ,status = "primary"
+                 ,solidHeader = TRUE 
+                 ,collapsible = TRUE 
+                 ,plotOutput("survhaz", height = "720px")
+                 ,p("The exponential distribution, the simplest survival distribution, has a constant hazard.
+                 
+                 The
+exponential distribution is a special case of the Weibull distribution with shape =1. It is monotone increasing
+for shape > 1 and monotone decreasing for shape < 1.
+                 
+                 The exponential distribution is easy to work with, but the constant hazard
+assumption is not often appropriate for describing the lifetimes. The Weibull distribution offers more flexibility in modeling survival
+data")
+             )
+             
+             ,box(width=6,
+                  title='Hazard function'
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                  ,plotOutput("survhaz2", height = "720px")
+                  ,p("To plot the hazard function with shape and scale, as shown by the left curve
+we define the hazard function as the p.d.f. divided by the survival function,")
+             ))),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
    tabItem("Change",
            fluidRow(
@@ -1374,9 +1430,55 @@ server <- function(input, output) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
   
   
-  
+  output$survhaz <-renderPlot({     
+    
+    alpha<- as.numeric(input$shape)
+    
+    lambda <- as.numeric(input$scale)
+    
+      weibSurv <- function(t, shape, scale) pweibull(t, shape=shape,
+                                                   scale=scale, lower.tail=F)
+    curve(weibSurv(x, shape=alpha, scale=1/lambda), from=0, to=2/lambda,
+          ylim=c(0,1), ylab='Survival probability', xlab='Time')
+    
+    text(x = 2/lambda*.695, y = .9,                # Text with different color & size
+         paste0(" Shape ", alpha, "; Scale ", lambda ,""),
+         col = "blue",
+         cex = 1.2)
+    
+    
+    text(x = 2/lambda*.695, y = .85,                # Text with different color & size
+         paste0(" Mean ", formatz2(gamma(1 + 1/alpha)/lambda),  ""),
+         col = "blue",
+         cex = 1.2)
+    
+    
+    
+    text(x = 2/lambda*.695, y = .8,                # Text with different color & size
+         paste0( " Median ",  formatz2((log(2)^(1/alpha))/lambda ),""),
+         col = "blue",
+         cex = 1.2)
+    
+    
+    
+    
+    
+      })
  
-  
+  output$survhaz2 <-renderPlot({     
+    
+    alpha<- as.numeric(input$shape)
+    
+    lambda <- as.numeric(input$scale)
+    
+    weibHaz <- function(x, shape, scale) 
+      dweibull(x, shape=shape, scale=scale)/
+      pweibull(x, shape=shape, scale=scale,lower.tail=F)
+    
+    curve(weibHaz(x, shape=alpha, scale=1/lambda), from=0, to=2/lambda,
+          ylab='Hazard', xlab='Time', col="red")
+    
+  })
   
   
   
