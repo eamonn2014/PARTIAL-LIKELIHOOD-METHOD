@@ -1345,9 +1345,9 @@ server <- function(input, output) {
     HS=datc()$result.smooth
     
     
-    plot(H,  col="black")
-    lines(H1)
-    lines(HS)
+    plot(H,  col="green")
+    lines(H1, col='blue')
+    lines(HS, col='red')
     
     
   })
@@ -1367,7 +1367,7 @@ server <- function(input, output) {
     plot(H2, conf.int=F, mark="|", xlab="Time",  # confint true throws an error
          #xlim=c(0,30), 
          ylab="Survival probability")
-    lines(surv ~ times[1:(length(times) - 1)])
+    lines(surv ~ times[1:(length(times) - 1)], col='blue')
     
   })
   
