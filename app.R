@@ -1213,12 +1213,12 @@ server <- function(input, output) {
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     text(x = max(s$time)*.655, y = .97,                # Text with different color & size
-         paste0(" At ",  formatz1(-log(per)* lambdaT), " months the survival probability is ",per* 100,"%"),
+         paste0(" At ",  formatz1(-log(per)* 1/lambdaT), " months the survival probability is ",per* 100,"%"),
          col = "#1b98e0",
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     text(x = max(s$time)*.66, y = .95,                # Text with different color & size
-         paste0(" At ",  formatz1(-log(per2)* lambdaT), " months the survival probability is ",per2* 100,"%"),
+         paste0(" At ",  formatz1(-log(per2)* 1/lambdaT), " months the survival probability is ",per2* 100,"%"),
          col = "#1b98e0",
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1234,12 +1234,12 @@ server <- function(input, output) {
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     text(x = max(s$time)*.69, y = .86,                # Text with different color & size
-         paste0(" At ",  formatz1(-log(per)*  lambdaT), " months the survival probability becomes ",formatz00(100*(per)^(beta1)) ,"%"),
+         paste0(" At ",  formatz1(-log(per)*  1/lambdaT), " months the survival probability becomes ",formatz00(100*(per)^(beta1)) ,"%"),
          col = "red",
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     text(x = max(s$time)*.695, y = .84,                # Text with different color & size
-         paste0(" At ",  formatz1(-log(per2)*  lambdaT), " months the survival probability becomes ",formatz00(100*(per2)^(beta1)) ,"%"),
+         paste0(" At ",  formatz1(-log(per2)*  1/lambdaT), " months the survival probability becomes ",formatz00(100*(per2)^(beta1)) ,"%"),
          col = "red",
          cex = 1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
