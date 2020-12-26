@@ -938,7 +938,7 @@ we define the hazard function as the p.d.f. divided by the survival function.")
                  ,status = "primary"
                  ,solidHeader = TRUE 
                  ,collapsible = TRUE 
-                # ,plotOutput("ploth2", height = "720px")
+                 ,plotOutput("powerp1", height = "720px")
                  #,p("KM curve based on user inputs, reference curve in blue")
              )
              
@@ -1156,12 +1156,14 @@ server <- function(input, output) {
     foo <- input$resample
     
     ss <- as.numeric(unlist(strsplit(input$ss,",")))
+    
     tt <- as.numeric(unlist(strsplit(input$tt,",")))
     
     # Here, let us accrue patients over three years, and
     #follow them for an additional seven years
     
     af <- as.numeric(unlist(strsplit(input$af,",")))  
+    
     hrx <- as.numeric(unlist(strsplit(input$hrx,",")))
     
     nonc <- as.numeric(unlist(strsplit(input$t2,",")))
@@ -1191,6 +1193,66 @@ server <- function(input, output) {
     
   })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  power1 <- reactive({
+    
+    sample <- power()
+    
+    t1=sample$ss1
+    t2=sample$ss2
+    
+    s1=sample$prob1
+    s2=sample$prob2
+    
+    N1=sample$nc
+    N2=sample$ni
+    
+    start=sample$AA
+    fini=sample$FF
+    
+    hrx=sample$hrx
+    drop=sample$nonc
+    sim=sample$sim
+    
+    
+    library(Hmisc)
+    
+    Weib.p <- Weibull2(c(s1,s2),c(t1,t2))
+    
+    rcens <- function(n) runif(n, start, fini)#
+    
+    ff.dropout <- Quantile2(Weib.p,hratio=function(x) hrx,
+                            dropout=function(x) drop)
+    
+    #plot(ff.dropout)
+    
+    rcontrol <-      function(n) ff.dropout(n, what='control')
+    rintervention <- function(n) ff.dropout(n, what='intervention')
+    
+    x<-spower(rcontrol, rintervention, rcens, 
+              nc=N1, 
+              ni=N2,
+              test=logrank, nsim=sim, alpha=0.025, cox=TRUE)
+    
+    return(list(x=x, f=ff.dropout )) 
+    
+ 
+  })
+  
+  
+  
+  # estimating hazard plot
+  output$powerp1 <-renderPlot({     
+    
+    H=power1()$f
+    plot(H)
+    
+  })
+  
+  
+  
+  
+  
   
   
   
