@@ -281,6 +281,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                      
                                      
                                      
+                                     
                                      textInput('tt', width = '90%' ,
                                                strong("Enter ctrl, intervention sample size"), "500, 500"),
                                      
@@ -291,15 +292,37 @@ ui <- dashboardPage(  title="Survival Analysis",
                                      
                                      
                                      
-                                     tags$div(
-                                       textInput(inputId="hrx", label='hazard ratio', width = '90%' , value="1.2"),
-                                     ),
+                                     # tags$div(
+                                     #   textInput(inputId="hrx", label='hazard ratio', width = '90%' , value="1.2"),
+                                     # ),
                                      tags$div(
                                        textInput(inputId="t2", label='intervention arm non-compliance', width = '90%' , value="0.1"),
                                      ),
-                                     tags$div(
-                                       textInput(inputId="sim", label='No. of simulations', width = '90%' , value="300"),
+                                     # tags$div(
+                                     #   textInput(inputId="sim", label='No. of simulations', width = '90%' , value="300"),
+                                     # ),
+                                     
+                                     
+                                     ##
+                                     splitLayout(
+                                       tags$div(
+                                         textInput(inputId="hrx", label='hazard ratio',   value="1.2"),
+                                       ),
+                                       tags$div(
+                                         textInput(inputId="sim", label='No. of simulations',  value="300"),
+                                       )
+                                       
                                      ),
+                                     
+                                     ##
+                                     
+                                     
+                                     
+                                     
+                                     
+                                     
+                                     
+                                     
                                      
 
                                    menuSubItem("Hit to reveal power",  tabName = "power")
@@ -949,11 +972,12 @@ for the intervention group")
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   #,plotOutput("plot1d", height = "720px")
-                  ,h5(textOutput("powerp2"))
+                 
                   #,h5(textOutput("info5"))
                   # ,h5(textOutput("info4"))
                   # ,h5(textOutput("info5"))
-                  #  ,plotOutput("ploth2", height = "720px")
+                   ,plotlyOutput("powerp3", height = "720px")
+                  ,h5(textOutput("powerp2"))
              ))),
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1235,7 +1259,49 @@ server <- function(input, output) {
               ni=N2,
               test=logrank, nsim=sim, alpha=0.025, cox=TRUE)
     
-    return(list(x=x, f=ff.dropout )) 
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # get one simulation realisation and plot it for information
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    ##lifted from spower function
+    
+    yc <- rcontrol(N1)
+    yi <- rintervention(N2)
+    cens <- rcens(N1+ N2)
+    group <- c(rep(1, N1), rep(2, N2))
+    y <- c(yc, yi)
+    maxfail <- 0
+    maxcens <- 0
+    maxfail <- max(maxfail, max(y))
+    maxcens <- max(maxcens, max(cens))
+    S <- cbind(pmin(y, cens), 1 * (y <= cens))
+    nexceed <- 0 + (logrank(S, group) > .025)
+    fit <- coxph.fit(as.matrix(group), S, strata = NULL, 
+                     offset = NULL, init = NULL, control = coxph.control(iter.max = 10, 
+                                                                         eps = 0.0001), method = "efron", 
+                     rownames = NULL)
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    d <- cbind(S, group)
+    d <- data.frame(d)
+    names(d) <- c("dt","e", "trt")
+    dd <<- datadist(d)
+    options(datadist='dd')
+    
+    fit <- cph(Surv(dt, e) ~ trt, data = d, x=TRUE, y=TRUE, surv=TRUE)
+    
+    
+    # survplot(fit, type="kaplan-meier", conf.int = TRUE, 
+    #          col.fill=c("firebrick1","cyan2"), grid=TRUE, what='survival')
+    
+    
+    f1 <- survfit(Surv(dt,e) ~ trt, data = d)
+   
+    
+    
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    return(list(x=x, f=ff.dropout , f1=f1, fit=fit)) 
     
  
   })
@@ -1250,6 +1316,22 @@ server <- function(input, output) {
     
   })
   
+  
+  output$powerp3 <-renderPlotly({     
+    
+    f1= power1()$f1
+    fit=power1()$fit
+    
+    p1 <- ggsurvplot(f1, main = "Kaplan-Meier Curve",
+                     
+                  
+                     legend.title = "Trt."
+               
+                     ,xlab=paste0("Time : HR=",round(exp(fit$coefficients),4))
+                      
+    )
+    ggplotly(p1[[1]] )
+  })
   
   
   # output$powerp2 <- renderText({  
