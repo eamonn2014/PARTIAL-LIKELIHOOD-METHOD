@@ -272,7 +272,40 @@ ui <- dashboardPage(  title="Survival Analysis",
                                      menuSubItem("Hit to reveal KM & smoothed survival curve",  tabName = "Changeh2") 
                             ),
                                
-                               
+                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            menuItem("Power",  startExpanded = FALSE,    icon = icon("table")  ,
+                                     
+                                     
+                                     textInput('ss', width = '90%' ,
+                                               strong("Enter two survival probs & times"), "0.7, 0.5, 17, 23"),
+                                     
+                                     
+                                     
+                                     textInput('tt', width = '90%' ,
+                                               strong("Enter ctrl, intervention sample size"), "500, 500"),
+                                     
+                                     textInput('af',  width = '90%' ,
+                                               strong("Accrual time and follow up"), "36, 60"),
+                                     # Here, let us accrue patients over three years, and
+                                     #follow them for an additional seven years
+                                     
+                                     
+                                     
+                                     tags$div(
+                                       textInput(inputId="hrx", label='hazard ratio', width = '90%' , value="1.2"),
+                                     ),
+                                     tags$div(
+                                       textInput(inputId="t2", label='intervention arm non-compliance', width = '90%' , value="0.1"),
+                                     ),
+                                     tags$div(
+                                       textInput(inputId="sim", label='No. of simulations', width = '90%' , value="300"),
+                                     ),
+                                     
+
+                                   menuSubItem("Hit to reveal power",  tabName = "power")
+                                  
+                            ),
+                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                
                             menuItem("Parametric Survival Distributions",  startExpanded = FALSE,    icon = icon("table"),
                                      
@@ -867,6 +900,7 @@ we define the hazard function as the p.d.f. divided by the survival function.")
                   ,plotOutput("ploth1", height = "720px")
              ))),
    
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
    tabItem("Changeh2",
            fluidRow(
@@ -891,6 +925,34 @@ we define the hazard function as the p.d.f. divided by the survival function.")
                   # ,h5(textOutput("info4"))
                   # ,h5(textOutput("info5"))
                 #  ,plotOutput("ploth2", height = "720px")
+             ))),
+   
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+   
+   tabItem("power",
+           fluidRow(
+             
+             box(width=6,
+                 title='power'
+                 ,status = "primary"
+                 ,solidHeader = TRUE 
+                 ,collapsible = TRUE 
+                # ,plotOutput("ploth2", height = "720px")
+                 #,p("KM curve based on user inputs, reference curve in blue")
+             )
+             
+             ,box(width=6,
+                  title='xxxxxxxxxxxxxxxxxxxxxxxxxx'
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                  #,plotOutput("plot1d", height = "720px")
+                  #,h5(textOutput("info4"))
+                  #,h5(textOutput("info5"))
+                  # ,h5(textOutput("info4"))
+                  # ,h5(textOutput("info5"))
+                  #  ,plotOutput("ploth2", height = "720px")
              ))),
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1087,6 +1149,52 @@ server <- function(input, output) {
     ))
     
   })
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  power <- reactive({
+    
+    foo <- input$resample
+    
+    ss <- as.numeric(unlist(strsplit(input$ss,",")))
+    tt <- as.numeric(unlist(strsplit(input$tt,",")))
+    
+    # Here, let us accrue patients over three years, and
+    #follow them for an additional seven years
+    
+    af <- as.numeric(unlist(strsplit(input$af,",")))  
+    hrx <- as.numeric(unlist(strsplit(input$hrx,",")))
+    
+    nonc <- as.numeric(unlist(strsplit(input$t2,",")))
+    
+    sim <- as.numeric(unlist(strsplit(input$sim,",")))
+    
+    return(list(  
+      
+      ss1=ss[1],
+      ss2=ss[2],
+      prob1=ss[3],
+      prob2=ss[4],
+      
+      nc=tt[1],
+      ni=tt[2],
+      
+      AA=af[1],
+      FF=af[2],
+       
+      hrx=hrx[1],
+      
+      nonc=nonc[1],
+      
+      sim=sim[1]
+    
+    ))
+    
+  })
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  
+  
+  
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
