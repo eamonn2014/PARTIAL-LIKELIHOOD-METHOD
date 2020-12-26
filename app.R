@@ -934,21 +934,22 @@ we define the hazard function as the p.d.f. divided by the survival function.")
            fluidRow(
              
              box(width=6,
-                 title='power'
+                 title='Survival curves based on a Weibull distribution for use in a power simulation'
                  ,status = "primary"
                  ,solidHeader = TRUE 
                  ,collapsible = TRUE 
                  ,plotOutput("powerp1", height = "720px")
-                 #,p("KM curve based on user inputs, reference curve in blue")
+                 ,p("The solid curve is for the control group and the dashed curve is
+for the intervention group")
              )
              
              ,box(width=6,
-                  title='xxxxxxxxxxxxxxxxxxxxxxxxxx'
+                  title='Two-Group Event Time Comparison Simulation'
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   #,plotOutput("plot1d", height = "720px")
-                  #,h5(textOutput("info4"))
+                  ,h5(textOutput("powerp2"))
                   #,h5(textOutput("info5"))
                   # ,h5(textOutput("info4"))
                   # ,h5(textOutput("info5"))
@@ -1229,7 +1230,7 @@ server <- function(input, output) {
     rcontrol <-      function(n) ff.dropout(n, what='control')
     rintervention <- function(n) ff.dropout(n, what='intervention')
     
-    x<-spower(rcontrol, rintervention, rcens, 
+    x<-spower(rcontrol, rintervention, rcens, pr=FALSE,
               nc=N1, 
               ni=N2,
               test=logrank, nsim=sim, alpha=0.025, cox=TRUE)
@@ -1251,8 +1252,26 @@ server <- function(input, output) {
   
   
   
+  # output$powerp2 <- renderText({  
+  #   
+  #   sample <- random.sample()
+  #   
+  #   x <- power1()$x
+  #   
+  #   print(x)
+  #   
+  #   
+  # })
   
-  
+  output$powerp2 <- renderPrint({
+    
+    sample <- random.sample()
+    
+    x <- power1()$x
+    
+       return(print(x, digits=4))
+    
+  })
   
   
   
