@@ -275,15 +275,30 @@ ui <- dashboardPage(  title="Survival Analysis",
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             menuItem("Power",  startExpanded = FALSE,    icon = icon("table")  ,
                                      
+                                     # 
+                                     # textInput('ss', width = '90%' ,
+                                     #           strong("Enter two survival probs & times"), "0.7, 0.5, 11.9, 23.1"),
                                      
-                                     textInput('ss', width = '90%' ,
-                                               strong("Enter two survival probs & times"), "0.7, 0.5, 17, 23"),
+                                     
+                                     splitLayout(
+                                       tags$div(
+                                         textInput(inputId="ss", label='Enter two survival probs',   value="0.7, 0.5"),
+                                       ),
+                                       tags$div(
+                                         textInput(inputId="ss2", label='Enter two survival times',  value="0.7, 0.5"),
+                                       )
+                                       
+                                     ),
+                                     
+                                     
+                                     
+                                     
                                      
                                       textInput('tt', width = '90%' ,
                                                strong("Enter ctrl, intervention sample size"), "500, 500"),
                                      
                                      textInput('af',  width = '90%' ,
-                                               strong("Accrual time and follow up"), "36, 60"),
+                                               strong("Accrual time and follow up"), "3, 160"),
                                      # Here, let us accrue patients over three years, and
                                      #follow them for an additional seven years
                                    
@@ -1175,6 +1190,8 @@ server <- function(input, output) {
     
     ss <- as.numeric(unlist(strsplit(input$ss,",")))
     
+    ss1 <- as.numeric(unlist(strsplit(input$ss1,",")))
+    
     tt <- as.numeric(unlist(strsplit(input$tt,",")))
     
     # Here, let us accrue patients over three years, and
@@ -1192,8 +1209,8 @@ server <- function(input, output) {
       
       ss1=ss[1],
       ss2=ss[2],
-      prob1=ss[3],
-      prob2=ss[4],
+      prob1=ss1[1],
+      prob2=ss1[2],
       
       nc=tt[1],
       ni=tt[2],
@@ -1261,7 +1278,7 @@ server <- function(input, output) {
     yc <- rcontrol(N1)
     yi <- rintervention(N2)
     cens <- rcens(N1+ N2)
-    group <- c(rep(1, N1), rep(2, N2))
+    group <- c(rep(0, N1), rep(1, N2))
     y <- c(yc, yi)
     maxfail <- 0
     maxcens <- 0
