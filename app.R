@@ -948,6 +948,7 @@ we define the hazard function as the p.d.f. divided by the survival function.")
                   # ,h5(textOutput("info4"))
                   # ,h5(textOutput("info5"))
                 #  ,plotOutput("ploth2", height = "720px")
+             
              ))),
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -964,10 +965,11 @@ we define the hazard function as the p.d.f. divided by the survival function.")
                  ,plotOutput("powerp1", height = "720px")
                  ,p("The solid curve is for the control group and the dashed curve is
 for the intervention group")
+                 ,h5(verbatimTextOutput("powerp2"))
              )
              
              ,box(width=6,
-                  title='Two-Group Event Time Comparison Simulation'
+                  title='Two-Group Event Time Comparison, one simulated realisation'
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
@@ -977,7 +979,8 @@ for the intervention group")
                   # ,h5(textOutput("info4"))
                   # ,h5(textOutput("info5"))
                    ,plotlyOutput("powerp3", height = "720px")
-                  ,h5(textOutput("powerp2"))
+                  ,h5(verbatimTextOutput("powerp5"))
+                  ,h5(verbatimTextOutput("powerp4"))
              ))),
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1297,9 +1300,6 @@ server <- function(input, output) {
     
     f1 <- survfit(Surv(dt,e) ~ trt, data = d)
    
-    
-    
-    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     return(list(x=x, f=ff.dropout , f1=f1, fit=fit)) 
     
@@ -1333,19 +1333,9 @@ server <- function(input, output) {
     ggplotly(p1[[1]] )
   })
   
+ 
   
-  # output$powerp2 <- renderText({  
-  #   
-  #   sample <- random.sample()
-  #   
-  #   x <- power1()$x
-  #   
-  #   print(x)
-  #   
-  #   
-  # })
-  
-  output$powerp2 <- renderPrint({
+  output$powerp2 <- renderPrint({  # renderText not so useful
     
     sample <- random.sample()
     
@@ -1356,9 +1346,27 @@ server <- function(input, output) {
   })
   
   
+  output$powerp4 <- renderPrint({  # renderText not so useful
+    
+    sample <- random.sample()
+    
+    x <- power1()$fit
+    
+    return(print(summary(x), digits=4))
+    
+  })
   
   
   
+  output$powerp5 <- renderPrint({  # renderText not so useful
+    
+    sample <- random.sample()
+    
+    x <- power1()$fit
+    
+    return(print((x), digits=4))
+    
+  })
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
