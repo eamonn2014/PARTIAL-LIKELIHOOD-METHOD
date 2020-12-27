@@ -275,60 +275,56 @@ ui <- dashboardPage(  title="Survival Analysis",
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             menuItem("Power",  startExpanded = FALSE,    icon = icon("table")  ,
                                      
-                                     # 
-                                     # textInput('ss', width = '90%' ,
-                                     #           strong("Enter two survival probs & times"), "0.7, 0.5, 11.9, 23.1"),
-                                     
-                                     
                                      splitLayout(
                                        tags$div(
                                          textInput(inputId="ss", label='Enter two survival probs',   value="0.7, 0.5"),
                                        ),
                                        tags$div(
-                                         textInput(inputId="ss2", label='Enter two survival times',  value="0.7, 0.5"),
+                                         textInput(inputId="ss2", label='Enter two survival times',  value="11.9, 23.1"),
                                        )
                                        
                                      ),
                                      
-                                     
-                                     
-                                     
-                                     
-                                      textInput('tt', width = '90%' ,
-                                               strong("Enter ctrl, intervention sample size"), "500, 500"),
-                                     
-                                     textInput('af',  width = '90%' ,
-                                               strong("Accrual time and follow up"), "3, 160"),
-                                     # Here, let us accrue patients over three years, and
-                                     #follow them for an additional seven years
-                                   
-                                     tags$div(
-                                       textInput(inputId="t2", label='intervention arm non-compliance', width = '90%' , value="0.1"),
-                                     ),
-                                    
-                                     
-                                     ##
+                                     #~~~~~~~~~~~~~~~~~~~~~~~~~
                                      splitLayout(
                                        tags$div(
-                                         textInput(inputId="hrx", label='hazard ratio',   value="1.2"),
+                                         textInput(inputId="tt", label='Enter control sample size',   value="500"),
+                                       ),
+                                       tags$div(
+                                         textInput(inputId="tt2", label='Enter intervention sample size',  value="500"),
+                                       )
+                                       
+                                     ),
+                                     #~~~~~~~~~~~~~~~~~~~~~~~~~
+                                     splitLayout(
+                                       tags$div(
+                                         textInput(inputId="af", label='Enter accrual time',   value="3"),
+                                       ),
+                                       tags$div(
+                                         textInput(inputId="af2", label='Enter follow up',  value="160"),
+                                       )
+                                       
+                                     ),
+                                     #~~~~~~~~~~~~~~~~~~~~~~~~~
+                                     # Here, let us accrue patients over x years, and
+                                     # follow them for an additional x years
+                                  
+                                     splitLayout(
+                                       tags$div(
+                                         textInput(inputId="hrx", label='Hazard ratio',   value="1.2"),
                                        ),
                                        tags$div(
                                          textInput(inputId="sim", label='No. of simulations',  value="500"),
                                        )
                                        
                                      ),
+                                     #~~~~~~~~~~~~~~~~~~~~~~~~~
                                      
-                                     ##
+                                     tags$div(
+                                       textInput(inputId="t2", label='Intervention arm non-compliance', width = '50%' , value="0.1"),
+                                     ),
+                                     #~~~~~~~~~~~~~~~~~~~~~~~~~
                                      
-                                     
-                                     
-                                     
-                                     
-                                     
-                                     
-                                     
-                                     
-
                                    menuSubItem("Hit to reveal power",  tabName = "power")
                                   
                             ),
@@ -1190,14 +1186,18 @@ server <- function(input, output) {
     
     ss <- as.numeric(unlist(strsplit(input$ss,",")))
     
-    ss1 <- as.numeric(unlist(strsplit(input$ss1,",")))
+    ss2x <- as.numeric(unlist(strsplit(input$ss2,",")))
     
     tt <- as.numeric(unlist(strsplit(input$tt,",")))
+    
+    tt2 <- as.numeric(unlist(strsplit(input$tt2,",")))
     
     # Here, let us accrue patients over three years, and
     #follow them for an additional seven years
     
     af <- as.numeric(unlist(strsplit(input$af,",")))  
+    
+    af2 <- as.numeric(unlist(strsplit(input$af2,","))) 
     
     hrx <- as.numeric(unlist(strsplit(input$hrx,",")))
     
@@ -1209,14 +1209,14 @@ server <- function(input, output) {
       
       ss1=ss[1],
       ss2=ss[2],
-      prob1=ss1[1],
-      prob2=ss1[2],
+      prob1=ss2x[1],
+      prob2=ss2x[2],
       
       nc=tt[1],
-      ni=tt[2],
+      ni=tt2[1],
       
       AA=af[1],
-      FF=af[2],
+      FF=af2[1],
        
       hrx=hrx[1],
       
