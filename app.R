@@ -279,29 +279,18 @@ ui <- dashboardPage(  title="Survival Analysis",
                                      textInput('ss', width = '90%' ,
                                                strong("Enter two survival probs & times"), "0.7, 0.5, 17, 23"),
                                      
-                                     
-                                     
-                                     
-                                     textInput('tt', width = '90%' ,
+                                      textInput('tt', width = '90%' ,
                                                strong("Enter ctrl, intervention sample size"), "500, 500"),
                                      
                                      textInput('af',  width = '90%' ,
                                                strong("Accrual time and follow up"), "36, 60"),
                                      # Here, let us accrue patients over three years, and
                                      #follow them for an additional seven years
-                                     
-                                     
-                                     
-                                     # tags$div(
-                                     #   textInput(inputId="hrx", label='hazard ratio', width = '90%' , value="1.2"),
-                                     # ),
+                                   
                                      tags$div(
                                        textInput(inputId="t2", label='intervention arm non-compliance', width = '90%' , value="0.1"),
                                      ),
-                                     # tags$div(
-                                     #   textInput(inputId="sim", label='No. of simulations', width = '90%' , value="300"),
-                                     # ),
-                                     
+                                    
                                      
                                      ##
                                      splitLayout(
@@ -309,7 +298,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                          textInput(inputId="hrx", label='hazard ratio',   value="1.2"),
                                        ),
                                        tags$div(
-                                         textInput(inputId="sim", label='No. of simulations',  value="300"),
+                                         textInput(inputId="sim", label='No. of simulations',  value="500"),
                                        )
                                        
                                      ),
@@ -979,6 +968,7 @@ for the intervention group")
                   # ,h5(textOutput("info4"))
                   # ,h5(textOutput("info5"))
                    ,plotlyOutput("powerp3", height = "720px")
+                  ,p("Random uniform censoring times. It is assumed that both treatment groups have the same censoring distribution.")
                   ,h5(verbatimTextOutput("powerp5"))
                   ,h5(verbatimTextOutput("powerp4"))
              ))),
@@ -1327,7 +1317,8 @@ server <- function(input, output) {
                   
                      legend.title = "Trt."
                
-                     ,xlab=paste0("Time : HR=",round(exp(fit$coefficients),4))
+                     #,xlab=paste0("Time : HR=",round(exp(fit$coefficients),4))
+                     ,xlab= "Time"
                       
     )
     ggplotly(p1[[1]] )
