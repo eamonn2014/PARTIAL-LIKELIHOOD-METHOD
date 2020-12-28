@@ -162,27 +162,26 @@ fff <-   attributes(ffi)  #lets get the data
 timei <- fff$plot.info$`I Survival`$Time
 survivali <- fff$plot.info$`I Survival`$Survival
 
-par(mfrow=c(2,2))
+#par(mfrow=c(2,2))
 
-plot(survivalc~timec,    type = "l", lty = 1 , main ="Control arm") # ok
+#plot(survivalc~timec,    type = "l", lty = 1 , main ="Control arm") # ok
 
 time <-       fff$plot.info$`C Survival`$Time
 survival   <- fff$plot.info$`C Survival`$Survival
-plot(survival~time,    type = "l", lty = 2,  main ="intervention arm") 
-#lines(survivali~timei, type = "l", lty = 1) 
+#plot(survival~time,    type = "l", lty = 2,  main ="intervention arm") 
+ 
 
-
-plot(ff)
-plot(ffi)
-par(mfrow=c(1,1))
+#plot(ff)
+#plot(ffi)
+#par(mfrow=c(1,1))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# control
+# control, pull out weibull parameters
 p <- lapply(Weib.p, unlist)
 t1x <- (p$alpha)
 t2x <- (p$gamma)
 
-# intervention
+# intervention, pull out weibull parameters
 i <- lapply(Weib.i, unlist)
 t3x <- (i$alpha)
 t4x <- (i$gamma)
@@ -192,20 +191,18 @@ A <- expression( paste("control ",      alpha) )
 B <- expression( paste("control ",      gamma) )
 C <- expression( paste("intervention ", alpha) )
 D <- expression( paste("intervention ", gamma) )
- #dweibull(x, shape=gamma, scale = 1/alpha), from=0, to=40)
-  
 
+#dweibull(x, shape=gamma, scale = 1/alpha), from=0, to=40)
 FF <- expression( paste("Note the Weibull parameterisation shape= ",      gamma," scale=1/ ",      alpha) ) 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~,
 plot(survivalc~timec,    type = "l", lty = 2,  ylab="Probability of survival",
      
-     main =paste("Weibull, intervention HR =",hr) , col='blue', xlab= "Time",
+     main =paste("Weibull distibutions, intervention HR =",hr) , col='blue', xlab= "Time",
      sub=FF)
 
     lines(survivali~timei, type = "l", lty = 1, col='red')  
  
 jump <- .85
-
 jump0 <-.9
 jump1 <-.76
 

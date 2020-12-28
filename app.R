@@ -246,8 +246,6 @@ ui <- dashboardPage(  title="Survival Analysis",
                                          )
                                          #~~~~~~~~~~~~~~~~~~~~~~~~
                                        
-                                         
-                                        
                                ),
                                 #
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -288,7 +286,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                      #~~~~~~~~~~~~~~~~~~~~~~~~~
                                      splitLayout(
                                        tags$div(
-                                         textInput(inputId="tt", label='Enter control sample size',   value="500"),
+                                         textInput(inputId="tt", label='Enter control sample size',        value="500"),
                                        ),
                                        tags$div(
                                          textInput(inputId="tt2", label='Enter intervention sample size',  value="500"),
@@ -301,7 +299,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                          textInput(inputId="af", label='Enter accrual time',   value="3"),
                                        ),
                                        tags$div(
-                                         textInput(inputId="af2", label='Enter follow up',  value="160"),
+                                         textInput(inputId="af2", label='Enter follow up',    value="160"),
                                        )
                                        
                                      ),
@@ -311,7 +309,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                   
                                      splitLayout(
                                        tags$div(
-                                         textInput(inputId="hrx", label='Hazard ratio',   value="1.2"),
+                                         textInput(inputId="hrx", label='Hazard ratio',       value="1.2"),
                                        ),
                                        tags$div(
                                          textInput(inputId="sim", label='No. of simulations',  value="500"),
@@ -325,7 +323,8 @@ ui <- dashboardPage(  title="Survival Analysis",
                                      ),
                                      #~~~~~~~~~~~~~~~~~~~~~~~~~
                                      
-                                   menuSubItem("Hit to reveal power",  tabName = "power")
+                                   menuSubItem("Hit to reveal power",  tabName = "power"),
+                                   menuSubItem("Hit to reveal Weibull distributions",  tabName = "weibull")
                                   
                             ),
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -342,18 +341,6 @@ ui <- dashboardPage(  title="Survival Analysis",
                                      
                                      menuSubItem("Hit to reveal Survival hazard relationship",  tabName = "survhaz")
                             ),
-                               
-                               
-                               
-                               
-                               
-                               
-                               
-                               
-                               
-                               
-                               
-                               
                                
                                menuItem("Explanation",                    tabName = "HELP",icon = icon("bar-chart-o"), selected = FALSE),
                                menuItem("Wiki", tabName = "Wiki",  icon = icon("bar-chart-o"), selected = FALSE),
@@ -896,6 +883,7 @@ we define the hazard function as the p.d.f. divided by the survival function.")
                  # ,plotOutput("plot2y", height = "720px")
              ))),
    
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
    
    tabItem("Changeh",
            fluidRow(
@@ -984,6 +972,37 @@ for the intervention group")
                   ,h5(verbatimTextOutput("powerp4"))
              ))),
    
+   
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+   tabItem("weibull",
+           fluidRow(
+             
+             box(width=6,
+                 title='xxxxxxxxxxxxxxxxxxxx'
+                 ,status = "primary"
+                 ,solidHeader = TRUE 
+                 ,collapsible = TRUE 
+                 ,plotOutput("powerw", height = "720px")
+                 #,p("The solid curve is for the control group and the dashed curve is for the intervention group")
+                 #,h5(verbatimTextOutput("powerp2"))
+             )
+             
+             ,box(width=6,
+                  title='xxxxxxxxxxxxxxxxxxxxx'
+                  ,status = "primary"
+                  ,solidHeader = TRUE 
+                  ,collapsible = TRUE 
+                  #,plotOutput("plot1d", height = "720px")
+                  #,h5(textOutput("info5"))
+                  # ,h5(textOutput("info4"))
+                  # ,h5(textOutput("info5"))
+                  ,plotlyOutput("powerp3w", height = "720px")
+                  # ,plotlyOutput("powerp3", height = "720px")
+                  #,p("Random uniform censoring times. It is assumed that both treatment groups have the same censoring distribution.")
+                  #,h5(verbatimTextOutput("powerp5"))
+                  #,h5(verbatimTextOutput("powerp4"))
+             ))),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
    tabItem("KMTABLE",
@@ -1324,7 +1343,7 @@ server <- function(input, output) {
   })
   
   
-  output$powerp3 <-renderPlotly({     
+  output$powerp3w <- output$powerp3 <-renderPlotly({     
     
     f1= power1()$f1
     fit=power1()$fit
@@ -1364,7 +1383,7 @@ server <- function(input, output) {
     
   })
   
-  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$powerp5 <- renderPrint({  # renderText not so useful
     
@@ -1375,6 +1394,137 @@ server <- function(input, output) {
     return(print((x), digits=4))
     
   })
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Here we plot weibull distributions
+  output$powerw <-renderPlot({  
+    
+    library(Hmisc)
+    
+    sample <- power()
+    
+    s1=sample$ss1
+    s2=sample$ss2
+    
+    t1=sample$prob1
+    t2=sample$prob2
+    
+    hr=sample$hrx
+  
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+    Weib.p <- Weibull2(c(t1,t2),c(s1,s2))
+    #Weib.p
+    ff <- Quantile2(Weib.p,hratio=function(x) hr ) # we get weibull parameters 
+    
+    ##pull out intervention survival probs
+    fff <-      attributes(ff)  #lets get the data
+    time <-     fff$plot.info$`I Survival`$Time
+    survival <- fff$plot.info$`I Survival`$Survival
+    #plot(survival~time, lty=1)   # interventions
+    
+    #pull out control survival data
+    timec <-     fff$plot.info$`C Survival`$Time
+    survivalc <- fff$plot.info$`C Survival`$Survival
+    
+    ###~~~~~~~~~~~~~~~~~~~~~~~~# what time is survival at t in intevention
+    
+    s50i <- which.min(abs(survival-s2)) # what index is time ~ .5
+    s70i <- which.min(abs(survival-s1))
+    
+    Weib.i <- Weibull2(c(  time[s70i], time[s50i]),c(s1, s2))
+    #Weib.i
+    ffi <-   Quantile2(Weib.i,hratio=function(x) 1)  # use hr of 1 here so no intervention effect
+    fff <-   attributes(ffi)  #lets get the data
+    timei <- fff$plot.info$`I Survival`$Time
+    survivali <- fff$plot.info$`I Survival`$Survival
+    
+    #par(mfrow=c(2,2))
+    #plot(survivalc~timec,    type = "l", lty = 1 , main ="Control arm") # ok
+    
+    time <-       fff$plot.info$`C Survival`$Time
+    survival   <- fff$plot.info$`C Survival`$Survival
+    #plot(survival~time,    type = "l", lty = 2,  main ="intervention arm") 
+    #plot(ff)
+    #plot(ffi)
+    #par(mfrow=c(1,1))
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # control, pull out weibull parameters
+    p <- lapply(Weib.p, unlist)
+    t1x <- (p$alpha)
+    t2x <- (p$gamma)
+    
+    # intervention, pull out weibull parameters
+    i <- lapply(Weib.i, unlist)
+    t3x <- (i$alpha)
+    t4x <- (i$gamma)
+    
+    A <- expression( paste("control ",      alpha) )
+    B <- expression( paste("control ",      gamma) )
+    C <- expression( paste("intervention ", alpha) )
+    D <- expression( paste("intervention ", gamma) )
+    
+    #dweibull(x, shape=gamma, scale = 1/alpha), from=0, to=40)
+    FF <- expression( paste("Note the Weibull parameterisation shape= ",      gamma," scale=1/ ",      alpha) ) 
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~,
+    plot(survivalc~timec,    type = "l", lty = 2,  ylab="Probability of survival",
+         
+         main =paste("Weibull distibutions, intervention HR =",hr) , col='blue', xlab= "Time",
+         sub=FF)
+    
+    lines(survivali~timei, type = "l", lty = 1, col='red')  
+    
+    jump <- .85
+    jump0 <-.9
+    jump1 <-.76
+    jump2 <-.72
+    
+    text(quantile(prob=jump0,c(timec,timei)),  0.96, c(round(t1x ,5)), cex = 1)
+    text(quantile(prob=jump1,c(timec,timei)), 0.96, A,                cex = 1)
+    
+    text(quantile(prob=jump0,c(timec,timei)),  0.78, c(round(t2x ,5)), cex = 1)
+    text(quantile(prob=jump1,c(timec,timei)), 0.78, B,                cex = 1)
+    
+    text(quantile(prob=jump0,c(timec,timei)),  0.84, c(round(t3x ,5)), cex = 1)
+    text(quantile(prob=jump1,c(timec,timei)), 0.84, C,                cex = 1)
+    
+    text(quantile(prob=jump0,c(timec,timei)),  0.90, c(round(t4x ,5)), cex = 1)
+    text(quantile(prob=jump1,c(timec,timei)), 0.90, D,                 cex = 1)
+    
+    s1i=survival[which.min(abs(time-t1))]
+    s2i=survivali[which.min(abs(timei-t2))]
+    
+    text(quantile(prob=jump2,c(timec,timei)), 0.72, paste0("At time ",t1,":"),   cex = 1)
+    text(quantile(prob=jump,c(timec,timei)), 0.66, paste0("Control survival prob ",s1," "),   cex = 1)
+    text(quantile(prob=jump,c(timec,timei)), 0.60, paste0("Interv. survival prob ",round(s1i,2),""),   cex = 1)
+    
+    text(quantile(prob=jump2,c(timec,timei)), 0.54, paste0("At time ",t2,":"),   cex = 1)
+    text(quantile(prob=jump,c(timec,timei)), 0.48, paste0("Control survival prob ",s2," "),   cex = 1)
+    text(quantile(prob=jump,c(timec,timei)), 0.42, paste0("Interv. survival prob ",round(s2i,2)," "),   cex = 1)
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # add arrows to explain  
+    arrows(                                   
+      t1,                                  # x start  
+      s1 ,                                 # surv prob at t1 in control
+      t1 ,                                 # x finish
+      s1i ,                                # surv prob at t1 in intervention     
+      col="black", lty=1 )       
+    
+    arrows(                                   
+      t2,                                    # x start  
+      s2 ,                                   # surv prob at t2 in control
+      t2 ,                                   # x finish
+      s2i,                                   # surv prob at t2 in intervention     
+      col="black", lty=1 )          
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+  })
+   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
