@@ -106,7 +106,7 @@ p1 <- ggsurvplot(f1, main = "Kaplan-Meier Curve",
                  # ggtheme = theme_bw() # Change ggplot2
                  #   ,text = paste0("wt: ", round(wt), "</br></br>qsec: ", round(qsec))
 )
-
+p1
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # see if we can get the weibull parameters for intervention !!
 
@@ -125,9 +125,9 @@ s2<-.5
 t1<-17
 t2<-23
  
-hr=.5
-t1<-27
-t2<-43
+# hr=.6
+# t1<-27
+# t2<-43
 
 
 
@@ -203,40 +203,34 @@ plot(survivalc~timec,    type = "l", lty = 2,  ylab="Probability of survival",
      sub=FF)
 
     lines(survivali~timei, type = "l", lty = 1, col='red')  
+ 
+jump <- .85
 
-# text(max(c(timec,timei))*(.90-.15), 0.96, c(round(t1x ,5)), cex = 1)
-# text(max(c(timec,timei))*(.78-.15), 0.96, A,                cex = 1)
-# 
-# text(max(c(timec,timei))*(.90-.15), 0.90, c(round(t2x ,5)), cex = 1)
-# text(max(c(timec,timei))*(.78-.15), 0.90, B,                cex = 1)
-# 
-# text(max(c(timec,timei))*(.90-.15), 0.84, c(round(t3x ,5)), cex = 1)
-# text(max(c(timec,timei))*(.75-.15), 0.84, C,                cex = 1)
-# 
-# text(max(c(timec,timei))*(.90-.15), 0.78, c(round(t4x ,5)), cex = 1)
-# text(max(c(timec,timei))*(.75-.15), 0.78, D,                cex = 1)
+jump0 <-.9
+jump1 <-.76
 
+text(quantile(prob=jump0,c(timec,timei)),  0.96, c(round(t1x ,5)), cex = 1)
+text(quantile(prob=jump1,c(timec,timei)), 0.96, A,                cex = 1)
 
-text(quantile(prob=.75,c(timec,timei)), 0.96, c(round(t1x ,5)), cex = 1)
-text(quantile(prob=.65,c(timec,timei)), 0.96, A,                cex = 1)
+text(quantile(prob=jump0,c(timec,timei)),  0.90, c(round(t2x ,5)), cex = 1)
+text(quantile(prob=jump1,c(timec,timei)), 0.90, B,                cex = 1)
 
-text(quantile(prob=.75,c(timec,timei)), 0.90, c(round(t2x ,5)), cex = 1)
-text(quantile(prob=.65,c(timec,timei)), 0.90, B,                cex = 1)
+text(quantile(prob=jump0,c(timec,timei)),  0.84, c(round(t3x ,5)), cex = 1)
+text(quantile(prob=jump1,c(timec,timei)), 0.84, C,                cex = 1)
 
-text(quantile(prob=.75,c(timec,timei)), 0.84, c(round(t3x ,5)), cex = 1)
-text(quantile(prob=.65,c(timec,timei)), 0.84, C,                cex = 1)
-
-text(quantile(prob=.75,c(timec,timei)), 0.78, c(round(t4x ,5)), cex = 1)
-text(quantile(prob=.65,c(timec,timei)), 0.78, D,                 cex = 1)
+text(quantile(prob=jump0,c(timec,timei)),  0.78, c(round(t4x ,5)), cex = 1)
+text(quantile(prob=jump1,c(timec,timei)), 0.78, D,                 cex = 1)
 
 
 s1i=survival[which.min(abs(time-t1))]
 s2i=survivali[which.min(abs(timei-t2))]
 
-text(quantile(prob=.75,c(timec,timei)), 0.66, c(round(t4x ,5)), cex = 1)
-text(quantile(prob=.65,c(timec,timei)), 0.66, D,                 cex = 1)
+ 
+text(quantile(prob=jump,c(timec,timei)), 0.66, paste0("Control survival prob ",s1," at time ",t1,""),   cex = 1)
+text(quantile(prob=jump,c(timec,timei)), 0.60, paste0("Interv. survival prob ",round(s1i,2)," at time ",t1,""),   cex = 1)
 
-
+text(quantile(prob=jump,c(timec,timei)), 0.54, paste0("Control survival prob ",s2," at time ",t2,""),   cex = 1)
+text(quantile(prob=jump,c(timec,timei)), 0.48, paste0("Interv. survival prob ",round(s2i,2)," at time ",t2,""),   cex = 1)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -245,14 +239,14 @@ arrows(
     t1,                                  # x start  
     s1 ,#                                # surv prob at t1 in control
     t1 ,                                 # x finish
-    s1i ,  # surv prob at t1 in intervention     
+    s1i ,                                # surv prob at t1 in intervention     
   col="black", lty=1 )       
 
 arrows(                                   
   t2,                                    # x start  
   s2 ,#                                  # surv prob at t2 in control
   t2 ,                                   # x finish
-  s2i,  # surv prob at t2 in intervention     
+  s2i,                                   # surv prob at t2 in intervention     
   col="black", lty=1 )          
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
