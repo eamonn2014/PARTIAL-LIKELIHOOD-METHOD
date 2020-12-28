@@ -286,12 +286,13 @@ ui <- dashboardPage(  title="Survival Analysis",
                                      #~~~~~~~~~~~~~~~~~~~~~~~~~
                                      splitLayout(
                                        tags$div(
-                                         textInput(inputId="tt", label='Enter control sample size',        value="500"),
+                                         textInput(inputId="tt", label='Enter ctrl, intervention n',        value="500,500"),
                                        ),
                                        tags$div(
-                                         textInput(inputId="tt2", label='Enter intervention sample size',  value="500"),
-                                       )
-                                       
+                                       textInput(inputId="hrx", label='Enter a hazard ratio',       value="1.2"),
+                                       #   textInput(inputId="tt2", label='Enter intervention sample size',  value="500"),
+                                        )
+                                        
                                      ),
                                      #~~~~~~~~~~~~~~~~~~~~~~~~~
                                      splitLayout(
@@ -308,19 +309,21 @@ ui <- dashboardPage(  title="Survival Analysis",
                                      # follow them for an additional x years
                                   
                                      splitLayout(
-                                       tags$div(
-                                         textInput(inputId="hrx", label='Hazard ratio',       value="1.2"),
+                                        tags$div(
+                                       #   textInput(inputId="hrx", label='Hazard ratio',       value="1.2"),
+                                       textInput(inputId="sim", label='Number of simulations',  value="500"),
                                        ),
                                        tags$div(
-                                         textInput(inputId="sim", label='No. of simulations',  value="500"),
+                                   
+                                         textInput(inputId="t2", label='Intervention non compliance', width = '50%' , value="0.1"),
                                        )
                                        
                                      ),
                                      #~~~~~~~~~~~~~~~~~~~~~~~~~
-                                     
-                                     tags$div(
-                                       textInput(inputId="t2", label='Intervention arm non-compliance', width = '50%' , value="0.1"),
-                                     ),
+                                     # 
+                                     # tags$div(
+                                     #   textInput(inputId="t2", label='Intervention arm non-compliance', width = '50%' , value="0.1"),
+                                     # ),
                                      #~~~~~~~~~~~~~~~~~~~~~~~~~
                                      
                                    menuSubItem("Hit to reveal power",  tabName = "power"),
@@ -1209,7 +1212,7 @@ server <- function(input, output) {
     
     tt <- as.numeric(unlist(strsplit(input$tt,",")))
     
-    tt2 <- as.numeric(unlist(strsplit(input$tt2,",")))
+    #tt2 <- as.numeric(unlist(strsplit(input$tt2,",")))
     
     # Here, let us accrue patients over three years, and
     #follow them for an additional seven years
@@ -1232,7 +1235,7 @@ server <- function(input, output) {
       prob2=ss2x[2],
       
       nc=tt[1],
-      ni=tt2[1],
+      ni=tt[2],
       
       AA=af[1],
       FF=af2[1],
