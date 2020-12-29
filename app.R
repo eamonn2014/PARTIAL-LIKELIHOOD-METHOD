@@ -422,66 +422,37 @@ ui <- dashboardPage(  title="Survival Analysis",
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
-                  #textOutput("help"),
-                 # , p("Exploring the Cox proportional hazards model and the partial likelihood function"),
+              
+                 ,p("This app is an exploration of the semiparametric Cox PH model and parametric 
+                 Weibull and exponential models using a control arm and intervention arm only.")
+
                   ,p("
-The first port of call is the 'Define parameters' chapter. Here select the total sample size, a constant baseline hazard rate, 
-allocation to the control and intervention arm and a true hazard ratio for the intervention. These are used to simulate 
-data via a user written function called 'coxdata'. Censoring is from a uniform distribution and assumed the same in both groups. ")
+              The first port of call is the 'Define parameters' chapter. Here select the total sample size, a constant baseline hazard rate, 
+              allocation to the control and intervention arm and a true hazard ratio for the intervention. These are used to simulate 
+              data via a user written function called 'coxdata'. Censoring is from a uniform distribution and assumed the same in both groups. ")
 
-,p("Under 'Analyses' we find the landing page which shows the Kaplan Meier(KM) plot and the difference in the KM estimates with 95%CI.")
-
-,p("The next page 'KM Diagnostics' presents the cumulative incidence plot and two useful diagnostic plots.")
-
-,p("The 'Cox proportional hazards' page presents survival curves from Cox PH and then a diagnostic plot based on the Cox PH model.")
-
-,p("Two different plots of the log hazard ratio over time are then presented.")
-
-,p("The 'Partial log likelihood' page shows how the Cox PH works under the hood, which leads to the presentation on the next page 
-exemplifying only the order of the events is required for HR estimation.")
-
-,p("The next page 'Model assumption' presents another way to check the Cox PH assumption.")
-
-,p("The next chapter is the Kaplan Meier life table and cumulative hazard table.")
-
-,p("Presented in the last page of this chapter is an exercise to help understand the Cox PH algorthim, 
-by choosing a HR that maximises the Log Likelihood. On the right panel there is another simulated dataset 
-of n=10 that helps once again to understand the calculations behind Cox PH.")
-
-,p("Next we move to the 'Change in hazard' chapter. Now we can ignore the 3 value boxes at the top which are unrelated to the content of this chapter.
-Select the chapter 'Change in hazard' then choose the first page 'Hit to reveal a change in hazard'.
-we are presented with user inputs to permit simulation of a control and intervention. The control arm is modelled by a Weibull 
-distribution. On the right we use the Weibull density function in R with the shape equal to 
-1 (so exponential) and scale 1/Weibull and plot this. Then we calculate the effect on surival for the intervention based on the hr, raising the control
-survival to the hr power. Not only this, based on the survival probabilities we calculate the times and draw arrows on the curves using the simple relationship,
-lambda = -log(survival)/t. On the left is one simulated dataset, closely resembling the true distributions on the right. 
-We present the HR estimates and a count of the number of events.")
-
-,p("The next page presents a number of estimates of the hazard function Which leads us the to the smooth survival curve page,
-   estimated from the hazard function and which closes this chapter.")
-
-,p("Now we move to the power chapter. Once again simulation is used to assess power. Here we can enter two survival probs 
-and associated two survival times, a sample size for the control and intervention, a hazard ratio, accrual time and follow up time, the number of simulations
-and a non compliance probability for the intervention arm. 
-     ")
+              ,p("Under 'Analyses' we find the landing page which shows the Kaplan Meier(KM) plot and the difference in the KM estimates with 95%CI.")
+              
+              ,p("The next page 'KM Diagnostics' presents the cumulative incidence plot and two useful diagnostic plots.")
+              
+              ,p("The 'Cox proportional hazards' page presents survival curves from Cox PH and then a diagnostic plot based on the Cox PH model.")
+              
+              ,p("Two different plots of the log hazard ratio over time are then presented.")
+              
+              ,p("The 'Partial log likelihood' page shows how the Cox PH works under the hood, which leads to the presentation on the next page 
+              exemplifying only the order of the events is required for HR estimation.")
+              
+              ,p("The next page 'Model assumption' presents another way to check the Cox PH assumption.")
+              
+              ,p("The next chapter is the Kaplan Meier life table and cumulative hazard table.")
+              
+              ,p("Presented in the last page of this chapter is an exercise to help understand the Cox PH algorthim, 
+              by choosing a HR that maximises the Log Likelihood. On the right panel there is another simulated dataset 
+              of n=10 that helps once again to understand the calculations behind Cox PH.")
 
 
 
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
+   
 
 
 
@@ -492,9 +463,35 @@ and a non compliance probability for the intervention arm.
                   title=' '
                   ,status = "primary"
                   ,solidHeader = TRUE 
-                  ,collapsible = TRUE ,
+                  ,collapsible = TRUE 
                   # ,plotOutput("plot4", height = "720px")
-                  p("xxxxxxxxxxxxxxxxxxxx"),
+                  
+                  
+                  ,p("Next we move to the 'Change in hazard' chapter. Now we can ignore the 3 value boxes at the top which are unrelated to the content of this chapter.
+Select the chapter 'Change in hazard' then choose the first page 'Hit to reveal a change in hazard'.
+we are presented with user inputs to permit simulation of a control and intervention. The control arm is modelled by a Weibull 
+distribution. On the right we use the Weibull density function in R with the shape equal to 
+1 (so exponential) and scale 1/Weibull and plot this. Then we calculate the effect on surival for the intervention based on the hr, raising the control
+survival to the hr power. Not only this, based on the survival probabilities we calculate the times and draw arrows on the curves using the simple relationship,
+lambda = -log(survival)/t. On the left is one simulated dataset, closely resembling the true distributions on the right. 
+We present the HR estimates and a count of the number of events.")
+                  
+                  ,p("The next page presents a number of estimates of the hazard function Which leads us the to the smooth survival curve page,
+   estimated from the hazard function and which closes this chapter.")
+                  
+                  ,p("Now we move to the power chapter. Once again simulation is used, now to assess power. Here we can enter two survival probabilities 
+and associated survival times, a sample size for the control and intervention, a hazard ratio, accrual time, follow up time, the number of simulations
+and a non compliance probability for the intervention arm. This uses Frank Harrell's functions. 
+The Weibull2 function takes two survival probabilities 
+and associated survival times and finds the Weibull distibution parameters. We use this and the Quantile2 function to derive the Weibull distribution parameters for the intervention
+and survival times for the intervention and present. The plot on the left shows the distributions and below we see the results of simulations using the spower function.
+The right panel shows one simulated realisation and Cox PH analysis results. The next page 'Hit to reveal Weibull distributions' shows the Weibull survival distributions,
+survival probabiites and associated times plus the parameters of the Weibull distributions. The right plot is a repeat of the one simulated realisation seen on the previous page.
+     ")
+                  
+,p("The next chapter the 'Hit to reveal survival hazard relatonship' allows one to see the survival curve based on Weibull parametes and the associated hazard funtion on the right plot.
+     ")
+                  
                 ),  # box end
               )
       ),
