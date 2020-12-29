@@ -502,7 +502,7 @@ on the right plot. The hazard function is created with the p.d.f. divided by the
 
 ,p("Next one can find links to the Rshiny and R code. ")
 
-,p("The last selection provides some links to resourses. More useful resources are linked to below:"),
+,p("The last selection provides some links to resources. More useful resources are linked to below:"),
 
  
 tags$a(href = "https://rviews.rstudio.com/2020/11/02/simulating-biologically-plausible-survival-data/", tags$span(style="color:blue", "Simulate survival data"),),
