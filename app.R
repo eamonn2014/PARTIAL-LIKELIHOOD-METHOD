@@ -63,9 +63,9 @@
   options(scipen=999)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-# function to create data and analyse
+# function to create data and analyse, ref rms help page
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
+
 coxdata <- function(n, allocation, hr, baseline) { 
   
   #n=1000; allocation =.5; hr=2; baseline=.4
@@ -180,7 +180,7 @@ loglike2 <- function(x, dat, dead, indep , time) {
 ui <- dashboardPage(  title="Survival Analysis",
   # Dashboard header carrying the title of the dashboard,
   
-  dashboardHeader(title = h4(HTML("Cox proportional hazards<br/>and partial log likelihood"))),
+  dashboardHeader(title = h4(HTML("Parametric Survival & Cox Proportonal Hazards"))),
   #Sidebar content of the dashboard
   sidebar <- dashboardSidebar(width=300,
                             
@@ -290,7 +290,6 @@ ui <- dashboardPage(  title="Survival Analysis",
                                        ),
                                        tags$div(
                                        textInput(inputId="hrx", label='Enter a hazard ratio',       value="1.2"),
-                                       #   textInput(inputId="tt2", label='Enter intervention sample size',  value="500"),
                                         )
                                         
                                      ),
@@ -305,25 +304,19 @@ ui <- dashboardPage(  title="Survival Analysis",
                                        
                                      ),
                                      #~~~~~~~~~~~~~~~~~~~~~~~~~
-                                     # Here, let us accrue patients over x years, and
-                                     # follow them for an additional x years
+                                     # Here, let us accrue patients over x years, and follow them for an additional x years
                                   
                                      splitLayout(
                                         tags$div(
-                                       #   textInput(inputId="hrx", label='Hazard ratio',       value="1.2"),
-                                       textInput(inputId="sim", label='Number of simulations',  value="500"),
+                                       textInput(inputId="sim", label='Number of simulations',  width = '60%' ,  value="500"),
                                        ),
                                        tags$div(
                                    
-                                         textInput(inputId="t2", label='Intervention non compliance', width = '50%' , value="0.1"),
+                                         textInput(inputId="t2", label='Non compliance intervention', width = '55%' , value="0.1"),
                                        )
                                        
                                      ),
-                                     #~~~~~~~~~~~~~~~~~~~~~~~~~
-                                     # 
-                                     # tags$div(
-                                     #   textInput(inputId="t2", label='Intervention arm non-compliance', width = '50%' , value="0.1"),
-                                     # ),
+                                    
                                      #~~~~~~~~~~~~~~~~~~~~~~~~~
                                      
                                    menuSubItem("Hit to reveal power",  tabName = "power"),
@@ -346,7 +339,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                             ),
                                
                                menuItem("Explanation",                    tabName = "HELP",icon = icon("bar-chart-o"), selected = FALSE),
-                               menuItem("Wiki", tabName = "Wiki",  icon = icon("bar-chart-o"), selected = FALSE),
+                               menuItem("Wiki", tabName = "Wiki",                          icon = icon("bar-chart-o"), selected = FALSE),
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                menuItem("Code", icon = icon("bar-chart-o"),
                                          menuSubItem("Shiny",  
@@ -431,6 +424,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                   ,collapsible = TRUE 
                   #textOutput("help"),
                   , p("Exploring the Cox proportional hazards model and the partial likelihood function"),
+                  p("xxxxxxxxxxxyyyyyyyyyyyyyzzzzzzzzzzzzzz"),
                 )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
@@ -452,9 +446,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   ,plotlyOutput("plot1", height = "720px"),
-                  
-                  #verbatimTextOutput("help2") ,
-                  #p("zzzzzzzzzzzzzzz"),
+                 
                   h5(textOutput("Staff_name"))
                 )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -490,7 +482,7 @@ ui <- dashboardPage(  title="Survival Analysis",
    tabItem("OVERVIEW3",
            fluidRow(
              box(
-               title =   "Altschuler-Nelson-Fleming-Harrington non parametric survival estimates and Cox-Breslow estimates"   # uiOutput('product'), 
+               title =   "Altschuler-Nelson-Fleming-Harrington non parametric survival estimates and Cox-Breslow estimates"     
                ,status = "primary"
                ,solidHeader = TRUE 
                ,collapsible = TRUE 
@@ -506,21 +498,12 @@ ui <- dashboardPage(  title="Survival Analysis",
                ,p("If the predicted survival curves from the fitted Cox model are in good agreement
                with the nonparametric estimates, this is evidence of verifying the PH assumption
 for for these data")
-              # ,plotlyOutput("plot5b", height = "720px"),
-               #h5(textOutput("info"))
+ 
              ))),   
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       tabItem("RESULTS1",
               fluidRow(        
-                #  box(
-                #    title = "Data listing"
-                #      ,status = "primary"
-                #       ,solidHeader = TRUE 
-                #       ,collapsible = TRUE 
-                #    , DT::dataTableOutput("mytable")
-                #)
-                
-                #,
+             
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 box(width=8,
                     title = "Partial Likelihood by hand! Here we show how to calculate the log likelihood given the actual model HR. 
@@ -589,11 +572,8 @@ for for these data")
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE ,
                   textOutput("help"),
-                  #      br(),
-                  #textOutput("help2"),
                   withMathJax(),  # need this to be stated
-                  #  p(strong("To do spieglehalter explanantion/ equations and partial likelihood example/cox paper link")) ,
-                  
+
                   p("The proportional hazard model can be expressed as:"),
                   
                   p("$$\\begin{align}
@@ -655,7 +635,6 @@ for for these data")
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE ,
-                  # ,plotOutput("plot4", height = "720px")
                   p("Now we develop the partial likelihood function. First sort the data
                 in an ascending order by the study time, so that the first subject in our
                  sample has the shortest study time or highest hazard rate $h_{1}$, the second
@@ -881,9 +860,7 @@ we define the hazard function as the p.d.f. divided by the survival function.")
                   ,plotOutput("plot1d", height = "720px")
                   ,h5(textOutput("info4"))
                   ,h5(textOutput("info5"))
-                  # ,h5(textOutput("info4"))
-                  # ,h5(textOutput("info5"))
-                 # ,plotOutput("plot2y", height = "720px")
+              
              ))),
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -898,19 +875,13 @@ we define the hazard function as the p.d.f. divided by the survival function.")
                  ,solidHeader = TRUE 
                  ,collapsible = TRUE 
                  ,plotOutput("ploth", height = "720px")
-                 #,p("KM curve based on user inputs, reference curve in blue")
-             )
+              )
              
              ,box(width=6,
                   title='Smoothed and step function estimates of the hazard function'
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
-                  #,plotOutput("plot1d", height = "720px")
-                  #,h5(textOutput("info4"))
-                  #,h5(textOutput("info5"))
-                  # ,h5(textOutput("info4"))
-                  # ,h5(textOutput("info5"))
                   ,plotOutput("ploth1", height = "720px")
              ))),
    
@@ -919,28 +890,24 @@ we define the hazard function as the p.d.f. divided by the survival function.")
    tabItem("Changeh2",
            fluidRow(
              
-             box(width=6,
+             box(width=12,
                  title=' Kaplan-Meier and smoothed survival curve estimate'
                  ,status = "primary"
                  ,solidHeader = TRUE 
                  ,collapsible = TRUE 
                  ,plotOutput("ploth2", height = "720px")
-                 #,p("KM curve based on user inputs, reference curve in blue")
              )
              
-             ,box(width=6,
-                  title='xxxxxxxxxxxxxxxxxxxxxxxxxx'
-                  ,status = "primary"
-                  ,solidHeader = TRUE 
-                  ,collapsible = TRUE 
-                  #,plotOutput("plot1d", height = "720px")
-                  #,h5(textOutput("info4"))
-                  #,h5(textOutput("info5"))
-                  # ,h5(textOutput("info4"))
-                  # ,h5(textOutput("info5"))
-                #  ,plotOutput("ploth2", height = "720px")
+             # room for more here?
+             # ,box(width=6,
+             #      title='xxxxxxxxxxxxxxxxxxxxxxxxxx'
+             #      ,status = "primary"
+             #      ,solidHeader = TRUE 
+             #      ,collapsible = TRUE 
+             #    
+             # )
              
-             ))),
+             )),
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
@@ -964,11 +931,7 @@ for the intervention group")
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
-                  #,plotOutput("plot1d", height = "720px")
                  
-                  #,h5(textOutput("info5"))
-                  # ,h5(textOutput("info4"))
-                  # ,h5(textOutput("info5"))
                    ,plotlyOutput("powerp3", height = "720px")
                   ,p("Random uniform censoring times. It is assumed that both treatment groups have the same censoring distribution.")
                   ,h5(verbatimTextOutput("powerp5"))
@@ -987,8 +950,7 @@ for the intervention group")
                  ,solidHeader = TRUE 
                  ,collapsible = TRUE 
                  ,plotOutput("powerw", height = "720px")
-                 #,p("The solid curve is for the control group and the dashed curve is for the intervention group")
-                 #,h5(verbatimTextOutput("powerp2"))
+              
              )
              
              ,box(width=6,
@@ -996,15 +958,8 @@ for the intervention group")
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
-                  #,plotOutput("plot1d", height = "720px")
-                  #,h5(textOutput("info5"))
-                  # ,h5(textOutput("info4"))
-                  # ,h5(textOutput("info5"))
                   ,plotlyOutput("powerp3w", height = "720px")
-                  # ,plotlyOutput("powerp3", height = "720px")
-                  #,p("Random uniform censoring times. It is assumed that both treatment groups have the same censoring distribution.")
-                  #,h5(verbatimTextOutput("powerp5"))
-                  #,h5(verbatimTextOutput("powerp4"))
+                   
              ))),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
@@ -1050,9 +1005,7 @@ for the intervention group")
                ,solidHeader = TRUE
                ,collapsible = TRUE
                ,plotlyOutput("plot99b", height = "720px")
-              # ,p("We add a red dotted line the slope of which equals the true baseline cumulative hazard in treatment group 0 
-               #   and a blue dashed line the slope of which equals the true cumulative hazard in treatment group 1...the slope equals true baseline x true hr")
-             
+              
                ,h5(textOutput("info3"))
                ,p("It is advisable to carry out the above graphical procedure before fitting a Cox regression model. 
                The interpretation of cumulative hazards $H(t)$ can be tricky, one way to think of cumulative hazards is the number of events  
@@ -1212,11 +1165,6 @@ server <- function(input, output) {
     
     tt <- as.numeric(unlist(strsplit(input$tt,",")))
     
-    #tt2 <- as.numeric(unlist(strsplit(input$tt2,",")))
-    
-    # Here, let us accrue patients over three years, and
-    #follow them for an additional seven years
-    
     af <- as.numeric(unlist(strsplit(input$af,",")))  
     
     af2 <- as.numeric(unlist(strsplit(input$af2,","))) 
@@ -1271,8 +1219,8 @@ server <- function(input, output) {
     drop=sample$nonc
     sim=sample$sim
     
-    
-    library(Hmisc)
+    # Frank Harrell functions
+    library(Hmisc) 
     
     Weib.p <- Weibull2(c(s1,s2),c(t1,t2))
     
@@ -1292,7 +1240,7 @@ server <- function(input, output) {
               test=logrank, nsim=sim, alpha=0.025, cox=TRUE)
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # get one simulation realisation and plot it for information
+    # get one simulation realization and plot it for information
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     ##lifted from spower function
@@ -1336,6 +1284,7 @@ server <- function(input, output) {
   })
   
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   # estimating hazard plot
   output$powerp1 <-renderPlot({     
@@ -1345,6 +1294,7 @@ server <- function(input, output) {
     
   })
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$powerp3w <- output$powerp3 <-renderPlotly({     
     
@@ -1364,6 +1314,7 @@ server <- function(input, output) {
   })
   
  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$powerp2 <- renderPrint({  # renderText not so useful
     
@@ -1375,6 +1326,7 @@ server <- function(input, output) {
     
   })
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$powerp4 <- renderPrint({  # renderText not so useful
     
@@ -1473,27 +1425,37 @@ server <- function(input, output) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~,
     plot(survivalc~timec,    type = "l", lty = 2,  ylab="Probability of survival",
          
-         main =paste("Weibull distibutions, intervention HR =",hr) , col='blue', xlab= "Time",
+         main =paste("Weibull distibutions, intervention HR =",hr) , col='red', xlab= "Time",
          sub=FF)
     
-    lines(survivali~timei, type = "l", lty = 1, col='red')  
+    lines(survivali~timei, type = "l", lty = 1, col='blue')  
     
+    # help placing texxt
     jump <- .85
     jump0 <-.9
     jump1 <-.76
     jump2 <-.72
     
-    text(quantile(prob=jump0,c(timec,timei)),  0.96, c(round(t1x ,5)), cex = 1)
-    text(quantile(prob=jump1,c(timec,timei)), 0.96, A,                cex = 1)
+    if (hr < 1) {
+      
+      jump <- .5
+      jump0 <-.55
+      jump1 <-.46
+      jump2 <-.46  #76
+      
+  }
     
-    text(quantile(prob=jump0,c(timec,timei)),  0.78, c(round(t2x ,5)), cex = 1)
-    text(quantile(prob=jump1,c(timec,timei)), 0.78, B,                cex = 1)
+    text(quantile(prob=jump0,c(timec,timei)),  0.90, c(round(t1x ,5)), cex = 1)
+    text(quantile(prob=jump1,c(timec,timei)), 0.90, A,                cex = 1)
     
-    text(quantile(prob=jump0,c(timec,timei)),  0.84, c(round(t3x ,5)), cex = 1)
-    text(quantile(prob=jump1,c(timec,timei)), 0.84, C,                cex = 1)
+    text(quantile(prob=jump0,c(timec,timei)),  0.96, c(round(t2x ,5)), cex = 1) #90
+    text(quantile(prob=jump1,c(timec,timei)), 0.96, B,                cex = 1)
     
-    text(quantile(prob=jump0,c(timec,timei)),  0.90, c(round(t4x ,5)), cex = 1)
-    text(quantile(prob=jump1,c(timec,timei)), 0.90, D,                 cex = 1)
+    text(quantile(prob=jump0,c(timec,timei)),  0.78, c(round(t3x ,5)), cex = 1)
+    text(quantile(prob=jump1,c(timec,timei)), 0.78, C,                cex = 1)
+    
+    text(quantile(prob=jump0,c(timec,timei)),  0.84, c(round(t4x ,5)), cex = 1) #78
+    text(quantile(prob=jump1,c(timec,timei)), 0.84, D,                 cex = 1)
     
     s1i=survival[which.min(abs(time-t1))]
     s2i=survivali[which.min(abs(timei-t2))]
@@ -2386,7 +2348,7 @@ server <- function(input, output) {
     
     KM_fit <- survfit(Surv(dt, e) ~ trt ,data = d)
     
-    KM <-  fortify(KM_fit, fun = "cumhaz")
+    KM <-  fortify(KM_fit, fun = "cumhaz")  # convert survival::survfit to data.frame
     
     DT::datatable(KM, rownames=FALSE,
                   plugins = 'natural',
