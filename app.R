@@ -265,8 +265,8 @@ ui <- dashboardPage(  title="Survival Analysis",
                                           textInput(inputId="per2", label='Enter another survival probability', width = '90%' , value="0.50"),
                                         ),
                                         
-                                     menuSubItem("Hit to reveal change in hazard",  tabName = "Change"),
-                                     menuSubItem("Hit to reveal hazard",  tabName = "Changeh")    ,
+                                     menuSubItem("Hit to reveal a change in hazard",  tabName = "Change"),
+                                     menuSubItem("Hit to reveal hazard function estimate",  tabName = "Changeh")    ,
                                      menuSubItem("Hit to reveal KM & smoothed survival curve",  tabName = "Changeh2") 
                             ),
                                
@@ -870,11 +870,14 @@ we define the hazard function as the p.d.f. divided by the survival function.")
              
              box(width=6,
                  title='
-                xxxxxxxxxxxxxxxxxxxxxxxx'
+                Obtaining a step hazard function estimate'
                  ,status = "primary"
                  ,solidHeader = TRUE 
                  ,collapsible = TRUE 
                  ,plotOutput("ploth", height = "720px")
+                 ,p("We use the library “muhaz” for estimating and plotting
+the nonparametric hazard functions. We use a constant smoothing parameter for all times.
+")
               )
              
              ,box(width=6,
@@ -883,7 +886,24 @@ we define the hazard function as the p.d.f. divided by the survival function.")
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   ,plotOutput("ploth1", height = "720px")
-             ))),
+                  ,p("Above we illustrate estimation of obtaining a smoother hazard function for our data.
+First, we divide time into equal intervals of width 5 time units, and observe the
+number of events di and the number of patients at risk each interval, ni;
+the hazard estimate for that interval is hi = di/ni. The hazard estimate
+using this method is obtained using the R “pehaz” function. The resulting estimate 
+is the solid step function. In the same figure, we
+also present the step function for 1-time unit intervals. The one-time unit hazard
+function jumps around quite a bit from one interval to the next, which limits its
+utility in visualizing the hazard function. For best results for visualizing the hazard
+function, we compute a smooth hazard estimate.  
+Selection of the appropriate amount of smoothing is one of the most difficult
+problems in non-parametric hazard estimation. If the bandwidth parameter is too
+small, the estimate may gyrate widely. Chose a parameter too wide and the hazard
+function may be too smooth to observe real variations in the hazard function over
+time. Indeed the red line does capture the constant true hazard from which we simulate our data.")
+                  
+             
+           ))),
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
@@ -896,6 +916,21 @@ we define the hazard function as the p.d.f. divided by the survival function.")
                  ,solidHeader = TRUE 
                  ,collapsible = TRUE 
                  ,plotOutput("ploth2", height = "720px")
+                 , p(" One use of smoothing the hazard function, calculated on the previous page, 
+                 is to obtain a smooth estimate of the
+                  survival function, To get this estimate, we
+                  need to extract the hazard estimate and list of times at which the hazard is estimated
+                  We then compare our smoothed survival estimate to the Kaplan-Meier.
+                   The smoothed hazard function follows the survival curve fairly well.
+The smoothing procedure
+doesn’t produce estimates beyond the last failure time. While certain specialized
+applications may require a smooth survival curve estimate, most published studies
+of survival data prefer to report the Kaplan-Meier step function estimate. This
+estimate has the theoretical property of being the maximum likelihood estimate of
+the survival function. In addition, the step function plot is an effective visual display
+of the data, in that it shows when the failures and censoring times occurred.
+")
+                 
              )
              
              # room for more here?
@@ -927,7 +962,7 @@ for the intervention group")
              )
              
              ,box(width=6,
-                  title='Two-Group Event Time Comparison, one simulated realisation'
+                  title='Two-group event time comparison, one simulated realisation'
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
@@ -945,7 +980,7 @@ for the intervention group")
            fluidRow(
              
              box(width=6,
-                 title='xxxxxxxxxxxxxxxxxxxx'
+                 title='Weibull distributions of control and intervention arm'
                  ,status = "primary"
                  ,solidHeader = TRUE 
                  ,collapsible = TRUE 
@@ -954,7 +989,7 @@ for the intervention group")
              )
              
              ,box(width=6,
-                  title='xxxxxxxxxxxxxxxxxxxxx'
+                  title='REprise of two-group event time comparison, one simulated realisation'
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
@@ -983,8 +1018,7 @@ for the intervention group")
                ,collapsible = TRUE 
               , DT::dataTableOutput("CHAZ")
                ,p("")
-               ,p("
-                xxxxxxxxxxxxxxxxxxxx")
+               ,p("Cumulative hazard is shown in the column 'surv' and can be calculated thus: -log(Survival) ")
              ))),        
    
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1724,11 +1758,11 @@ server <- function(input, output) {
      
     N2 <- d1/(1-(s1+s2)/2)
 
-    
-    text(x = max(s$time)*.667, y = .93,                # Text with different color & size
-         paste0( "Alpha 2 sided ",A," Power ",1-B," events required= ",ceiling(d1), ", N= ",ceiling(N2)),
-         col = "#1b98e0",
-         cex = 1)
+    # drop this as does not seem correct..come back and check
+    # text(x = max(s$time)*.667, y = .93,                # Text with different color & size
+    #      paste0( "Alpha 2 sided ",A," Power ",1-B," events required= ",ceiling(d1), ", N= ",ceiling(N2)),
+    #      col = "#1b98e0",
+    #      cex = 1)
     
     
     
