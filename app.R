@@ -196,7 +196,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                 actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  ),
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 
-                                menuItem("Wiki", tabName = "Wiki",                          icon = icon("bar-chart-o"), selected = FALSE),
+                                menuItem("Wiki", tabName = "Wiki",      icon = icon("bar-chart-o"), selected = FALSE),
                                 
                                 
                                 menuItem("Define parameters ", icon = icon("bar-chart-o"),
@@ -421,7 +421,7 @@ ui <- dashboardPage(  title="Survival Analysis",
       tabItem("Wiki", 
               fluidRow(
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                box(  
+                box(  width=6,
                   title='Wiki'
                   ,status = "primary"
                   ,solidHeader = TRUE 
@@ -462,7 +462,7 @@ ui <- dashboardPage(  title="Survival Analysis",
         )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
-                  title=' '
+                  title='Wiki continued'
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
