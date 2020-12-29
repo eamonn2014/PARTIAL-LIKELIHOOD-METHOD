@@ -196,6 +196,9 @@ ui <- dashboardPage(  title="Survival Analysis",
                                 actionButton("resample"," Hit to sample another data set", icon = icon("th"),  width =250  ),
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 
+                                menuItem("Wiki", tabName = "Wiki",                          icon = icon("bar-chart-o"), selected = FALSE),
+                                
+                                
                                 menuItem("Define parameters ", icon = icon("bar-chart-o"),
                                          splitLayout(
                                            
@@ -224,7 +227,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 menuItem("Analyses",  startExpanded = FALSE,  icon = icon("bar-chart-o"),
                                          #~~~~~~~~~~~~~~~~~~~~~~~~
-                                         menuSubItem("Kaplan Meier (landing page)",    tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
+                                         menuSubItem("Kaplan Meier (landing page)",    tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = TRUE),
                                          menuSubItem("KM diagnostics",                 tabName = "RESULTS2",  icon = icon("bar-chart-o")),
                                          menuSubItem("Cox proportional hazards",       tabName = "RESULTS3",  icon = icon("bar-chart-o")),
                                          menuSubItem("Cox PH Explanation",                    tabName = "HELP",      icon = icon("bar-chart-o"), selected = FALSE),
@@ -340,7 +343,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                             ),
                                
                               # menuItem("Explanation",                    tabName = "HELP",icon = icon("bar-chart-o"), selected = FALSE),
-                               menuItem("Wiki", tabName = "Wiki",                          icon = icon("bar-chart-o"), selected = FALSE),
+                               # menuItem("Wiki", tabName = "Wiki",                          icon = icon("bar-chart-o"), selected = FALSE),
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                menuItem("Code", icon = icon("bar-chart-o"),
                                          menuSubItem("Shiny",  
@@ -432,9 +435,11 @@ ui <- dashboardPage(  title="Survival Analysis",
               allocation to the control and intervention arm and a true hazard ratio for the intervention. These are used to simulate 
               data via a user written function called 'coxdata'. Censoring is from a uniform distribution and assumed the same in both groups. ")
 
-              ,p("The three boxes at the top summarise the two treatment arms and the comparison. There is also a button at the top which permits a new simulation.")
+              ,p("The three boxes at the top of the app (in red, blue and green) summarise the two treatment arms and the comparison. 
+                 There is also a green button at the top left of the app which permits a new simulation.")
 
-              ,p("Under 'Analyses' we find the landing page which shows the Kaplan Meier(KM) plot and the difference in the KM estimates with 95%CI.")
+              ,p("Under 'Analyses' we find the landing page which shows the Kaplan Meier(KM) plot and the difference in the KM estimates with 95%CI
+                 using the simulated data.")
               
               ,p("The next page 'KM Diagnostics' presents the cumulative incidence plot and two useful diagnostic plots.")
               
@@ -451,7 +456,7 @@ ui <- dashboardPage(  title="Survival Analysis",
               
               ,p("The next chapter is the Kaplan Meier life table and cumulative hazard table.")
               
-              ,p("Presented in the last page of this chapter is an exercise to help understand the Cox PH algorthim, 
+              ,p("Presented in the last page of this chapter is an exercise to help understand the Cox PH algorithm, 
               by choosing a HR that maximises the Log Likelihood. On the right panel there is another simulated dataset 
               of n=10 that helps once again to understand the calculations behind Cox PH.")
         )
@@ -462,24 +467,30 @@ ui <- dashboardPage(  title="Survival Analysis",
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
 
-                  ,p("Next we move to the 'Change in hazard' chapter. Now we can ignore the 3 value boxes at the top which are unrelated to the content of this chapter.
-Select the chapter 'Change in hazard' then choose the first page 'Hit to reveal a change in hazard'.
-we are presented with user inputs to permit simulation of a control and intervention. The control arm is modelled by a Weibull 
-distribution. On the right we use the Weibull density function in R with the shape equal to 
-1 (so exponential) and scale 1/Weibull and plot this. Then we calculate the effect on surival for the intervention based on the hr, raising the control
-survival to the hr power. Not only this, based on the survival probabilities we calculate the times and draw arrows on the curves using the simple relationship,
-lambda = -log(survival)/t. On the left is one simulated dataset, closely resembling the true distributions on the right. 
-We present the HR estimates and a count of the number of events.")
+                  ,p("Next we move to the 'Change in hazard' chapter. From now on we can ignore the 3 value boxes at the top 
+                  of the app which are unrelated to the content of this chapter.
+Select the first page 'Hit to reveal a change in hazard'.
+Here we are presented with user inputs to permit simulation of a control and intervention. The control arm is modelled by a Weibull 
+distribution. On the right panel we use the Weibull density function in R with the shape equal to 
+1 (so exponential) and scale 1/Weibull and we plot this. 
+Then we calculate the effect on surival for the intervention based on the hr, raising the control
+survival to the hr power. Not only this, but based on the survival probabilities we calculate 
+the times and draw arrows on the curves using the simple relationship,
+lambda = -log(survival)/t. On the left panel is one simulated dataset, closely resembling the true distributions shown in the right panel. 
+We also present the HR estimates and a count of the number of events.")
                   
-                  ,p("The next page presents a number of estimates of the hazard function Which leads us the to the smooth survival curve page,
+                  ,p("The next page presents a number of estimates of the hazard function. This leads us the to the smooth survival curve page,
    estimated from the hazard function and which closes this chapter.")
                   
-                  ,p("Now onto the power chapter. Once again simulation is used, now to assess power. Here we can enter two survival probabilities 
-and associated survival times, a sample size for the control and intervention, a hazard ratio, accrual time, follow up time, the number of simulations
+                  ,p("Now onto the power chapter. Once again simulation is used, this time to assess power. 
+                  Here we can enter two survival probabilities 
+and associated survival times, a sample size for the control, the intervention, a hazard ratio, accrual time, follow up time, the number of simulations
 and a non compliance probability for the intervention arm. This uses Frank Harrell's functions. 
 The Weibull2 function takes two survival probabilities 
-and associated survival times and finds the Weibull distibution parameters. We use this and the Quantile2 function to derive the Weibull distribution parameters for the intervention
-and survival times for the intervention and present. The plot on the left shows the distributions and below we see the results of simulations using the spower function.
+and associated survival times and finds the Weibull distibution parameters. 
+We use this and the Quantile2 function to derive the Weibull distribution parameters for the intervention
+and survival times for the intervention and present them.
+The plot on the left shows the distributions and below it we see the results of simulations using the spower function.
 The right panel shows one simulated realisation and Cox PH analysis results. The next page 'Hit to reveal Weibull distributions' shows the Weibull survival distributions,
 survival probabiites and associated times plus the parameters of the Weibull distributions. The right plot is a repeat of the one simulated realisation seen on the previous page.
      ")
@@ -488,8 +499,10 @@ survival probabiites and associated times plus the parameters of the Weibull dis
 allows one to see the survival curve based on Weibull parameters and the associated hazard funtion 
 on the right plot. The hazard function is created with the p.d.f. divided by the survival function.
      ")
-                  
-,p("Some useful resources"),
+
+,p("Next one can find links to the Rshiny and R code. ")
+
+,p("The last selection provides some links to resourses. More useful resources are linked to below:"),
 
  
 tags$a(href = "https://rviews.rstudio.com/2020/11/02/simulating-biologically-plausible-survival-data/", tags$span(style="color:blue", "Simulate survival data"),),
