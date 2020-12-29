@@ -355,7 +355,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                          
                                          menuSubItem("R",  
                                                      icon = icon("send",lib='glyphicon'), 
-                                                     href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/cox%20calculations.R") 
+                                                     href = "https://raw.githubusercontent.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/master/R%20code%20for%20app.R") 
                                   ),
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                          menuItem("References", icon = icon("bar-chart-o"),
