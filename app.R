@@ -496,7 +496,7 @@ survival probabiites and associated times plus the parameters of the Weibull dis
      ")
                   
 ,p("Onto the next chapter 'The Weibull distribution' click 'Hit to reveal survival hazard relatonship' which 
-allows one to see the survival curve based on Weibull parameters and the associated hazard funtion 
+allows one to see the survival curve based on Weibull parameters and the associated hazard function 
 on the right plot. The hazard function is created with the p.d.f. divided by the survival function.
      ")
 
