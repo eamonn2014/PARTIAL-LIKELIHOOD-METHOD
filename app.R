@@ -423,8 +423,34 @@ ui <- dashboardPage(  title="Survival Analysis",
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   #textOutput("help"),
-                  , p("Exploring the Cox proportional hazards model and the partial likelihood function"),
-                  p("xxxxxxxxxxxyyyyyyyyyyyyyzzzzzzzzzzzzzz"),
+                 # , p("Exploring the Cox proportional hazards model and the partial likelihood function"),
+                  ,p("
+The first port of call is the 'Define parameters' chapter. Here select the total sample size, a constant baseline hazard rate, 
+allocation to the control and intervention arm and a true hazard ratio for the intervention. These are used to simulate 
+data using a user written function called 'coxdata'. Censoring is from a uniform distribution and assumed the same in both groups. ")
+
+,p("Under 'Analyses' we dinfd the landing page which shows the Kaplan Meier(KM) plot and the difference in the KM estimates with 95%CI.")
+
+,p("The next page 'KM Diagnostics' presents the cumulative incidence plot and two useful diagnostic plots.")
+
+,p("The 'Cox proportional hazards' page presents survival curves from Cox PH and then a diagnostic plot based on the Cox PH model.")
+
+,p("Two different plots of the log hazard ratio over time are then presented.")
+
+,p("The 'Partial log likelihood' page shows how the Cox PH works under the hood, which leads to the presentation on the next page 
+exemplifying that only the order of the events is required for HR estimation.")
+
+,p("The next page 'Model assumption' presents another way to check the Cox PH assumption.")
+
+,p("Presented last in this chapter is the Kaplan Meier life table and cumulative hazard table.")
+
+,p("Next we move to the 'Change in hazard' chapter. Now we can ignore the 3 value boxes at the top which are unrelated to the content of this chapter.
+Selecting 'Change in hazard' we are presented with user inputs to permit simulation of a control and intervention. The control arm is modelled by a Weibull 
+distribution. On the right we use the Weibull density function in R with the shape equal to 
+1 (so exponential) and scale 1/Weibull and plot this. Then we calculate the effect on surival for the intervention based on the hr, raising the control
+survival to the hr power. Not only this, based on the survival probabilities we calculate the times and draw arrows on the curves using the simple relationship,
+lambda = -log(survival)/t.
+"),
                 )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
@@ -989,7 +1015,7 @@ for the intervention group")
              )
              
              ,box(width=6,
-                  title='REprise of two-group event time comparison, one simulated realisation'
+                  title='Reprise of two-group event time comparison, one simulated realisation'
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
@@ -1188,6 +1214,8 @@ server <- function(input, output) {
     
   })
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # start of power section
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   power <- reactive({
     
@@ -1524,10 +1552,11 @@ server <- function(input, output) {
   })
    
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # end of power section
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # The change in  hazard tab, data generation
+  # The change in hazard tab, data generation
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   datc <- reactive({
     
@@ -1618,7 +1647,7 @@ server <- function(input, output) {
     
   })
     
-  # right plot....................., 
+  # right exponential plot....................., 
   output$plot1d<-renderPlot({     
     
     sample <- random.sample()
@@ -2034,7 +2063,7 @@ server <- function(input, output) {
   
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # GENERATE THE DATA Execute analysis
+  # GENERATE THE DATA Execute analysis for the landing page
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   dat <- reactive({
     
@@ -2048,7 +2077,6 @@ server <- function(input, output) {
     res <- coxdata(n, allocation, hr, baseline)
     
     return(list(  d=res$d, f=res$f, f1=res$f1, sf=res$sf, np=res$np , LL1=res$LL1, LL0=res$LL0, S=res$S, res=res
-                  
                   
                   ,f0a=res$f0a, f0=res$f0, f2=res$f2 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      
                   
