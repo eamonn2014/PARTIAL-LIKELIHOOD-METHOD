@@ -227,7 +227,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                          menuSubItem("Kaplan Meier (landing page)",    tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                                          menuSubItem("KM diagnostics",                 tabName = "RESULTS2",  icon = icon("bar-chart-o")),
                                          menuSubItem("Cox proportional hazards",       tabName = "RESULTS3",  icon = icon("bar-chart-o")),
-                                         menuSubItem("Explanation",                    tabName = "HELP",      icon = icon("bar-chart-o"), selected = FALSE),
+                                         menuSubItem("Cox PH Explanation",                    tabName = "HELP",      icon = icon("bar-chart-o"), selected = FALSE),
                                          menuSubItem("Hazard ratio over time",         tabName = "RESULTS4",  icon = icon("bar-chart-o")),
                                          menuSubItem("Partial log likelihood",         tabName = "RESULTS1",  icon = icon("table")),
                                          #~~~~~~~~~~~~~~~~~~~~~~~~
@@ -367,7 +367,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                                       icon = icon("send",lib='glyphicon'), 
                                                       href = "https://understandinguncertainty.org/node/759"),
                                          
-                                         menuSubItem( h5(HTML("Analysis of time-to-event for observational studies <br/>Guidance to the use of intensity models")),  
+                                         menuSubItem( h5(HTML("Analysis of time-to-event <br/>for observational studies <br/>Guidance to the use of intensity models")),  
                                                       icon = icon("send",lib='glyphicon'), 
                                                       href = "https://github.com/eamonn2014/PARTIAL-LIKELIHOOD-METHOD/blob/master/Analysis%20of%20time-to-event%20for%20observational%20studies.pdf"),
                                          
@@ -439,6 +439,8 @@ ui <- dashboardPage(  title="Survival Analysis",
               ,p("The next page 'KM Diagnostics' presents the cumulative incidence plot and two useful diagnostic plots.")
               
               ,p("The 'Cox proportional hazards' page presents survival curves from Cox PH and then a diagnostic plot based on the Cox PH model.")
+
+              ,p("The 'Cox PH Explanation' goes into some detail on the calculations behind Cox PH.")
               
               ,p("Two different plots of the log hazard ratio over time are then presented.")
               
@@ -472,7 +474,7 @@ We present the HR estimates and a count of the number of events.")
                   ,p("The next page presents a number of estimates of the hazard function Which leads us the to the smooth survival curve page,
    estimated from the hazard function and which closes this chapter.")
                   
-                  ,p("Now we move to the power chapter. Once again simulation is used, now to assess power. Here we can enter two survival probabilities 
+                  ,p("Now onto the power chapter. Once again simulation is used, now to assess power. Here we can enter two survival probabilities 
 and associated survival times, a sample size for the control and intervention, a hazard ratio, accrual time, follow up time, the number of simulations
 and a non compliance probability for the intervention arm. This uses Frank Harrell's functions. 
 The Weibull2 function takes two survival probabilities 
@@ -482,8 +484,9 @@ The right panel shows one simulated realisation and Cox PH analysis results. The
 survival probabiites and associated times plus the parameters of the Weibull distributions. The right plot is a repeat of the one simulated realisation seen on the previous page.
      ")
                   
-,p("The next chapter the 'Hit to reveal survival hazard relatonship' 
-allows one to see the survival curve based on Weibull parametes and the associated hazard funtion on the right plot.
+,p("Onto the next chapter 'The Weibull distribution' click 'Hit to reveal survival hazard relatonship' which 
+allows one to see the survival curve based on Weibull parameters and the associated hazard funtion 
+on the right plot. The hazard function is created with the p.d.f. divided by the survival function.
      ")
                   
 ,p("Some useful resources"),
@@ -508,23 +511,14 @@ tags$a(href = "https://www.itl.nist.gov/div898/handbook/eda/section3/eda3668.htm
 div(p(" ")),
 
 tags$a(href = "https://sas-and-r.blogspot.com/2010/03/example-730-simulate-censored-survival.html?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%3A+SASandR+%28SAS+and+R%29", tags$span(style="color:blue", "SAS and R"),),
-div(p(" ")),
+div(p(" "))
 
+,p("Dirk F. Moore Applied Survival Analysis Using R")
+,p("Chapter 3.4 Obtaining a Smoothed Hazard and Survival Function Estimate")
+,p("Chapter 10.3.4 Selecting a Weibull Distribution to Model Survival Data")
+,p("Chapter 2.4 Parametric Survival Distributions. Here the hazard function is created with the p.d.f. divided by the survival function")
 
-
-
-
-
-
-
-
-
-
-
-
-
- 
-   ),  # box end
+  ),  # box end
               )
       ),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
