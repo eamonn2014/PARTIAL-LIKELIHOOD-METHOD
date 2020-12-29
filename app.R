@@ -227,6 +227,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                          menuSubItem("Kaplan Meier (landing page)",    tabName = "OVERVIEW",  icon = icon("bar-chart-o"), selected = FALSE),
                                          menuSubItem("KM diagnostics",                 tabName = "RESULTS2",  icon = icon("bar-chart-o")),
                                          menuSubItem("Cox proportional hazards",       tabName = "RESULTS3",  icon = icon("bar-chart-o")),
+                                         menuSubItem("Explanation",                    tabName = "HELP",      icon = icon("bar-chart-o"), selected = FALSE),
                                          menuSubItem("Hazard ratio over time",         tabName = "RESULTS4",  icon = icon("bar-chart-o")),
                                          menuSubItem("Partial log likelihood",         tabName = "RESULTS1",  icon = icon("table")),
                                          #~~~~~~~~~~~~~~~~~~~~~~~~
@@ -325,7 +326,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                             ),
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                
-                            menuItem("Parametric Survival Distributions",  startExpanded = FALSE,    icon = icon("table"),
+                            menuItem("The Weibull Distributions",  startExpanded = FALSE,    icon = icon("table"),
                                      
                                      tags$div(
                                        textInput(inputId="shape", label='Weibull shape', width = '90%' , value="1"),
@@ -338,7 +339,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                      menuSubItem("Hit to reveal Survival hazard relationship",  tabName = "survhaz")
                             ),
                                
-                               menuItem("Explanation",                    tabName = "HELP",icon = icon("bar-chart-o"), selected = FALSE),
+                              # menuItem("Explanation",                    tabName = "HELP",icon = icon("bar-chart-o"), selected = FALSE),
                                menuItem("Wiki", tabName = "Wiki",                          icon = icon("bar-chart-o"), selected = FALSE),
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                menuItem("Code", icon = icon("bar-chart-o"),
@@ -431,6 +432,8 @@ ui <- dashboardPage(  title="Survival Analysis",
               allocation to the control and intervention arm and a true hazard ratio for the intervention. These are used to simulate 
               data via a user written function called 'coxdata'. Censoring is from a uniform distribution and assumed the same in both groups. ")
 
+              ,p("The three boxes at the top summarise the two treatment arms and the comparison. There is also a button at the top which permits a new simulation.")
+
               ,p("Under 'Analyses' we find the landing page which shows the Kaplan Meier(KM) plot and the difference in the KM estimates with 95%CI.")
               
               ,p("The next page 'KM Diagnostics' presents the cumulative incidence plot and two useful diagnostic plots.")
@@ -449,24 +452,14 @@ ui <- dashboardPage(  title="Survival Analysis",
               ,p("Presented in the last page of this chapter is an exercise to help understand the Cox PH algorthim, 
               by choosing a HR that maximises the Log Likelihood. On the right panel there is another simulated dataset 
               of n=10 that helps once again to understand the calculations behind Cox PH.")
-
-
-
-   
-
-
-
-
-                )
+        )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
                   title=' '
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
-                  # ,plotOutput("plot4", height = "720px")
-                  
-                  
+
                   ,p("Next we move to the 'Change in hazard' chapter. Now we can ignore the 3 value boxes at the top which are unrelated to the content of this chapter.
 Select the chapter 'Change in hazard' then choose the first page 'Hit to reveal a change in hazard'.
 we are presented with user inputs to permit simulation of a control and intervention. The control arm is modelled by a Weibull 
@@ -489,10 +482,49 @@ The right panel shows one simulated realisation and Cox PH analysis results. The
 survival probabiites and associated times plus the parameters of the Weibull distributions. The right plot is a repeat of the one simulated realisation seen on the previous page.
      ")
                   
-,p("The next chapter the 'Hit to reveal survival hazard relatonship' allows one to see the survival curve based on Weibull parametes and the associated hazard funtion on the right plot.
+,p("The next chapter the 'Hit to reveal survival hazard relatonship' 
+allows one to see the survival curve based on Weibull parametes and the associated hazard funtion on the right plot.
      ")
                   
-                ),  # box end
+,p("Some useful resources"),
+
+ 
+tags$a(href = "https://rviews.rstudio.com/2020/11/02/simulating-biologically-plausible-survival-data/", tags$span(style="color:blue", "Simulate survival data"),),
+div(p(" ")),
+
+tags$a(href = "https://thestatsgeek.com/list-of-posts/#surv", tags$span(style="color:blue", "The stats geek"),),
+div(p(" ")),
+
+tags$a(href = "https://grokbase.com/t/r/r-help/04a5ydyst0/r-nelson-aalen-estimator-in-r", tags$span(style="color:blue", "Nelson-aalen estimator"),),
+div(p(" ")),
+
+tags$a(href = "https://rstudio-pubs-static.s3.amazonaws.com/258589_cd197f86fb5548ac89d7bcffd4bc6afe.html", tags$span(style="color:blue", "General review"),),
+div(p(" ")),
+
+tags$a(href = "https://stattools.crab.org/index.html", tags$span(style="color:blue", "Other apps"),),
+div(p(" ")),
+
+tags$a(href = "https://www.itl.nist.gov/div898/handbook/eda/section3/eda3668.htm", tags$span(style="color:blue", "Weibull Distribution"),),
+div(p(" ")),
+
+tags$a(href = "https://sas-and-r.blogspot.com/2010/03/example-730-simulate-censored-survival.html?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%3A+SASandR+%28SAS+and+R%29", tags$span(style="color:blue", "SAS and R"),),
+div(p(" ")),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+   ),  # box end
               )
       ),
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
