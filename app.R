@@ -524,7 +524,15 @@ tags$a(href = "https://www.itl.nist.gov/div898/handbook/eda/section3/eda3668.htm
 div(p(" ")),
 
 tags$a(href = "https://sas-and-r.blogspot.com/2010/03/example-730-simulate-censored-survival.html?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%3A+SASandR+%28SAS+and+R%29", tags$span(style="color:blue", "SAS and R"),),
+div(p(" ")),
+
+tags$a(href = "https://www.youtube.com/watch?v=EoIB_Obddrk&t=327s&ab_channel=RMSRegression", tags$span(style="color:blue", "F harrell showing more by showing less, interactive and semi-interacive graphics"),),
 div(p(" "))
+
+
+
+
+
 
 ,p("Dirk F. Moore Applied Survival Analysis Using R")
 ,p("Chapter 3.4 Obtaining a Smoothed Hazard and Survival Function Estimate")
@@ -538,13 +546,16 @@ div(p(" "))
       tabItem("OVERVIEW",
               fluidRow(
                 box(
-                  title = "Kaplan-Meier Curve"
+                  title = "Kaplan-Meier Curve, interactive graphics, showing more by showing less"
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
                   ,plotlyOutput("plot1", height = "720px"),
                  
-                  h5(textOutput("Staff_name"))
+                  h5(textOutput("Staff_name")),
+                  h5(textOutput("Staff_name3")),
+                  h5(textOutput("Staff_name4")),
+                  h5(textOutput("Staff_name5"))
                 )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
@@ -1997,11 +2008,7 @@ server <- function(input, output) {
          paste0( " Median ",  formatz2((log(2)^(1/alpha))/lambda ),""),
          col = "blue",
          cex = 1.2)
-    
-    
-    
-    
-    
+     
       })
  
   output$survhaz2 <-renderPlot({     
@@ -2018,16 +2025,8 @@ server <- function(input, output) {
           ylab='Hazard', xlab='Time', col="red")
     
   })
-  
-  
-  
-  
-  
-  
-  
+ 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-  
-
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # text below right plot in changing hazard 
   output$info4 <- renderText({  
@@ -2129,10 +2128,6 @@ server <- function(input, output) {
     
   #})
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # GENERATE THE DATA Execute analysis for the landing page
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2264,21 +2259,22 @@ server <- function(input, output) {
     Z <- as.numeric(as.character(sf[2,c("Upper 0.95")]))
     f0 <- dat()$f0
 
-    p1 <- ggsurvplot(f, main = "Kaplan-Meier Curve",
-                     
-                   #  text = paste("Time: ", time),
-                     
-                     #palette = c("orange", "purple")
-                     legend.title = "Trt."
-                    # , xlab= paste0("Time" )
-                     ,xlab=paste0("Time : HR=",formatz4(exp(f0)) )
-                     # , xlab= paste0("Time: HR = ", formatz2(X),", 95%CI( ",formatz2(Y),", ",formatz2(Z)," )" )
-                     #,#conf.int = TRUE,
-                     # ggtheme = theme_bw() # Change ggplot2
-                  #   ,text = paste0("wt: ", round(wt), "</br></br>qsec: ", round(qsec))
-    )
-    ggplotly(p1[[1]] )
+    
+    f <- dat()$np
+    p1 <- survplotp(f, time.inc=1, times=c(5,10))
+    
+    
+   # p2 <- ggsurvplot(f, main = "Kaplan-Meier Curve",
+                   
+                  ##   legend.title = "Trt."
+                   
+              ##       ,xlab=paste0("Time : HR=",formatz4(exp(f0)) )
+                   
+    ##)
+    ##ggplotly(p1[[1]] )
 
+    
+    p1
   })
   
   # p <- ggplot(mtcars, 
@@ -2685,9 +2681,43 @@ server <- function(input, output) {
            Therefore we can reformulate the hazard ratio, possibly more intuitively, as
             the probability that a patient in treatment 
             group 1 experiences the event before a patient in treatment group 0, which is: "
-                  , formatz2(Xp),", 95%CI ( ",formatz2(Yp),", ",formatz2(Zp),").        ")
-    
+                  , formatz2(Xp),", 95%CI ( ",formatz2(Yp),", ",formatz2(Zp),").   ")   
+            
   })
+  
+    output$Staff_name3<- renderText({  
+    paste0( "This above presentation uses Frank Harrell's RMS package. 'For statistical graphics to have high information it's often better to 
+            use newer options in interactive and semi
+interactive graphics to show initially what we want to focus on but allow drilling down for more information. 
+Franks's RMS package in R has implemented several functions that allow you to use
+plotly graphics and allow for hovering over points and revealing more information as well as selectively displaying different traces
+on the graph. Here we're using nonparametric survival function making special calculations
+of cumulative incidents at time points 5 and 10 using a simple exponential distribution fit, so
+they may not be exactly good estimates if the distribution is not from exponential. We also see
+some other basic information how many total events there are in the two strata.")
+    })
+      
+    output$Staff_name4<- renderText({  
+      paste0( "We see something a bit different which is a more useful confidence band. 
+      Most non statisticians don't realize that you
+cannot look at overlap of individual confidence bands to judge significance of the difference you have to
+actually calculate the confidence interval for the difference. The band height is half of the height of the 
+point-wise 0.95 confidence intervals and it's positioned at the midpoint of the
+two KM estimates, so this has the property that the shaded band overlaps the two curves at a point if and only if the p-value for the
+comparison at those two points is greater than 0.05, so this confidence band which is the half-height confidence band
+giving us what we really want and is far less cluttered.")
+    })
+    
+    output$Staff_name5<- renderText({  
+      paste0( "When you hover over points on a plotly graphic you can see the actual estimates and now we have something new which is showing the number of subjects at risk. If you think about number at risk that's really a continuous variable because
+time is almost always continuous in survival analysis. We've been calculating the number at risk on a
+monthly or yearly basis for most of our statistical lives and that's really committing a sin which is chopping nice
+continuous data. The reviewer of the graph may want to know the number at risk at a certain point that you didn't
+happen to choose when making the graph. Now we have all the numbers at risk that we could ever want by just hovering over
+the point and revealing the number at risk exactly at that time point, you also at the same time reveal the KM survival 
+              probability estimate.'")
+    })
+    
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # frank Harrell rms page 479
