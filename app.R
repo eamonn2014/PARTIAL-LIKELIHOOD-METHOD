@@ -901,8 +901,7 @@ for for these data")
            fluidRow(
            
              box(width=6,
-                  title='
-                Repeated Cox regression coefficients estimates and confidence limits within time intervals'
+                  title='Repeated Cox regression coefficients estimates and confidence limits within time intervals'
                   ,status = "primary"
                   ,solidHeader = TRUE 
                   ,collapsible = TRUE 
@@ -932,7 +931,7 @@ for for these data")
 exponential distribution is a special case of the Weibull distribution with shape =1. The shape of the hazard is monotone increasing
 for shape > 1 and monotone decreasing for shape < 1.
                  The exponential distribution is easy to work with, but the constant hazard
-assumption is not often appropriate for describing the lifetimes. The Weibull distribution offers more flexibility in modeling survival
+assumption is not often appropriate for describing human lifetimes. The Weibull distribution offers more flexibility in modeling survival
 data. Other
 parametric families of survival distributions include the gamma, log-normal, log-logistic, Pareto, and many more.")
              )
@@ -951,8 +950,7 @@ we define the hazard function as the p.d.f. divided by the survival function.")
            fluidRow(
              
              box(width=6,
-                 title='
-                KM curve based on user inputs, reference curve in blue'
+                 title='KM curve based on user inputs, reference curve in blue'
                  ,status = "primary"
                  ,solidHeader = TRUE 
                  ,collapsible = TRUE 
@@ -2781,7 +2779,8 @@ the point and revealing the number at risk exactly at that time point, you also 
       model are estimated without having to specify the 
       baseline hazard function (distribution-free approach), 
       and the estimates depend only on the
-      ranks of the event times, not their numerical values.")
+      ranks of the event times, not their numerical values. 
+      The HR quoted in the top right value box is unchanged in the right panel!")
     
   })
   
