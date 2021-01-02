@@ -2684,35 +2684,38 @@ server <- function(input, output) {
   })
   
     output$Staff_name3<- renderText({  
-    paste0( "This above presentation uses Frank Harrell's RMS package. 'For statistical graphics to have high information it's often better to 
+    paste0( "This above presentation uses Frank Harrell's RMS package...'For statistical graphics to have 
+    high information it's often better to 
             use newer options in interactive and semi
-interactive graphics to show initially what we want to focus on but allow drilling down for more information. 
-Franks's RMS package in R has implemented several functions that allow you to use
-plotly graphics and allow for hovering over points and revealing more information as well as selectively displaying different traces
-on the graph. Here we're using nonparametric survival function making special calculations
+interactive graphics to show initially what we want to focus on and allow drilling down for more information. 
+Franks's RMS package in R has implemented several functions that allow use of
+plotly graphics and allow for hovering over points and revealing more information 
+as well as selectively displaying different traces
+on the graph. Here we're using a nonparametric survival function making special calculations
 of cumulative incidents at time points 5 and 10 using a simple exponential distribution fit, so
 they may not be exactly good estimates if the distribution is not from exponential. We also see
-some other basic information how many total events there are in the two strata.")
+how many total events there are in the two strata.")
     })
       
     output$Staff_name4<- renderText({  
-      paste0( "We see something a bit different which is a more useful confidence band. 
+      paste0( "We also see can present a more useful confidence band. 
       Most non statisticians don't realize that you
-cannot look at overlap of individual confidence bands to judge significance of the difference you have to
+cannot look at the overlap of individual confidence bands to judge significance of the difference, you have to
 actually calculate the confidence interval for the difference. The band height is half of the height of the 
 point-wise 0.95 confidence intervals and it's positioned at the midpoint of the
 two KM estimates, so this has the property that the shaded band overlaps the two curves at a point if and only if the p-value for the
-comparison at those two points is greater than 0.05, so this confidence band which is the half-height confidence band
-giving us what we really want and is far less cluttered.")
+comparison at those two points is greater than 0.05, so this confidence band which is the half-height confidence band is
+giving us what we really need and is far less cluttered.")
     })
     
     output$Staff_name5<- renderText({  
-      paste0( "When you hover over points on a plotly graphic you can see the actual estimates and now we have something new which is showing the number of subjects at risk. If you think about number at risk that's really a continuous variable because
+      paste0( "When you hover over points on a plotly graphic you can see the actual estimates and the number of subjects at risk. 
+      If you think about the number at risk that is really a continuous variable because
 time is almost always continuous in survival analysis. We've been calculating the number at risk on a
 monthly or yearly basis for most of our statistical lives and that's really committing a sin which is chopping nice
 continuous data. The reviewer of the graph may want to know the number at risk at a certain point that you didn't
-happen to choose when making the graph. Now we have all the numbers at risk that we could ever want by just hovering over
-the point and revealing the number at risk exactly at that time point, you also at the same time reveal the KM survival 
+happen to choose when making the graph. So now we have all the numbers at risk that we could ever want by just hovering over
+the point and revealing the number at risk exactly at that time point, also at the same time reveal the KM survival 
               probability estimate.'")
     })
     
