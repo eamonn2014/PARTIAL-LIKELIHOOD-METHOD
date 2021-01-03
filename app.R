@@ -529,11 +529,6 @@ div(p(" ")),
 tags$a(href = "https://www.youtube.com/watch?v=EoIB_Obddrk&t=327s&ab_channel=RMSRegression", tags$span(style="color:blue", "F harrell showing more by showing less, interactive and semi-interacive graphics"),),
 div(p(" "))
 
-
-
-
-
-
 ,p("Dirk F. Moore Applied Survival Analysis Using R")
 ,p("Chapter 3.4 Obtaining a Smoothed Hazard and Survival Function Estimate")
 ,p("Chapter 10.3.4 Selecting a Weibull Distribution to Model Survival Data")
@@ -555,7 +550,12 @@ div(p(" "))
                   h5(textOutput("Staff_name")),
                   h5(textOutput("Staff_name3")),
                   h5(textOutput("Staff_name4")),
-                  h5(textOutput("Staff_name5"))
+                  h5(textOutput("Staff_name5")),
+                   
+                  tags$a(href = "https://www.youtube.com/watch?v=EoIB_Obddrk&t=327s&ab_channel=RMSRegression", tags$span(style="color:blue", "F harrell showing more by showing less, interactive and semi-interacive graphics"),),
+                  div(p(" "))
+
+                  
                 )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
@@ -2684,7 +2684,7 @@ server <- function(input, output) {
   })
   
     output$Staff_name3<- renderText({  
-    paste0( "This above presentation uses Frank Harrell's RMS package...'For statistical graphics to have 
+    paste0( "This above presentation uses Frank Harrell's RMS package'For statistical graphics to have 
     high information it's often better to 
             use newer options in interactive and semi
 interactive graphics to show initially what we want to focus on and allow drilling down for more information. 
@@ -2716,10 +2716,11 @@ monthly or yearly basis for most of our statistical lives and that's really comm
 continuous data. The reviewer of the graph may want to know the number at risk at a certain point that you didn't
 happen to choose when making the graph. So now we have all the numbers at risk that we could ever want by just hovering over
 the point and revealing the number at risk exactly at that time point, also at the same time reveal the KM survival 
-              probability estimate.'")
+              probability estimate.'") 
+      
     })
-    
-  
+ 
+ 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # frank Harrell rms page 479
    output$FH <- renderPlot({
