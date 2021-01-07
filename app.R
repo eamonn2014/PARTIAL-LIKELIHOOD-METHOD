@@ -2049,15 +2049,15 @@ server <- function(input, output) {
      
     c(paste0(" 
     With a shape parameter of 1 and a scale parameter of ",lambdaT," a survival curve is created based on a Weibull distribution.
-    Here we are measuring time in months.
-    The time to reach median survival is equal to -log(0.5) x ",lambdaT,". 
-             This equates to a median survival of ", formatz2(-log(.5)*lambdaT)," months. 
+    When the shape parameter equals 1 the Weibull reduces to an exponential distribution. Let's assume time is measured in months.
+    The time to reach median survival is equal to -log(0.5) / ",formatz2(lambdaT),". 
+             This equates to a median survival of ", formatz2(-log(.5)*1/lambdaT)," months. 
              
              Replacing 0.5 with a desired survival percentile will return the associated time. 
              Enter survival probabilities in the two boxes on the left. 
              
-             The time at which the survival probability is ",per* 100,"% is ",  formatz2(-log(per)* lambdaT), " months.
-             The time at which the survival probability is ",per2*100,"% is ",  formatz2(-log(per2)*lambdaT), " months"
+             The time at which the survival probability is ",per* 100,"% is ",  formatz2(-log(per)* 1/lambdaT), " months.
+             The time at which the survival probability is ",per2*100,"% is ",  formatz2(-log(per2)*1/lambdaT), " months"
       ))
                
      
@@ -2086,8 +2086,8 @@ server <- function(input, output) {
     
     c(paste0("Now if we are postulating that a new treatment " ,wordd," the hazard by ",yo,"% we can use 
                the fact S1(t) = S0(t)^exp Bx, with exp Bx=", (beta1)," the 
-              probability of survival at ",  formatz2(-log(per)*  lambdaT), " months now becomes ",formatz2((per)^(beta1)) ,".
-          The probability of survival at ",  formatz2(-log(per2)* lambdaT), " months now becomes ",formatz2((per2)^(beta1)) ,"
+              probability of survival at ",  formatz2(-log(per)*  1/lambdaT), " months now becomes ",formatz2((per)^(beta1)) ,".
+          The probability of survival at ",  formatz2(-log(per2)* 1/lambdaT), " months now becomes ",formatz2((per2)^(beta1)) ,"
           . See the arrows in the plot showing the changes in survival. 
              " ) )
     
