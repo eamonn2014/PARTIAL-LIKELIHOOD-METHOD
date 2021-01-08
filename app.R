@@ -382,7 +382,7 @@ ui <- dashboardPage(  title="Survival Analysis",
                                                       icon = icon("send",lib='glyphicon'), 
                                                       href = "https://rdrr.io/cran/rms/man/cph.html"),
                                          
-                                         menuSubItem( h5(HTML("Jonatahan Bartlett, Interpreting changes in hazard and hazard ratios")),  
+                                         menuSubItem( h5(HTML("Jonatahan Bartlett, Interpreting changes <br/> in hazard and hazard ratios")),  
                                                       icon = icon("send",lib='glyphicon'), 
                                                       href = "https://thestatsgeek.com/2014/03/28/interpreting-changes-in-hazard-and-hazard-ratios")
                                          
