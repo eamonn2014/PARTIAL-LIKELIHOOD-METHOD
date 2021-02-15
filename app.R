@@ -465,6 +465,22 @@ ui <- dashboardPage(  title="Survival Analysis",
               ,p("Presented in the last page of this chapter is an exercise to help understand the Cox PH algorithm, 
               by choosing a HR that maximises the Log Likelihood. On the right panel there is another simulated dataset 
               of n=10 that helps once again to understand the calculations behind Cox PH.")
+              
+              
+              ,p("Just a note on median survival. ")  
+              
+              ,p("It is incorrect to say 'Half of the patients were alive at x months after starting treatment.'")  
+              
+              ,p("It is correct to say 'The probability of surviving x months or longer after starting treatment was 0.5'")  
+              
+              ,p(" 
+              The probabilities are called Kaplan-Meier or conditional probabilities and have a unique interpretation the survival curves indicate the probability of surviving at least a particular length of time — that is, the probability of surviving so many months, or longer, after starting treatment
+              The median survival time was x months. Therefore, the probability of surviving at least x
+              months—that is, of surviving x months or longer after starting treatment was 0.5")  
+              
+               
+              
+              
         )
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ,box(
