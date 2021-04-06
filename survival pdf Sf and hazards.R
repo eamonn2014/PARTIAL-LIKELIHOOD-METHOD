@@ -244,7 +244,7 @@
     n         <- 100 # use this to simulate fail times
     # Weibull parameters
     lambda    <- .03 # scale   
-    k         <- .5  # shape < 1 decreasing with time.., > 1 increasing with time, 1 constant
+    k         <- 2#.5  # shape < 1 decreasing with time.., > 1 increasing with time, 1 constant
     
     #~~~~~~~~~~~~~~~~~
     p         <- 0.5
@@ -266,7 +266,7 @@
     
     
     #~~~~~~~~~~~~~~~~~~~~~start plot
-    par(mfrow=c(1,3))
+    par(mfrow=c(1,4))
     
     #~~~~~~~~~~~~
     plot(km  , 
@@ -284,7 +284,7 @@
     plot(km  , log = TRUE,
          main=paste0("Shape =",k,", rate = ",lambda,"\nTrue med surv = ",
                      round(med.surv,1) ,", N=", (n)),  
-         ylab='Survival probability', xlab='Time')
+         ylab='Survival probability (log scale)', xlab='Time')
    
     curve(weibSurv(x, shape=k, scale=1/lambda), from=0, to=end, n=end+1, log=TRUE,
           col='red', lwd=2, lty=2, #yaxt='n',
@@ -302,6 +302,15 @@
     plot(x, haz,    type='l', xlab='Time', 
          ylab='Hazard', 
          main=paste0("h(t) Shape = ",k,", rate = ",lambda,""))
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    
+    plot(x[-1], cumsum(haz[-1]),  type='l', xlab='Time', 
+         ylab='Cumulative Hazard', 
+         main=paste0("H(t) Shape = ",k,", rate = ",lambda,""))
+    
+    
     par(mfrow=c(1,1))
     #~~~~~~~~~~~~~~~~~~~~~end plot
     
@@ -330,36 +339,10 @@
     # 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
+  
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~weibull
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
+ 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #https://stats.stackexchange.com/questions/105881/how-to-simulate-survival-times-using-true-base-line-hazard-function
 
@@ -407,24 +390,10 @@
 rm(list=ls())
     require(survival)
     options(scipen=999)
-# dx <-  c(3184L, 268L, 145L, 81L, 64L, 81L, 101L, 50L, 72L, 76L, 50L, 
-#          62L, 65L, 95L, 86L, 120L, 86L, 110L, 144L, 147L, 206L, 244L, 
-#          175L, 227L, 182L, 227L, 205L, 196L, 202L, 154L, 218L, 279L, 193L, 
-#          223L, 227L, 300L, 226L, 256L, 259L, 282L, 303L, 373L, 412L, 297L, 
-#          436L, 402L, 356L, 485L, 495L, 597L, 645L, 535L, 646L, 851L, 689L, 
-#          823L, 927L, 878L, 1036L, 1070L, 971L, 1225L, 1298L, 1539L, 1544L, 
-#          1673L, 1700L, 1909L, 2253L, 2388L, 2578L, 2353L, 2824L, 2909L, 
-#          2994L, 2970L, 2929L, 3401L, 3267L, 3411L, 3532L, 3090L, 3163L, 
-#          3060L, 2870L, 2650L, 2405L, 2143L, 1872L, 1601L, 1340L, 1095L, 
-#          872L, 677L, 512L, 376L, 268L, 186L, 125L, 81L, 51L, 31L, 18L, 
-#          11L, 6L, 3L, 2L)
-
-
-#https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/nationallifetablesunitedkingdomreferencetables
-# 2017-2019 pre covid
-# uk deaths aged 1:100 males
-dx <- c(
-   426.7,   24.2,   13.1,   10.0,    9.7,   8.5,   8.8,   6.8,
+# data from here@
+# https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/nationallifetablesunitedkingdomreferencetables
+# 2017-2019 pre covid UK deaths aged 1:100 males
+dx <- c( 426.7,   24.2,   13.1,   10.0,    9.7,   8.5,   8.8,   6.8,
    6.7,   5.9,   7.4,   8.5,   10.4,   12.6,   12.1,   17.3,
    22.6,   31.4,   39.8,   44.5,   50.4,   50.9,   50.0,   50.0,
    54.7,   59.2,   57.5,   61.4,   68.7,   72.3,   76.1,   82.3,
@@ -438,160 +407,36 @@ dx <- c(
    3921.6,   3818.9,   3456.3,   3260.5,   2944.2,   2581.5,   2243.5,   1874.0,
    1521.2,   1150.9,   858.3,   656.0,    430.2)
   
+   x <- 0:(length(dx)-1) # age vector ( this could be time )
+   n=100
+   haz <-    (dx/sum(dx)) / (1-cumsum(dx/sum(dx)))
+   cumhaz <- cumsum(haz)
+   Surv <-   exp(-cumhaz)
 
-# males 2010-12
-
-# dx <- c(
-#    
-#    472.2,
-#    33.2,
-#    19.1,
-#    12.4,
-#    10.5,
-#    10.9,
-#    9.9,
-#    7.6,
-#    10.4,
-#    10.2,
-#    9.0,
-#    9.7,
-#    10.9,
-#    9.4,
-#    12.8,
-#    15.8,
-#    22.2,
-#    35.8,
-#    48.2,
-#    46.8,
-#    51.5,
-#    55.1,
-#    55.3,
-#    58.4,
-#    54.3,
-#    60.5,
-#    60.3,
-#    61.9,
-#    68.8,
-#    74.3,
-#    80.0,
-#    80.9,
-#    82.7,
-#    89.4,
-#    97.8,
-#    101.6,
-#    109.7,
-#    120.4,
-#    130.0,
-#    141.2,
-#    154.2,
-#    157.7,
-#    171.3,
-#    183.3,
-#    209.2,
-#    219.2,
-#    226.6,
-#    239.3,
-#    262.4,
-#    280.0,
-#    304.2,
-#    334.6,
-#    374.4,
-#    405.7,
-#    437.5,
-#    490.6,
-#    545.9,
-#    577.8,
-#    633.0,
-#    677.0,
-#    747.3,
-#    806.2,
-#    873.9,
-#    923.9,
-#    1001.5,
-#    1073.7,
-#    1209.7,
-#    1298.2,
-#    1382.6,
-#    1542.9,
-#    1700.2,
-#    1837.2,
-#    1959.5,
-#    2070.3,
-#    2249.9,
-#    2382.0,
-#    2567.2,
-#    2732.3,
-#    2928.1,
-#    3066.8,
-#    3270.0,
-#    3482.7,
-#    3643.9,
-#    3752.7,
-#    3858.2,
-#    3903.1,
-#    3887.9,
-#    3855.2,
-#    3695.7,
-#    3606.6,
-#    3160.3,
-#    2949.0,
-#    2640.2,
-#    2413.3,
-#    2006.4,
-#    1627.8,
-#    1312.4,
-#    1001.4,
-#    757.9,
-#    525.6,
-#    365.5)
-#    
+# subset data and run regression for linear estimate~~~~~~~~~~~~~~~~~
    
+   require(rms)
+   z <- 30:90   # these ages only
+   dd<- data.frame(cbind(y= haz[z],x=z))
+   dx <- datadist(dd)
+   options(datadist='dx')
    
-   
-   
-   
-   
-   
-
-
-
-
-
-x <- 0:(length(dx)-1) # age vector ( this could be time )
-n=100
-#  x = deaths / total deaths 
-#  1- cumsum(x)
-
-haz <-    ( dx/sum(dx)) / (1-cumsum(dx/sum(dx)) )
-cumhaz <- cumsum(haz)
-Surv <-   exp(-cumhaz)
-
-# subset data and run regression~~~~~~~~~~~~~~~~~~~~~~
-require(rms)
-
-z<-30:90
-
-dd<- data.frame(cbind(y= haz[z],x=z))
-dx <- datadist(dd)
-options(datadist='dx')
-
-f <- ols(log(y) ~ x , dd)
-y <- haz[1:100]
-x <- 1: 100
-# slope
-exp(f$coefficients[2])
+   f <- ols(log(y) ~ x , dd)
+   y <- haz[1:100]
+   x <- 1: 100
+   # slope
+   exp(f$coefficients[2])
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-plot(x,  y, t='l', log="y",
-     xlab="age", ylab="Annual ‘hazard’ or ‘force of mortality h(t)", 
-     main="Annual risk of death in males from all causes for UK 2017-19")  
-lines(dd$x,  exp(predict(f)), col = 'red',  lwd=2, lty=2)
-
-
+   plot(x,  y, t='l', log="y",
+        xlab="age", ylab="Annual ‘hazard’ or ‘force of mortality h(t)", 
+        main="Annual risk of death in males from all causes for UK 2017-19")  
+   lines(dd$x,  exp(predict(f)), col = 'red',  lwd=2, lty=2)
 
 par(mfrow=c(1,4))
-#plot(haz,    t="l", xlab="age", ylab="Annual ‘hazard’ or ‘force of mortality h(t)", main="Annual risk of death \nmales from all causes \nfor UK 2017-19", log="y")
+#plot(haz,    t="l", xlab="age", ylab="Annual ‘hazard’ or ‘force of mortality h(t)", 
+#main="Annual risk of death \nmales from all causes \nfor UK 2017-19", log="y")
 
    plot(x,  y, t='l', log="y",
         xlab="age", ylab="Annual ‘hazard’ or ‘force of mortality h(t)", 
@@ -752,6 +597,144 @@ plot(km)                                    # basic KM plot
 #      ylim =      c(0,1))
 # lines(lowess(time[-1], haz[-1], f = 0.10))
 # abline(h=h, lty=2)
+
+
+
+
+
+
+
+
+
+
+# Plotting Three Weibull Distributions:
+
+
+x_lower_wei <- 0
+x_upper_wei <- 10
+
+# Excluded ylimits this time.
+
+ggplot(data.frame(x = c(x_lower_wei , x_upper_wei)), aes(x = x)) + 
+   xlim(c(x_lower_wei , x_upper_wei)) + 
+   stat_function(fun = dweibull, args = list(shape = 2, scale = 3), aes(colour = "2 & 3")) + 
+   stat_function(fun = dweibull, args = list(shape = 3, scale = 3), aes(colour = "3 & 3")) + 
+   stat_function(fun = dweibull, args = list(shape = 3, scale = 4), aes(colour = "3 & 4")) + 
+   scale_color_manual("Shape & Scale \n Parameters", values = c("blue", "green", "red")) +
+   labs(x = "\n x", y = "f(x) \n", 
+        title = "Weibull Distribution Plots") + 
+   theme(plot.title = element_text(hjust = 0.5), 
+         axis.title.x = element_text(face="bold", colour="blue", size = 12),
+         axis.title.y = element_text(face="bold", colour="blue", size = 12),
+         legend.title = element_text(face="bold", size = 10),
+         legend.position = "right")
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+## Moore's book p.17
+
+windows()
+par(mfrow=c(1,2))
+
+      up= 80
+      scale. = 0.03
+      A= 1.50
+      B= 1.00
+      C= 0.75
+      D= 0.04
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~Hazard   CDF/PDF
+weibHaz <- {function(x, shape, scale) dweibull(x, shape=shape,
+                  scale=scale)/pweibull(x, shape=shape, scale=scale, lower.tail=F)}
+
+      curve(weibHaz(x, shape=A, scale=1/scale.), from=0, to=up, 
+         ylab='Hazard', xlab='Time', col="red", 
+         main=paste0("The hazard is monotone increasing for ",
+                     expression(alpha)," >1, monotone decreasing for ",
+                     expression(alpha),"<1 \nand constant when equal to 1"))  
+       
+      
+      curve(weibHaz(x, shape=B, scale=1/scale.), from=0, to=up, 
+         ylab='Hazard', xlab='Time', add=T, col="black")
+   
+      curve(weibHaz(x, shape=C, scale=1/scale.), from=0, to=up, 
+         ylab='Hazard', xlab='Time', add=T, col="blue")
+      
+      curve(weibHaz(x, shape=B, scale=1/D), from=0, to=up, 
+            ylab='Hazard', xlab='Time', add=T, col="darkgreen",  lty=2)
+   
+      text(45, 0.065, bquote("" ~ alpha == .(A) ~ ""  ~ lambda == .(scale.) ~ ""), 
+           col="red", cex=1.3)
+      
+      text(45, 0.034, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(scale.) ~ ""), 
+           col="black", cex=1.3)
+      
+      text(45, 0.015, bquote("" ~ alpha == .(C) ~ "" ~ lambda == .(scale.) ~ ""), 
+           col="blue", cex=1.3)
+   
+      text(45, 0.044, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""), 
+           col="darkgreen", cex=1.3)
+    
+#~~~~~~~~~~~~~~~~~~~~~~~~~Survival      PDF
+weibHaz <- {function(x, shape, scale)  pweibull(x, shape=shape, scale=scale, lower.tail=F)}
+
+   curve(weibHaz(x, shape=A, scale=1/scale.), from=0, to=up, 
+         ylab='Survival', xlab='Time', col="red")
+   
+   curve(weibHaz(x, shape=B, scale=1/scale.), from=0, to=up, 
+         ylab='Survival', xlab='Time', add=T, col="black")
+   
+   curve(weibHaz(x, shape=C, scale=1/scale.), from=0, to=up, 
+         ylab='Survival', xlab='Time', add=T, col="blue")
+   
+   curve(weibHaz(x, shape=B, scale=1/D), from=0, to=up, 
+         ylab='Hazard', xlab='Time', add=T, col="darkgreen",  lty=2)
+   
+   text(16, 0.065, bquote("" ~ alpha == .(A) ~ ""  ~ lambda == .(scale.) ~ ""), 
+        col="red", cex=1.3)
+   
+   text(15, 0.23, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(scale.) ~ ""), 
+        col="black", cex=1.3)
+   
+   text(17, 0.15, bquote("" ~ alpha == .(C) ~ "" ~ lambda == .(scale.) ~ ""), 
+        col="blue", cex=1.3)
+   
+   text(15, 0.31, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""), 
+        col="darkgreen", cex=1.3)
+
+par(mfrow=c(1,1))
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+weibHaz <- {function(x, shape, scale)  pweibull(x, shape=shape, scale=scale, lower.tail=F, log=TRUE)}
+
+curve(weibHaz(x, shape=A, scale=1/scale.), from=0, to=up, 
+      ylab='Survival', xlab='Time', col="red")
+
+curve(weibHaz(x, shape=B, scale=1/scale.), from=0, to=up, 
+      ylab='Survival', xlab='Time', add=T, col="black")
+
+curve(weibHaz(x, shape=C, scale=1/scale.), from=0, to=up, 
+      ylab='Survival', xlab='Time', add=T, col="blue")
+
+curve(weibHaz(x, shape=B, scale=1/D), from=0, to=up, 
+      ylab='Hazard', xlab='Time', add=T, col="darkgreen",  lty=2)
+
+text(16, 0.065-2.4, bquote("" ~ alpha == .(A) ~ ""  ~ lambda == .(scale.) ~ ""), 
+     col="red", cex=1.3)
+text(15, 0.23-2.85, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(scale.) ~ ""), 
+     col="black", cex=1.3)
+
+text(16.5, 0.155-3.1, bquote("" ~ alpha == .(C) ~ "" ~ lambda == .(scale.) ~ ""), 
+     col="blue", cex=1.3)
+
+text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""), 
+     col="darkgreen", cex=1.3)
+
+
+
 
 
 
