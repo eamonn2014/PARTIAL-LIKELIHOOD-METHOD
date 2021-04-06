@@ -654,8 +654,9 @@ weibHaz <- {function(x, shape, scale) dweibull(x, shape=shape,
       curve(weibHaz(x, shape=A, scale=1/scale.), from=0, to=up, 
          ylab='Hazard', xlab='Time', col="red", 
          main=paste0("The hazard is monotone increasing for ",
-                     expression(alpha)," >1, monotone decreasing for ",
-                     expression(alpha),"<1 \nand constant when equal to 1"))  
+         expression(alpha)," >1, monotone decreasing for ",
+                     expression(alpha),"<1 \nand constant when equal to 1"))
+ 
        
       
       curve(weibHaz(x, shape=B, scale=1/scale.), from=0, to=up, 
@@ -711,9 +712,10 @@ par(mfrow=c(1,1))
 weibHaz <- {function(x, shape, scale)  pweibull(x, shape=shape, scale=scale, lower.tail=F, log=TRUE)}
 
 curve(weibHaz(x, shape=A, scale=1/scale.), from=0, to=up, 
-      ylab='Survival', xlab='Time', col="red")
+      ylab='Survival', xlab='Time', col="red",
+      main=paste0("When alpha is 1 the log scale plot will be a straight line"))  
 
-curve(weibHaz(x, shape=B, scale=1/scale.), from=0, to=up, 
+ curve(weibHaz(x, shape=B, scale=1/scale.), from=0, to=up, 
       ylab='Survival', xlab='Time', add=T, col="black")
 
 curve(weibHaz(x, shape=C, scale=1/scale.), from=0, to=up, 
@@ -733,6 +735,7 @@ text(16.5, 0.155-3.1, bquote("" ~ alpha == .(C) ~ "" ~ lambda == .(scale.) ~ "")
 text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""), 
      col="darkgreen", cex=1.3)
 
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
