@@ -605,22 +605,21 @@ plot(km)                                    # basic KM plot
 
 
 
-
+# https://dk81.github.io/dkmathstats_site/rvisual-cont-prob-dists.html
 
 # Plotting Three Weibull Distributions:
 
 
 x_lower_wei <- 0
-x_upper_wei <- 10
-
-# Excluded ylimits this time.
+x_upper_wei <- 80
 
 ggplot(data.frame(x = c(x_lower_wei , x_upper_wei)), aes(x = x)) + 
    xlim(c(x_lower_wei , x_upper_wei)) + 
-   stat_function(fun = dweibull, args = list(shape = 2, scale = 3), aes(colour = "2 & 3")) + 
-   stat_function(fun = dweibull, args = list(shape = 3, scale = 3), aes(colour = "3 & 3")) + 
-   stat_function(fun = dweibull, args = list(shape = 3, scale = 4), aes(colour = "3 & 4")) + 
-   scale_color_manual("Shape & Scale \n Parameters", values = c("blue", "green", "red")) +
+   stat_function(fun = pweibull, args = list(shape = 1, scale = 1/.03, lower.tail=F), aes(colour = "1 & 0.03")) + 
+   stat_function(fun = pweibull, args = list(shape = 1, scale = 1/.04, lower.tail=F), aes(colour = "1 & 0.04")) + 
+   stat_function(fun = pweibull, args = list(shape = .75, scale = 1/.03, lower.tail=F), aes(colour = "0.75 & 0.03")) + 
+   stat_function(fun = pweibull, args = list(shape = 1.5, scale = 1/.03, lower.tail=F), aes(colour = "1.5 & 0.03")) + 
+   scale_color_manual("Shape & Scale \n Parameters", values = c("blue", "black", "red", "darkgreen")) +
    labs(x = "\n x", y = "f(x) \n", 
         title = "Weibull Distribution Plots") + 
    theme(plot.title = element_text(hjust = 0.5), 
@@ -630,7 +629,29 @@ ggplot(data.frame(x = c(x_lower_wei , x_upper_wei)), aes(x = x)) +
          legend.position = "right")
 
 
+x_lower_wei <- 0
+x_upper_wei <- 80
+# function to calculate hazard:
+weibHaz <- {function(x, shape, scale) dweibull(x, shape=shape,
+                   scale=scale)/pweibull(x, shape=shape, scale=scale, lower.tail=F)}
 
+
+ggplot(data.frame(x = c(x_lower_wei , x_upper_wei)), aes(x = x)) + 
+   xlim(c(x_lower_wei , x_upper_wei)) + 
+   stat_function(fun = weibHaz, args = list(shape = 1, scale = 1/.03), aes(colour = "1 & 0.03")) + 
+   stat_function(fun = weibHaz, args = list(shape = 1, scale = 1/.04), aes(colour = "1 & 0.04")) + 
+   stat_function(fun = weibHaz, args = list(shape = .75, scale = 1/.03), aes(colour = "0.75 & 0.03")) + 
+   stat_function(fun = weibHaz, args = list(shape = 1.5, scale = 1/.03), aes(colour = "1.5 & 0.03")) + 
+   scale_color_manual("Shape & Scale \n Parameters", values = c("blue", "black", "red", "darkgreen")) +
+   labs(x = "\n x", y = "h(x) \n", 
+        title = "Weibull Hazard Distribution Plots") + 
+   theme(plot.title = element_text(hjust = 0.5), 
+         axis.title.x = element_text(face="bold", colour="blue", size = 12),
+         axis.title.y = element_text(face="bold", colour="blue", size = 12),
+         legend.title = element_text(face="bold", size = 10),
+         legend.position = "right")
+
+ 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -647,7 +668,7 @@ par(mfrow=c(1,2))
       C= 0.75
       D= 0.04
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~Hazard   CDF/PDF
+#~~~~~~~~~~~~~~~~~~~Hazard   CDF/PDF 
 weibHaz <- {function(x, shape, scale) dweibull(x, shape=shape,
                   scale=scale)/pweibull(x, shape=shape, scale=scale, lower.tail=F)}
 
