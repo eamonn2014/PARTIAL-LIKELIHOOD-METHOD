@@ -173,26 +173,34 @@
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # another go EXPONENTIAL ONLY
-
-    end <- ceiling(-(log(1-.999)/ lambda))   # for plotting 99th percentile, see wikipedia 
+    
+    rm(list=ls())
+    require(survival)
+    # a function to plot survival function
+    weibSurv <- function(t, shape, scale) pweibull(t, shape=shape, scale=scale, lower.tail=F)
+    
+    un =100                  ## number of fail times
+    # pdf, two versions of the same thing
+    lambda <- .003                            # rate
+    end <- ceiling(-(log(1-.999)/ lambda))   # for plotting x axis uper limit 
     s <- seq(0,end, length.out = end+1)
     s1 <- c(s, length(s))
-    haz <- rep(lambda, length(s)) # 
+    haz <- rep(lambda, length(s)) #
     cumhaz <- c(0,cumsum(haz) )   #  # get that first point of 0
     Surv <- exp(-cumhaz ) 
     
     par(mfrow=c(1,5))
       
-       plot(s, haz,    type='l', xlab='Time domain', ylab='Hazard', main=paste0("h(t),rate = ",lambda,""))
+       plot(s, haz,    type='l', xlab='Time', ylab='Hazard', main=paste0("h(t),rate = ",lambda,""))
       
-       plot(s1, cumhaz, type='l', xlab='Time domain', ylab='Cumulative hazard', main=paste0("H(t) , rate = ",lambda,""))
+       plot(s1, cumhaz, type='l', xlab='Time', ylab='Cumulative hazard', main=paste0("H(t) , rate = ",lambda,""))
        
-       plot(s1, Surv,   type='l', xlab='Time domain', ylab='Survival', 
+       plot(s1, Surv,   type='l', xlab='Time', ylab='Survival', 
             main=paste0("S(t), rate = ",lambda,"\nMed Surv=", round(-log(.5)/lambda,2) ))
        abline(v=-log(0.5)/lambda )
        abline(h=0.5 )
        
-       plot(s1, log(Surv),   type='l', xlab='Time domain', ylab='log Survival', main=paste0("S(t), rate = ",lambda,""))
+       plot(s1, log(Surv),   type='l', xlab='Time', ylab='log Survival', main=paste0("S(t), rate = ",lambda,""))
        abline(v=-log(0.5)/lambda )
        abline(h= log(.5))
   
@@ -206,11 +214,11 @@
        # select the survival corresponding to each D
        ###############################
        
-       u <- runif(n)
-       failtimes <- s[colSums(outer(S, u, `>`))]
+       u <- runif(un)
+       failtimes <- s[colSums(outer(Surv, u, `>`))]
        km <- (survfit(Surv(failtimes)~1))
        km
-       plot(km  , main=paste0("rate =",lambda,"\nN=",n),  ylab='Survival probability', xlab='Time')
+       plot(km  , main=paste0("rate =",lambda,"\nN=",un),  ylab='Survival probability', xlab='Time')
        curve(weibSurv(x, shape=1, scale=1/lambda), from=0, to=end, n=end+1, 
               col='red', lwd=2, lty=2,
              ylim=c(0,1), add=TRUE)
@@ -227,27 +235,31 @@
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~repeat but use weibull
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~weibull
-    un        <- 1000  # use this to simulate survival times
-    n         <- 1000
-    lambda    <- .03     
-    k         <- .5# 1/2    #shape < 1 decreasing with time.., > 1 increasing with time, 1 constant
+    rm(list=ls())
+    require(survival)
+    
+    # a function to plot survival function
+    weibSurv <- function(t, shape, scale) pweibull(t, shape=shape, scale=scale, lower.tail=F)
+     
+    n         <- 100 # use this to simulate fail times
+    # Weibull parameters
+    lambda    <- .03 # scale   
+    k         <- .5  # shape < 1 decreasing with time.., > 1 increasing with time, 1 constant
     
     #~~~~~~~~~~~~~~~~~
     p         <- 0.5
-    (med.surv <- 1/lambda* (-log(1-p))^(1/k) )
-    # 95th percentile
-    p=.95
-    end <- (med.surv2 <- 1/lambda* (-log(1-p))^(1/k) )
+    (med.surv <- 1/lambda* (-log(1-p))^(1/k) )   # true median survival
+   
+    p <-.95   # 95th percentile
+    end <- (med.surv2 <- 1/lambda* (-log(1-p))^(1/k) )  # upper a axis limit
     #~~~~~~~~~~~~~~~~~~
     
     
-    x <- seq(0, ceiling(end), length.out = end+1)
-    S =      pweibull(x, shape=k, scale=1/lambda, lower.tail=F)
-    plot(S)
+    x <- seq(0, ceiling(end), length.out = end+1)   # time domain
+    S =  pweibull(x, shape=k, scale=1/lambda, lower.tail=F)   # pdf
+    # plot(S)
     
-    
-    #S
-    u <- runif(un)
+    u <- runif(n)
     failtimes <- x[colSums(outer(S, u, `>`))]
     km <- (survfit(Surv(failtimes)~1))
     km
@@ -258,7 +270,8 @@
     
     #~~~~~~~~~~~~
     plot(km  , 
-         main=paste0("Shape =",k,", rate =",lambda,"\nTrue med surv = ",round(med.surv,1) ," N=",length(u)),  
+         main=paste0("Shape = ",k,", rate = ",lambda,"\nTrue med surv = ",
+                     round(med.surv,1) ,", N=", (n)),  
          ylab='Survival probability', xlab='Time')
     
     curve(weibSurv(x, shape=k, scale=1/lambda), from=0, to=end, n=end+1, 
@@ -266,22 +279,23 @@
           ylim=c(0,1), add=TRUE)
     abline(v= med.surv , lty=2)
     abline(h=.5 , lty=2 )
-    #~~~~~~~~~~~~~~~~~~ log scsle
+    #~~~~~~~~~~~~~~~~~~ log scale
     
     plot(km  , log = TRUE,
-         main=paste0("Shape =",k,", rate =",lambda,"\nTrue med surv = ",round(med.surv,1) ," N=",length(u)),  
+         main=paste0("Shape =",k,", rate = ",lambda,"\nTrue med surv = ",
+                     round(med.surv,1) ,", N=", (n)),  
          ylab='Survival probability', xlab='Time')
    
     curve(weibSurv(x, shape=k, scale=1/lambda), from=0, to=end, n=end+1, log=TRUE,
           col='red', lwd=2, lty=2, #yaxt='n',
            ylim=c(0,1), add=TRUE)
-   # axis(2, at = y)  
+     
     abline(v=  (med.surv) , lty=2)
     abline(h= .5, lty=2 )
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # hazard
-    cdf <-   dweibull(x, shape=k, scale=1/lambda)     # pdf
+    cdf <-   dweibull(x, shape=k, scale=1/lambda)                # pdf
     pdf <-   pweibull(x, shape=k, scale=1/lambda, lower.tail=F)  # survival function
     haz <- cdf/pdf 
     
@@ -390,21 +404,161 @@
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # https://stats.stackexchange.com/questions/60238/intuition-for-cumulative-hazard-function-survival-analysis
+rm(list=ls())
+    require(survival)
+    options(scipen=999)
+# dx <-  c(3184L, 268L, 145L, 81L, 64L, 81L, 101L, 50L, 72L, 76L, 50L, 
+#          62L, 65L, 95L, 86L, 120L, 86L, 110L, 144L, 147L, 206L, 244L, 
+#          175L, 227L, 182L, 227L, 205L, 196L, 202L, 154L, 218L, 279L, 193L, 
+#          223L, 227L, 300L, 226L, 256L, 259L, 282L, 303L, 373L, 412L, 297L, 
+#          436L, 402L, 356L, 485L, 495L, 597L, 645L, 535L, 646L, 851L, 689L, 
+#          823L, 927L, 878L, 1036L, 1070L, 971L, 1225L, 1298L, 1539L, 1544L, 
+#          1673L, 1700L, 1909L, 2253L, 2388L, 2578L, 2353L, 2824L, 2909L, 
+#          2994L, 2970L, 2929L, 3401L, 3267L, 3411L, 3532L, 3090L, 3163L, 
+#          3060L, 2870L, 2650L, 2405L, 2143L, 1872L, 1601L, 1340L, 1095L, 
+#          872L, 677L, 512L, 376L, 268L, 186L, 125L, 81L, 51L, 31L, 18L, 
+#          11L, 6L, 3L, 2L)
 
-dx <-  c(3184L, 268L, 145L, 81L, 64L, 81L, 101L, 50L, 72L, 76L, 50L, 
-         62L, 65L, 95L, 86L, 120L, 86L, 110L, 144L, 147L, 206L, 244L, 
-         175L, 227L, 182L, 227L, 205L, 196L, 202L, 154L, 218L, 279L, 193L, 
-         223L, 227L, 300L, 226L, 256L, 259L, 282L, 303L, 373L, 412L, 297L, 
-         436L, 402L, 356L, 485L, 495L, 597L, 645L, 535L, 646L, 851L, 689L, 
-         823L, 927L, 878L, 1036L, 1070L, 971L, 1225L, 1298L, 1539L, 1544L, 
-         1673L, 1700L, 1909L, 2253L, 2388L, 2578L, 2353L, 2824L, 2909L, 
-         2994L, 2970L, 2929L, 3401L, 3267L, 3411L, 3532L, 3090L, 3163L, 
-         3060L, 2870L, 2650L, 2405L, 2143L, 1872L, 1601L, 1340L, 1095L, 
-         872L, 677L, 512L, 376L, 268L, 186L, 125L, 81L, 51L, 31L, 18L, 
-         11L, 6L, 3L, 2L)
+
+#https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/nationallifetablesunitedkingdomreferencetables
+# 2017-2019 pre covid
+# uk deaths aged 1:100 males
+dx <- c(
+   426.7,   24.2,   13.1,   10.0,    9.7,   8.5,   8.8,   6.8,
+   6.7,   5.9,   7.4,   8.5,   10.4,   12.6,   12.1,   17.3,
+   22.6,   31.4,   39.8,   44.5,   50.4,   50.9,   50.0,   50.0,
+   54.7,   59.2,   57.5,   61.4,   68.7,   72.3,   76.1,   82.3,
+   82.3,   91.5,   94.1,   105.5,   112.5,   128.3,   123.5,   136.8,
+   149.3,   162.8,   176.9,   194.6,    203.0,   227.2,   240.2,   259.7,
+   273.9,   305.4,   322.6,   343.1,   370.4,   389.5,   421.1,   445.7,
+   502.2,   542.8,   589.1,   634.4,   690.5,   750.0,   825.2,   902.3,
+   960.5,   1043.5,   1142.9,   1221.3,    1312.3,   1418.8,   1474.7,   1605.3,
+   1731.7,   1933.7,   2078.2,   2255.3,    2442.8,   2606.9,   2807.8,   2968.1,
+   3170.9,   3338.1,   3473.9,   3676.0,    3820.8,   3905.8,   3991.4,   3956.3,
+   3921.6,   3818.9,   3456.3,   3260.5,   2944.2,   2581.5,   2243.5,   1874.0,
+   1521.2,   1150.9,   858.3,   656.0,    430.2)
+  
+
+# males 2010-12
+
+# dx <- c(
+#    
+#    472.2,
+#    33.2,
+#    19.1,
+#    12.4,
+#    10.5,
+#    10.9,
+#    9.9,
+#    7.6,
+#    10.4,
+#    10.2,
+#    9.0,
+#    9.7,
+#    10.9,
+#    9.4,
+#    12.8,
+#    15.8,
+#    22.2,
+#    35.8,
+#    48.2,
+#    46.8,
+#    51.5,
+#    55.1,
+#    55.3,
+#    58.4,
+#    54.3,
+#    60.5,
+#    60.3,
+#    61.9,
+#    68.8,
+#    74.3,
+#    80.0,
+#    80.9,
+#    82.7,
+#    89.4,
+#    97.8,
+#    101.6,
+#    109.7,
+#    120.4,
+#    130.0,
+#    141.2,
+#    154.2,
+#    157.7,
+#    171.3,
+#    183.3,
+#    209.2,
+#    219.2,
+#    226.6,
+#    239.3,
+#    262.4,
+#    280.0,
+#    304.2,
+#    334.6,
+#    374.4,
+#    405.7,
+#    437.5,
+#    490.6,
+#    545.9,
+#    577.8,
+#    633.0,
+#    677.0,
+#    747.3,
+#    806.2,
+#    873.9,
+#    923.9,
+#    1001.5,
+#    1073.7,
+#    1209.7,
+#    1298.2,
+#    1382.6,
+#    1542.9,
+#    1700.2,
+#    1837.2,
+#    1959.5,
+#    2070.3,
+#    2249.9,
+#    2382.0,
+#    2567.2,
+#    2732.3,
+#    2928.1,
+#    3066.8,
+#    3270.0,
+#    3482.7,
+#    3643.9,
+#    3752.7,
+#    3858.2,
+#    3903.1,
+#    3887.9,
+#    3855.2,
+#    3695.7,
+#    3606.6,
+#    3160.3,
+#    2949.0,
+#    2640.2,
+#    2413.3,
+#    2006.4,
+#    1627.8,
+#    1312.4,
+#    1001.4,
+#    757.9,
+#    525.6,
+#    365.5)
+#    
+   
+   
+   
+   
+   
+   
+   
+
+
+
+
 
 x <- 0:(length(dx)-1) # age vector ( this could be time )
-
+n=100
 #  x = deaths / total deaths 
 #  1- cumsum(x)
 
@@ -412,19 +566,79 @@ haz <-    ( dx/sum(dx)) / (1-cumsum(dx/sum(dx)) )
 cumhaz <- cumsum(haz)
 Surv <-   exp(-cumhaz)
 
+# subset data and run regression~~~~~~~~~~~~~~~~~~~~~~
+require(rms)
+
+z<-30:90
+
+dd<- data.frame(cbind(y= haz[z],x=z))
+dx <- datadist(dd)
+options(datadist='dx')
+
+f <- ols(log(y) ~ x , dd)
+y <- haz[1:100]
+x <- 1: 100
+# slope
+exp(f$coefficients[2])
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+plot(x,  y, t='l', log="y",
+     xlab="age", ylab="Annual ‘hazard’ or ‘force of mortality h(t)", 
+     main="Annual risk of death in males from all causes for UK 2017-19")  
+lines(dd$x,  exp(predict(f)), col = 'red',  lwd=2, lty=2)
+
+
+
 par(mfrow=c(1,4))
-plot(haz,    t="l", xlab="age", ylab="h(t)", main="h(t)", log="y")
-plot(cumhaz, t="l", xlab="age", ylab="H(t)", main="H(t)")
-plot( Surv,  t="l", xlab="age", ylab="H(t)", main="S(t)")
+#plot(haz,    t="l", xlab="age", ylab="Annual ‘hazard’ or ‘force of mortality h(t)", main="Annual risk of death \nmales from all causes \nfor UK 2017-19", log="y")
 
+   plot(x,  y, t='l', log="y",
+        xlab="age", ylab="Annual ‘hazard’ or ‘force of mortality h(t)", 
+        main="Annual risk of death in \nmales from all causes \nfor UK 2017-19")  
+   lines(dd$x,  exp(predict(f)), col = 'red',  lwd=2, lty=2)
+   
+   plot(cumhaz, t="l", xlab="age", ylab="H(t)", main="H(t)")
+   
+   plot( Surv,  t="l", xlab="age", ylab="S(t)", main="S(t)")
+   
+   u <- runif(n)
+   failtimes <- x[colSums(outer(Surv, u, `>`))]
+   km <- (survfit(Surv(failtimes)~1))
+   km
+   plot(km, main=paste0("Survival, N=",length(u)),  
+   ylab='Survival probability', xlab='age')
 
-
-u <- runif(n)
-failtimes <- x[colSums(outer(Surv, u, `>`))]
-km <- (survfit(Surv(failtimes)~1))
-km
-plot(km)
 par(mfrow=c(1,1))
+
+
+
+# subset data and run regression
+# require(rms)
+#  
+# dd<- data.frame(cbind(y= haz[26:90],x=26: 90))
+# dx <- datadist(dd)
+# options(datadist='dx')
+# 
+# f <- ols(log(y) ~ x , dd)
+# y <- haz[1:100]
+# x <- 1: 100
+# 
+# 
+#  plot(x,  log(y), t='l' ) 
+#  lines(dd$x, predict(f), col = 'red',  lwd=2, lty=2)
+# 
+# 
+# plot(x,  y, t='l', log="y")  
+# lines(dd$x,  exp(predict(f)), col = 'red',  lwd=2, lty=2)
+
+ 
+
+
+
+
+# Annual risk of death from all causes for uk,
+# 2017–2019, known as the annual ‘hazard’ or ‘force of mortality’
 
 
 # curve(weibSurv(x, shape=1, scale=1/lambda), from=0, to=end, n=end+1, 
@@ -433,6 +647,7 @@ par(mfrow=c(1,1))
 # abline(v=-log(.5)/lambda )
 # abline(h=.5 )
 # -log(.5)/lambda 
+ 
 
 
 
