@@ -387,7 +387,7 @@
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # https://stats.stackexchange.com/questions/60238/intuition-for-cumulative-hazard-function-survival-analysis
-rm(list=ls())
+    rm(list=ls())
     require(survival)
     options(scipen=999)
 # data from here@
@@ -413,6 +413,12 @@ dx <- c( 426.7,   24.2,   13.1,   10.0,    9.7,   8.5,   8.8,   6.8,
    cumhaz <- cumsum(haz)
    Surv <-   exp(-cumhaz)
 
+   plot(haz,   t='l', log="y",
+        xlab="age", ylab="Annual ‘hazard’ or ‘force of mortality h(t)", 
+        main="Annual risk of death in males from all causes for UK 2017-19")  
+   #lines(dd$x,  exp(predict(f)), col = 'red',  lwd=2, lty=2)
+   
+   
 # subset data and run regression for linear estimate~~~~~~~~~~~~~~~~~
    
    require(rms)
@@ -608,51 +614,101 @@ plot(km)                                    # basic KM plot
 # https://dk81.github.io/dkmathstats_site/rvisual-cont-prob-dists.html
 
 # Plotting Three Weibull Distributions:
-
+# https://dk81.github.io/dkmathstats_site/rvisual-cont-prob-dists.html
+library(gridExtra)
+library(grid)
+library(ggplot2)
+xx= 1.3  # line size
 
 x_lower_wei <- 0
 x_upper_wei <- 80
 
-ggplot(data.frame(x = c(x_lower_wei , x_upper_wei)), aes(x = x)) + 
+pa<-ggplot(data.frame(x = c(x_lower_wei , x_upper_wei)), aes(x = x)) + 
    xlim(c(x_lower_wei , x_upper_wei)) + 
-   stat_function(fun = pweibull, args = list(shape = 1, scale = 1/.03, lower.tail=F), aes(colour = "1 & 0.03")) + 
-   stat_function(fun = pweibull, args = list(shape = 1, scale = 1/.04, lower.tail=F), aes(colour = "1 & 0.04")) + 
-   stat_function(fun = pweibull, args = list(shape = .75, scale = 1/.03, lower.tail=F), aes(colour = "0.75 & 0.03")) + 
-   stat_function(fun = pweibull, args = list(shape = 1.5, scale = 1/.03, lower.tail=F), aes(colour = "1.5 & 0.03")) + 
+   stat_function(fun = pweibull, args = list(shape = 1.0, scale = 1/.03, lower.tail=F), size = xx, aes(colour = "1.0 & 0.03")) + 
+   stat_function(fun = pweibull, args = list(shape = 1.0, scale = 1/.04, lower.tail=F), size = xx, aes(colour = "1.0 & 0.04")) + 
+   stat_function(fun = pweibull, args = list(shape = 0.75, scale = 1/.03, lower.tail=F), size = xx, aes(colour = "0.75 & 0.03")) + 
+   stat_function(fun = pweibull, args = list(shape = 1.5, scale = 1/.03, lower.tail=F), size = xx, aes(colour = "1.5 & 0.03")) + 
    scale_color_manual("Shape & Scale \n Parameters", values = c("blue", "black", "red", "darkgreen")) +
-   labs(x = "\n x", y = "f(x) \n", 
-        title = "Weibull Distribution Plots") + 
+   labs(x = "\n t", y = "S(t) \n", 
+        title = "Survival Distribution Plots") + 
    theme(plot.title = element_text(hjust = 0.5), 
          axis.title.x = element_text(face="bold", colour="blue", size = 12),
          axis.title.y = element_text(face="bold", colour="blue", size = 12),
          legend.title = element_text(face="bold", size = 10),
-         legend.position = "right")
+         legend.position = "right") + theme_bw() # + theme(legend.position = "none")  
 
 
-x_lower_wei <- 0
-x_upper_wei <- 80
+ 
+# see pweibull help, cum haz  H(t) = - log(1 - F(t)) is
+
+p <- {function(x, shape, scale) 
+   -pweibull(x, shape=shape, scale=scale, lower.tail=FALSE, log=TRUE)}
+
+pb<-ggplot(data.frame(x = c(x_lower_wei , x_upper_wei)), aes(x = x)) + 
+   xlim(c(x_lower_wei , x_upper_wei)) + 
+   stat_function(fun = p, args = list(shape = 1.0, scale = 1/.03 ), size = xx, aes(colour = "1.0 & 0.03")) + 
+   stat_function(fun = p, args = list(shape = 1.0, scale = 1/.04 ), size = xx, aes(colour = "1.0 & 0.04")) + 
+   stat_function(fun = p, args = list(shape = 0.75, scale =1/.03 ), size = xx, aes(colour = "0.75 & 0.03")) + 
+   stat_function(fun = p, args = list(shape = 1.5, scale = 1/.03 ), size = xx, aes(colour = "1.5 & 0.03")) + 
+   scale_color_manual("Shape & Scale \n Parameters", values = c("blue", "black", "red", "darkgreen")) +
+   labs(x = "\n t", y = "H(t) \n", 
+        title = "Cumulative hazard distribution Plots") + 
+   theme(plot.title = element_text(hjust = 0.5), 
+         axis.title.x = element_text(face="bold", colour="blue", size = 12),
+         axis.title.y = element_text(face="bold", colour="blue", size = 12),
+         legend.title = element_text(face="bold", size = 10),
+         legend.position = "right") + theme_bw() #+ theme(legend.position = "none")  
+  # theme(legend.position="bottom") 
+
+
 # function to calculate hazard:
 weibHaz <- {function(x, shape, scale) dweibull(x, shape=shape,
                    scale=scale)/pweibull(x, shape=shape, scale=scale, lower.tail=F)}
 
 
-ggplot(data.frame(x = c(x_lower_wei , x_upper_wei)), aes(x = x)) + 
+pc<-ggplot(data.frame(x = c(x_lower_wei , x_upper_wei)), aes(x = x )) + 
    xlim(c(x_lower_wei , x_upper_wei)) + 
-   stat_function(fun = weibHaz, args = list(shape = 1, scale = 1/.03), aes(colour = "1 & 0.03")) + 
-   stat_function(fun = weibHaz, args = list(shape = 1, scale = 1/.04), aes(colour = "1 & 0.04")) + 
-   stat_function(fun = weibHaz, args = list(shape = .75, scale = 1/.03), aes(colour = "0.75 & 0.03")) + 
-   stat_function(fun = weibHaz, args = list(shape = 1.5, scale = 1/.03), aes(colour = "1.5 & 0.03")) + 
+   stat_function(fun = weibHaz, args = list(shape = 1.0, scale = 1/.03), size = xx, aes(colour = "1.0 & 0.03")) + 
+   stat_function(fun = weibHaz, args = list(shape = 1.0, scale = 1/.04), size = xx,aes(colour = "1.0 & 0.04")) + 
+   stat_function(fun = weibHaz, args = list(shape = 0.75, scale = 1/.03), size = xx,aes(colour = "0.75 & 0.03")) + 
+   stat_function(fun = weibHaz, args = list(shape = 1.5, scale = 1/.03), size = xx,aes(colour = "1.5 & 0.03")) + 
    scale_color_manual("Shape & Scale \n Parameters", values = c("blue", "black", "red", "darkgreen")) +
-   labs(x = "\n x", y = "h(x) \n", 
-        title = "Weibull Hazard Distribution Plots") + 
+   labs(x = "\n t", y = "h(t) \n", 
+        title = "Hazard Distribution Plots") + 
+  
    theme(plot.title = element_text(hjust = 0.5), 
          axis.title.x = element_text(face="bold", colour="blue", size = 12),
          axis.title.y = element_text(face="bold", colour="blue", size = 12),
          legend.title = element_text(face="bold", size = 10),
-         legend.position = "right")
+         legend.position = "right") +   theme_bw()   
 
- 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+# f2 <- npsurv(S~1)
+# n  <- f2$numevents
+# x  <- f2$exposure
+# f2$numevents\f2$exposure
+# 
+# 
+# 
+# grid.arrange(pa,  pc, pb, ncol=3,
+#              
+#              top = textGrob(paste0( "Weibull"),
+#                             gp=gpar(fontsize=20,font=3)) )
+# 
+# 
+# 
+# 
+
+
+
+
+
+
+
 
 
 
@@ -763,38 +819,77 @@ text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""),
 
 
 
+# Inverse cumulative hazard function
+
+#########stata and bender p1716 Generating survival times to simulate Cox proportional
+# hazards models
+
+# Times = H^-1[-log(U)]
+#  
+# 
+# uniformly distributed random numbers can be transformed into survival
+# times following a specific Cox model
+# It is just required to insert the inverse of an appropriate cumulative baseline
+# hazard function into equation
+
+
+   
+
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   # In addition to f(), F(), S(), h(), and H() -all different ways of summarizing the same
+   # information-a sixth way, Q(), is of use for to create artificial survival-time data sets.
 
 
 
+   n=100 
+   
+   weibSurv <- function(t, shape, scale) pweibull(t, shape=shape, scale=scale, lower.tail=F)
+   
+   par(mfrow=c(1,2))  
+   
+      # simulate weibull shape parameter p, scale = h
+      p=1/3    # if 1 this is exponential
+      h=0.05
+      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~weibull
+      t <- h^-1*(-log(runif(n)))^p
+      
+      survfit <- survfit(Surv(t) ~ 1)
+      plot(survfit, ylab="Survival probability", xlab="Time")
+      
+      # plot true survival for weibull
+      curve(weibSurv(x, shape=1/p, scale=1/h), from=0, to=max(t), n=length(t), 
+            col='red', lwd=2, lty=2,
+            ylim=c(0,1), add=TRUE)
+      
+      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~exponential rate = h
+      
+      t <- -log(runif(n))/h
+      survfit <- survfit(Surv(t) ~ 1)
+      plot(survfit, ylab="Survival probability", xlab="Time")
+    
+      # plot true survival constant hazard h
+      curve(weibSurv(x, shape=1, scale=1/h), from=0, to=max(t), n=length(t), 
+            col='red', lwd=2, lty=2,
+            ylim=c(0,1), add=TRUE)
 
 
+   par(mfrow=c(1,1))
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
    #  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    #  # clear environment
    #  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
