@@ -833,17 +833,18 @@ text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""),
 # hazard function into equation
 
 
-   
+#Inverse cumulative hazard function
 
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    # In addition to f(), F(), S(), h(), and H() -all different ways of summarizing the same
    # information-a sixth way, Q(), is of use for to create artificial survival-time data sets.
-
+   # if U ∼ U[0; 1], then (1 − U) ∼ U[0; 1] so dispense with 1- in weibull formula
+   # uniformly distributed random numbers can be transformed into survival times
    n=100
    # function to plot true survival function
    weibSurv <- function(t, shape, scale) pweibull(t, shape=shape, scale=scale, lower.tail=F)
    
-   par(mfrow=c(1,2))  
+   par(mfrow=c(1,3))  
    
       # simulate weibull shape parameter p, scale = h
       p=1/3    # shape, if 1 this is exponential
@@ -872,16 +873,22 @@ text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""),
             ylim=c(0,1), add=TRUE)
 
 
-   par(mfrow=c(1,1))
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
-
+   require(flexsurv)
+   gSurv <- function(t, shape, scale) pgompertz(t, shape=p, rate = h, lower.tail=F)
    
+   t <- (1/p)*log((-log(runif(n)))*(p/h)+1) # gompertz see bender table1
    
+   survfit <- survfit(Surv(t) ~ 1)
+   plot(survfit, ylab="Survival probability", xlab="Time", main=paste0("N = ",n,", Gompertz, shape = ",p,", scale = ",h))
    
+   # plot true survival curve, 
+   curve(gSurv(x, shape=p, scale=1/h), from=0, to=max(t), n=length(t), 
+         col='red', lwd=2, lty=2,
+         ylim=c(0,1), add=TRUE)
    
-   
-   
+   par(mfrow=c(1,1))
    
    
    
