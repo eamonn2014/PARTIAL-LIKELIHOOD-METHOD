@@ -839,37 +839,34 @@ text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""),
    # In addition to f(), F(), S(), h(), and H() -all different ways of summarizing the same
    # information-a sixth way, Q(), is of use for to create artificial survival-time data sets.
 
-
-
-   n=100 
-   
+   n=100
+   # function to plot true survival function
    weibSurv <- function(t, shape, scale) pweibull(t, shape=shape, scale=scale, lower.tail=F)
    
    par(mfrow=c(1,2))  
    
       # simulate weibull shape parameter p, scale = h
-      p=1/3    # if 1 this is exponential
-      h=0.05
+      p=1/3    # shape, if 1 this is exponential
+      h=0.05   # scale
       
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~weibull
-      t <- h^-1*(-log(runif(n)))^p
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~
+      t <- h^-1*(-log(runif(n)))^p # weibull
       
       survfit <- survfit(Surv(t) ~ 1)
-      plot(survfit, ylab="Survival probability", xlab="Time")
+      plot(survfit, ylab="Survival probability", xlab="Time", main=paste0("N = ",n,", Weibull, shape = ",1/p,", rate = ",h))
       
-      # plot true survival for weibull
+      # plot true survival curve for weibull
       curve(weibSurv(x, shape=1/p, scale=1/h), from=0, to=max(t), n=length(t), 
             col='red', lwd=2, lty=2,
             ylim=c(0,1), add=TRUE)
       
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~
+      t <- -log(runif(n))/h # exponential rate = h 
       
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~exponential rate = h
-      
-      t <- -log(runif(n))/h
       survfit <- survfit(Surv(t) ~ 1)
-      plot(survfit, ylab="Survival probability", xlab="Time")
+      plot(survfit, ylab="Survival probability", xlab="Time", main=paste0("N = ",n,", Exponential, rate = ",h))
     
-      # plot true survival constant hazard h
+      # plot true survival curve, constant hazard h
       curve(weibSurv(x, shape=1, scale=1/h), from=0, to=max(t), n=length(t), 
             col='red', lwd=2, lty=2,
             ylim=c(0,1), add=TRUE)
