@@ -1,4 +1,331 @@
  
+#
+## ranks of time, show it is only ranks that count, mentino ties!
+
+# app function
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   #
+   coxdata <- function(n, allocation, hr, baseline) { 
+      
+      #n=1000; allocation =.5; hr=2; baseline=.4
+      
+      trt <- sample(0:1, n,  rep=TRUE, prob=c(1-allocation, allocation))
+      
+      cens <- 15*runif(n)
+      
+      h <- baseline*exp(log(hr)*(trt==1))  # hazard function h(t)
+      
+      dt <- -log(runif(n))/h
+      
+      label(dt) <- 'Follow-up Time'
+      
+      e <- ifelse(dt <= cens,1,0)
+      
+      dt <- pmin(dt, cens)
+      
+      units(dt) <- "Year"
+      
+      d <<- data.frame(cbind(dt,e,trt=trt))  ##why the << required to circumvent error?
+      
+      dd <<- datadist(d)
+      options(datadist='dd')
+      
+      foo <-d
+      # S <- Surv(dt,e)
+      f <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
+      f0 <- f$coefficients[[1]] #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+      LL1 <- f$loglik[2]
+      LL0 <- f$loglik[1]
+      
+      sf <- summary(f)
+      
+      f1 <- survfit(Surv(dt,e) ~ trt, data = d)
+      
+      np <- npsurv(Surv(dt,e) ~ trt,d)
+      
+      S <- Surv(d$dt, d$e)
+      
+      #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+      
+      d <- plyr::arrange(d,dt)
+      d$dt <- dd<- NULL
+      d$dt <- sort(2*rexp(nrow(d)))# new times
+      
+      dx <<- datadist(d)
+      options(datadist='dx')
+      f0a <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
+      f0a <- f0a$coefficients[[1]]
+      f2 <- survfit(Surv(dt ,e)  ~ trt, data = d)
+      
+      #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+      
+      return(list(f=f, d=d, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0, S=S,                  
+                  
+                  f0=f0,  f2=f2, f0a=f0a, foo=foo))
+      
+   }
+   
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# quickly show partial log likelihood calc (without logging til end)
+# in reality you don't know HR, it is found by iteration, maximizing LL
+
+set.seed(1234)
+
+# create small dataset, 
+# we are doing it this way to exemplfy
+# large datasets will cause numerical problems
+# so we should calculate on log space really
+
+## show the cox phworkings
+
+set.seed(8713)
+res <- coxdata(n=10, allocation=.5, hr=2, baseline = .4)
+f <- cph(Surv(dt,e) ~ trt, x=TRUE, y=TRUE, data=res$d )
+f
+d <- res$d
+d <- plyr::arrange(d, dt)  # sort by time
+
+# Calculate Li for everyone
+d$numerator   <- exp(res$f$coefficients[[1]] * d$trt)
+d$denominator <- (rev(cumsum(rev(d$numerator))))
+d$Li          <- d$numerator/d$denominator
+
+# all censored contribute 1 (on multiplicative scale)
+d$Li2<- ifelse(d$e %in% 1,d$Li,1)
+
+# get the product of all and log answer
+d$LL <- log(prod(d$Li2))  
+d
+
+print(d,digits=6)
+
+
+# model LL, prove we have ecalc correctly
+res$f$loglik
+
+
+
+f <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=res$d )
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 
+res <- coxdata(n=100, allocation=.5, hr=2, baseline = .4)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~
+fx <-  res$f2 # Get the  obj #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+f0a <- res$f0a               #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+p1 <- ggsurvplot(fx, main = "Kaplan-Meier Curve", legend.title = "Trt.",
+                 # palette = c("orange", "purple")  ,
+                 xlab=paste0("Time : HR=",  (exp(f0a)))
+                 # ggtheme = theme_bw() # Change ggplot2 theme
+)
+A<-ggplotly(p1[[1]])
+#~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+fx <-  res$f1 # Get the  obj #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+f0a <- res$f0                #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+p2 <- ggsurvplot(fx, main = "Kaplan-Meier Curve", legend.title = "Trt.",
+                 # palette = c("orange", "purple")  ,
+                 xlab=paste0("Time : HR=",  (exp(f0a)))
+                 # ggtheme = theme_bw() # Change ggplot2 theme
+)
+B <- ggplotly(p2[[1]])
+#~~~~~~~~~~~~~~~~~~~~~~~~~
+
+require(gridExtra)
+subplot(A,B,nrows=1, shareX=TRUE , titleX=TRUE)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~pdf cdf s(t)
+rm(list=ls())
+require(ggplot2)
+set.seed(100)
+Time <- data.frame(Time=rnorm(1000, 500, 150))
+rand1 <- 400
+
+# pdf
+p <- ggplot(Time, aes(Time)) +
+   geom_density(fill="grey") #+
+# subset region and plot
+d <- ggplot_build(p)$data[[1]]
+
+p <- p + geom_area(data = subset(d, x > rand1), aes(x=x, y=y), fill="lightgrey") +
+   geom_segment(x=rand1, xend=rand1, 
+                y=0, yend=approx(x = d$x, y = d$y, xout = rand1)$y,
+                colour="black", size=1)  + ylab("Density (Relative frequency)") +
+   
+   annotate("text", x=250,  y=0.0002, label= "F(t)", size=4) + 
+   annotate("text", x =650, y=0.0002, label = "S(t) = 1 - F(t)", size=4) +
+   annotate("text", x =660, y=0.002,  label = "f(t)", size=4) +
+   ggtitle("f(t) (death density) as a function of time. The cumulative \nproportion of the population that has died up to time t equals F(t). \nThe prop of the pop that has survived to time t is S(t) = 1- F(t)") +
+   theme_bw()
+
+# cdf
+P2 <-  ggplot(Time, aes(Time)) + stat_ecdf(geom = "step") +
+   ggtitle("F(t). Cumulative proportion of deaths with time")  +
+   theme_bw()
+
+# S(t)
+pg <- ggplot_build(P2)$data[[1]]
+P3 <- ggplot(pg, aes(x = x, y = 1-y )) + geom_step() +
+   ggtitle("S(t) The proportion of the population survived to time t \n S(t) = 1 - F(t) = P(T>t)")  + 
+   xlab("Time") +
+   ylab("Survival probability") +
+   theme_bw()
+
+
+require(gridExtra)
+plot1 <- p
+plot2 <- P2
+plot3 <- P3
+grid.arrange(plot1, plot2, plot3, ncol=3)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+p
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~pdf cdf s(t)
+   rm(list=ls())
+   require(ggplot2)
+   set.seed(1088)
+   
+   n=20
+   rand1 <- 400
+   Time=rnorm(n, 500, 150)
+  # Time=rexp(n, rate=.003)
+  
+   Time1 <- data.frame(Time=Time)
+   
+   #mean1 <- mean(amount_spent1$amount_spent)
+   rand1 <- 400
+   
+   
+   p <- ggplot(Time1, aes(Time)) +
+      geom_density(fill="grey")# +
+    #  geom_vline(xintercept=mean1) 
+   
+   # subset region and plot
+   d <- ggplot_build(p)$data[[1]]
+   
+   # p <- p + geom_area(data = subset(d, x > rand1), aes(x=x, y=y), fill="red") +
+   #    geom_segment(x=rand1, xend=rand1, 
+   #                 y=0, yend=approx(x = d$x, y = d$y, xout = rand1)$y,
+   #                 colour="blue", size=3)
+ 
+   
+  
+   dput(   sort(as.vector(unlist(Time1))))
+
+ #  pdf
+   # p <- ggplot(amount_spent1, aes(Time1)) +
+   #    geom_density(fill="grey") #+
+   # # subset region and plot
+   # d <- ggplot_build(p)$data[[1]]
+   #
+    p <- p + geom_area(data = subset(d, x > rand1), aes(x=x, y=y), fill="lightgrey") +
+      geom_segment(x=rand1, xend=rand1,
+                    y=0, yend=approx(x = d$x, y = d$y, xout = rand1)$y,
+                    colour="black", size=1)  + ylab("Density (Relative frequency)") +
+   
+      annotate("text", x=350,  y=0.0002, label= "F(t)", size=4) +
+       annotate("text", x =650, y=0.0002, label = "S(t) = 1 - F(t)", size=4) +
+       annotate("text", x =600, y=0.002,  label = "f(t)", size=4) +
+       ggtitle("f(t) (death density) as a function of time. The cumulative \nproportion of the population that has died up to time t equals F(t). \nThe prop of the pop that has survived to time t is S(t) = 1- F(t)") +
+       theme_bw()
+   
+  
+   
+
+# cdf
+   P2 <-  ggplot(Time1, aes(Time)) + stat_ecdf(geom = "step") +
+      ggtitle("F(t). Cumulative proportion of deaths with time")  +
+      theme_bw()
+
+# S(t)
+   pg <- ggplot_build(P2)$data[[1]]
+   P3 <- ggplot(pg, aes(x = x, y = 1-y )) + geom_step() +
+      ggtitle("S(t) The proportion of the population survived to time t \n S(t) = 1 - F(t) = P(T>t)")  + 
+      xlab("Time") +
+      ylab("Survival probability") +
+      theme_bw()
+
+
+   require(gridExtra)
+   plot1 <- p
+   plot2 <- P2
+   plot3 <- P3
+   grid.arrange(plot1, plot2, plot3, ncol=3)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   # 
+   # 
+   # 
+   # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   # dens <- density(Time1$Time, n=n)
+   # pdf <- dens$y 
+   # sum(dens$y)*diff(dens$x[1:2])  # area under the curve sums up to one as pdf should
+   # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   # #
+   # pg <- plyr::arrange(pg, x)
+   # y <- 1-pg$y
+   #  
+   # h <- pdf/y[3:length(y)]
+   # plot(h, type='l')
+   # 
+   
+   
+   
+   
+   
+   
+   
+   
 # library(survival)
 # tm <- c(0, # birth
 #         1/365, # first day of life
@@ -832,17 +1159,18 @@ text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""),
 # It is just required to insert the inverse of an appropriate cumulative baseline
 # hazard function into equation
 
-
-#Inverse cumulative hazard function
-
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   #Inverse cumulative hazard function
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    # In addition to f(), F(), S(), h(), and H() -all different ways of summarizing the same
    # information-a sixth way, Q(), is of use for to create artificial survival-time data sets.
    # if U ∼ U[0; 1], then (1 − U) ∼ U[0; 1] so dispense with 1- in weibull formula
    # uniformly distributed random numbers can be transformed into survival times
+
    n=100
-   # function to plot true survival function
-   weibSurv <- function(t, shape, scale) pweibull(t, shape=shape, scale=scale, lower.tail=F)
+   # functions to plot true survival function
+      weibSurv <- function(t, shape, scale)   pweibull(t, shape=shape, scale=scale, lower.tail=F)
+      gSurv     <- function(t, shape, scale) pgompertz(t, shape=p,     rate = h,    lower.tail=F)
    
    par(mfrow=c(1,3))  
    
@@ -854,7 +1182,8 @@ text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""),
       t <- h^-1*(-log(runif(n)))^p # weibull
       
       survfit <- survfit(Surv(t) ~ 1)
-      plot(survfit, ylab="Survival probability", xlab="Time", main=paste0("N = ",n,", Weibull, shape = ",1/p,", rate = ",h))
+      plot(survfit, ylab="Survival probability", xlab="Time", 
+           main=paste0("N = ",n,", Weibull, shape = ",1/p,", rate = ",h))
       
       # plot true survival curve for weibull
       curve(weibSurv(x, shape=1/p, scale=1/h), from=0, to=max(t), n=length(t), 
@@ -865,31 +1194,32 @@ text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""),
       t <- -log(runif(n))/h # exponential rate = h 
       
       survfit <- survfit(Surv(t) ~ 1)
-      plot(survfit, ylab="Survival probability", xlab="Time", main=paste0("N = ",n,", Exponential, rate = ",h))
+      plot(survfit, ylab="Survival probability", xlab="Time", 
+           main=paste0("N = ",n,", Exponential, rate = ",h))
     
       # plot true survival curve, constant hazard h
       curve(weibSurv(x, shape=1, scale=1/h), from=0, to=max(t), n=length(t), 
             col='red', lwd=2, lty=2,
             ylim=c(0,1), add=TRUE)
 
-
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      require(flexsurv)
    
-   require(flexsurv)
-   gSurv <- function(t, shape, scale) pgompertz(t, shape=p, rate = h, lower.tail=F)
-   
-   t <- (1/p)*log((-log(runif(n)))*(p/h)+1) # gompertz see bender table1
-   
-   survfit <- survfit(Surv(t) ~ 1)
-   plot(survfit, ylab="Survival probability", xlab="Time", main=paste0("N = ",n,", Gompertz, shape = ",p,", scale = ",h))
-   
-   # plot true survival curve, 
-   curve(gSurv(x, shape=p, scale=1/h), from=0, to=max(t), n=length(t), 
-         col='red', lwd=2, lty=2,
-         ylim=c(0,1), add=TRUE)
+      t <- (1/p)*log((-log(runif(n)))*(p/h)+1) # gompertz, see bender table 1 where -log(runif(n)) is t
+      
+      survfit <- survfit(Surv(t) ~ 1)
+      plot(survfit, ylab="Survival probability", xlab="Time", 
+           main=paste0("N = ",n,", Gompertz, shape = ",p,", scale = ",h))
+      
+      # plot true survival curve, 
+      curve(gSurv(x, shape=p, scale=1/h), from=0, to=max(t), n=length(t), 
+            col='red', lwd=2, lty=2,
+            ylim=c(0,1), add=TRUE)
    
    par(mfrow=c(1,1))
    
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
    
    
