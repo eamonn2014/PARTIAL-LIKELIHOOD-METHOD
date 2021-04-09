@@ -1,4 +1,146 @@
  
+ 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~pdf cdf s(t)
+rm(list=ls())
+require(ggplot2)
+set.seed(100)
+Time <- data.frame(Time=rnorm(1000, 500, 150))
+rand1 <- 400
+
+# pdf
+p <- ggplot(Time, aes(Time)) +
+   geom_density(fill="grey") #+
+# subset region and plot
+d <- ggplot_build(p)$data[[1]]
+
+p <- p + geom_area(data = subset(d, x > rand1), aes(x=x, y=y), fill="lightgrey") +
+   geom_segment(x=rand1, xend=rand1, 
+                y=0, yend=approx(x = d$x, y = d$y, xout = rand1)$y,
+                colour="black", size=1)  + ylab("Density (Relative frequency)") +
+   
+   annotate("text", x=250,  y=0.0002, label= "F(t)", size=4) + 
+   annotate("text", x =650, y=0.0002, label = "S(t) = 1 - F(t)", size=4) +
+   annotate("text", x =660, y=0.002,  label = "f(t)", size=4) +
+   ggtitle("f(t) (death density) as a function of time. The cumulative \nproportion of the population that has died up to time t equals F(t). \nThe prop of the pop that has survived to time t is S(t) = 1- F(t)") +
+   theme_bw()
+
+# cdf
+P2 <-  ggplot(Time, aes(Time)) + stat_ecdf(geom = "step") +
+   ggtitle("F(t). Cumulative proportion of deaths with time")  +
+   theme_bw()
+
+# S(t)
+pg <- ggplot_build(P2)$data[[1]]
+P3 <- ggplot(pg, aes(x = x, y = 1-y )) + geom_step() +
+   ggtitle("S(t) The proportion of the population survived to time t \n S(t) = 1 - F(t) = P(T>t)")  + 
+   xlab("Time") +
+   ylab("Survival probability") +
+   theme_bw()
+
+
+require(gridExtra)
+plot1 <- p
+plot2 <- P2
+plot3 <- P3
+grid.arrange(plot1, plot2, plot3, ncol=3)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+p
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~pdf cdf s(t)
+   rm(list=ls())
+   require(ggplot2)
+   set.seed(1088)
+   
+   n=20
+   rand1 <- 400
+   Time=rnorm(n, 500, 150)
+  # Time=rexp(n, rate=.003)
+  
+   Time1 <- data.frame(Time=Time)
+   
+   #mean1 <- mean(amount_spent1$amount_spent)
+   rand1 <- 400
+   
+   
+   p <- ggplot(Time1, aes(Time)) +
+      geom_density(fill="grey")# +
+    #  geom_vline(xintercept=mean1) 
+   
+   # subset region and plot
+   d <- ggplot_build(p)$data[[1]]
+   
+   # p <- p + geom_area(data = subset(d, x > rand1), aes(x=x, y=y), fill="red") +
+   #    geom_segment(x=rand1, xend=rand1, 
+   #                 y=0, yend=approx(x = d$x, y = d$y, xout = rand1)$y,
+   #                 colour="blue", size=3)
+ 
+   
+  
+   dput(   sort(as.vector(unlist(Time1))))
+
+ #  pdf
+   # p <- ggplot(amount_spent1, aes(Time1)) +
+   #    geom_density(fill="grey") #+
+   # # subset region and plot
+   # d <- ggplot_build(p)$data[[1]]
+   #
+    p <- p + geom_area(data = subset(d, x > rand1), aes(x=x, y=y), fill="lightgrey") +
+      geom_segment(x=rand1, xend=rand1,
+                    y=0, yend=approx(x = d$x, y = d$y, xout = rand1)$y,
+                    colour="black", size=1)  + ylab("Density (Relative frequency)") +
+   
+      annotate("text", x=350,  y=0.0002, label= "F(t)", size=4) +
+       annotate("text", x =650, y=0.0002, label = "S(t) = 1 - F(t)", size=4) +
+       annotate("text", x =600, y=0.002,  label = "f(t)", size=4) +
+       ggtitle("f(t) (death density) as a function of time. The cumulative \nproportion of the population that has died up to time t equals F(t). \nThe prop of the pop that has survived to time t is S(t) = 1- F(t)") +
+       theme_bw()
+   
+  
+   
+
+# cdf
+   P2 <-  ggplot(Time1, aes(Time)) + stat_ecdf(geom = "step") +
+      ggtitle("F(t). Cumulative proportion of deaths with time")  +
+      theme_bw()
+
+# S(t)
+   pg <- ggplot_build(P2)$data[[1]]
+   P3 <- ggplot(pg, aes(x = x, y = 1-y )) + geom_step() +
+      ggtitle("S(t) The proportion of the population survived to time t \n S(t) = 1 - F(t) = P(T>t)")  + 
+      xlab("Time") +
+      ylab("Survival probability") +
+      theme_bw()
+
+
+   require(gridExtra)
+   plot1 <- p
+   plot2 <- P2
+   plot3 <- P3
+   grid.arrange(plot1, plot2, plot3, ncol=3)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   # 
+   # 
+   # 
+   # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   # dens <- density(Time1$Time, n=n)
+   # pdf <- dens$y 
+   # sum(dens$y)*diff(dens$x[1:2])  # area under the curve sums up to one as pdf should
+   # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   # #
+   # pg <- plyr::arrange(pg, x)
+   # y <- 1-pg$y
+   #  
+   # h <- pdf/y[3:length(y)]
+   # plot(h, type='l')
+   # 
+   
+   
+   
+   
+   
+   
+   
+   
 # library(survival)
 # tm <- c(0, # birth
 #         1/365, # first day of life
@@ -832,17 +974,18 @@ text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""),
 # It is just required to insert the inverse of an appropriate cumulative baseline
 # hazard function into equation
 
-
-#Inverse cumulative hazard function
-
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   #Inverse cumulative hazard function
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    # In addition to f(), F(), S(), h(), and H() -all different ways of summarizing the same
    # information-a sixth way, Q(), is of use for to create artificial survival-time data sets.
    # if U ∼ U[0; 1], then (1 − U) ∼ U[0; 1] so dispense with 1- in weibull formula
    # uniformly distributed random numbers can be transformed into survival times
+
    n=100
-   # function to plot true survival function
-   weibSurv <- function(t, shape, scale) pweibull(t, shape=shape, scale=scale, lower.tail=F)
+   # functions to plot true survival function
+      weibSurv <- function(t, shape, scale)   pweibull(t, shape=shape, scale=scale, lower.tail=F)
+      gSurv     <- function(t, shape, scale) pgompertz(t, shape=p,     rate = h,    lower.tail=F)
    
    par(mfrow=c(1,3))  
    
@@ -854,7 +997,8 @@ text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""),
       t <- h^-1*(-log(runif(n)))^p # weibull
       
       survfit <- survfit(Surv(t) ~ 1)
-      plot(survfit, ylab="Survival probability", xlab="Time", main=paste0("N = ",n,", Weibull, shape = ",1/p,", rate = ",h))
+      plot(survfit, ylab="Survival probability", xlab="Time", 
+           main=paste0("N = ",n,", Weibull, shape = ",1/p,", rate = ",h))
       
       # plot true survival curve for weibull
       curve(weibSurv(x, shape=1/p, scale=1/h), from=0, to=max(t), n=length(t), 
@@ -865,31 +1009,32 @@ text(15, 0.31-3.6, bquote("" ~ alpha == .(B) ~ ""  ~ lambda == .(D) ~ ""),
       t <- -log(runif(n))/h # exponential rate = h 
       
       survfit <- survfit(Surv(t) ~ 1)
-      plot(survfit, ylab="Survival probability", xlab="Time", main=paste0("N = ",n,", Exponential, rate = ",h))
+      plot(survfit, ylab="Survival probability", xlab="Time", 
+           main=paste0("N = ",n,", Exponential, rate = ",h))
     
       # plot true survival curve, constant hazard h
       curve(weibSurv(x, shape=1, scale=1/h), from=0, to=max(t), n=length(t), 
             col='red', lwd=2, lty=2,
             ylim=c(0,1), add=TRUE)
 
-
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      require(flexsurv)
    
-   require(flexsurv)
-   gSurv <- function(t, shape, scale) pgompertz(t, shape=p, rate = h, lower.tail=F)
-   
-   t <- (1/p)*log((-log(runif(n)))*(p/h)+1) # gompertz see bender table1
-   
-   survfit <- survfit(Surv(t) ~ 1)
-   plot(survfit, ylab="Survival probability", xlab="Time", main=paste0("N = ",n,", Gompertz, shape = ",p,", scale = ",h))
-   
-   # plot true survival curve, 
-   curve(gSurv(x, shape=p, scale=1/h), from=0, to=max(t), n=length(t), 
-         col='red', lwd=2, lty=2,
-         ylim=c(0,1), add=TRUE)
+      t <- (1/p)*log((-log(runif(n)))*(p/h)+1) # gompertz, see bender table 1 where -log(runif(n)) is t
+      
+      survfit <- survfit(Surv(t) ~ 1)
+      plot(survfit, ylab="Survival probability", xlab="Time", 
+           main=paste0("N = ",n,", Gompertz, shape = ",p,", scale = ",h))
+      
+      # plot true survival curve, 
+      curve(gSurv(x, shape=p, scale=1/h), from=0, to=max(t), n=length(t), 
+            col='red', lwd=2, lty=2,
+            ylim=c(0,1), add=TRUE)
    
    par(mfrow=c(1,1))
    
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
    
    
