@@ -1,4 +1,5 @@
  
+ 
 #
 ## ranks of time, show it is only ranks that count, mentino ties!
 
@@ -138,24 +139,6 @@ require(gridExtra)
 subplot(A,B,nrows=1, shareX=TRUE , titleX=TRUE)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
