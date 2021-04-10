@@ -46,6 +46,8 @@
       
       S <- Surv(d$dt, d$e)
       
+      do<-d
+      do <- plyr::arrange(do,dt)
       #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
       
       d <- plyr::arrange(d,dt)
@@ -60,7 +62,7 @@
       
       #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
       
-      return(list(f=f, d=d, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0, S=S,                  
+      return(list(f=f, d=d, do=do, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0, S=S,                  
                   
                   f0=f0,  f2=f2, f0a=f0a, foo=foo))
       
@@ -111,8 +113,12 @@ f <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=res$d )
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+# time itself does not matter
 res <- coxdata(n=100, allocation=.5, hr=2, baseline = .4)
+
+
+
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~
 fx <-  res$f2 # Get the  obj #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -139,7 +145,8 @@ require(gridExtra)
 subplot(A,B,nrows=1, shareX=TRUE , titleX=TRUE)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+tail(res$d)
+tail(res$do)
 
 
 
