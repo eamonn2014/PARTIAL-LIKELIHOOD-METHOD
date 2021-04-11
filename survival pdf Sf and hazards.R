@@ -1,11 +1,15 @@
- 
- 
-#
-## ranks of time, show it is only ranks that count, mentino ties!
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Demonstrate  it is only ranks that count, mention ties!
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# app function
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   #
+   rm(list=ls())
+   require(surival)
+   require(rms)
+   
+   # FUNCTION SIMULATE AND TO DO PLL CALC
    coxdata <- function(n, allocation, hr, baseline) { 
       
       #n=1000; allocation =.5; hr=2; baseline=.4
@@ -16,7 +20,7 @@
       
       h <- baseline*exp(log(hr)*(trt==1))  # hazard function h(t)
       
-      dt <- -log(runif(n))/h
+      dt <- -log(runif(n))/h   # <- exemplify this
       
       label(dt) <- 'Follow-up Time'
       
@@ -34,7 +38,7 @@
       foo <-d
       # S <- Surv(dt,e)
       f <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=d )
-      f0 <- f$coefficients[[1]] #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+      f0 <- f$coefficients[[1]]  
       LL1 <- f$loglik[2]
       LL0 <- f$loglik[1]
       
@@ -47,12 +51,11 @@
       S <- Surv(d$dt, d$e)
       
       do<-d
-      do <- plyr::arrange(do,dt)
-      #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-      
+      do <- plyr::arrange(do,dt) # collect this dataset
+
       d <- plyr::arrange(d,dt)
       d$dt <- dd<- NULL
-      d$dt <- sort(2*rexp(nrow(d)))# new times
+      d$dt <- sort(2*rexp(nrow(d))) # new times here!
       
       dx <<- datadist(d)
       options(datadist='dx')
@@ -60,7 +63,7 @@
       f0a <- f0a$coefficients[[1]]
       f2 <- survfit(Surv(dt ,e)  ~ trt, data = d)
       
-      #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+      #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
       
       return(list(f=f, d=d, do=do, f1=f1, sf=sf, np=np, LL1=LL1, LL0=LL0, S=S,                  
                   
@@ -68,12 +71,10 @@
       
    }
    
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # quickly show partial log likelihood calc (without logging til end)
 # in reality you don't know HR, it is found by iteration, maximizing LL
-
-set.seed(1234)
-
 # create small dataset, 
 # we are doing it this way to exemplfy
 # large datasets will cause numerical problems
@@ -81,101 +82,67 @@ set.seed(1234)
 
 ## show the cox phworkings
 
-set.seed(8713)
-res <- coxdata(n=10, allocation=.5, hr=2, baseline = .4)
-f <- cph(Surv(dt,e) ~ trt, x=TRUE, y=TRUE, data=res$d )
-f
-d <- res$d
-d <- plyr::arrange(d, dt)  # sort by time
+   set.seed(8713)
+   res <- coxdata(n=10, allocation=.5, hr=2, baseline = .4)
+   f <- cph(Surv(dt,e) ~ trt, x=TRUE, y=TRUE, data=res$d )
+   f
+   d <- res$d
+   d <- plyr::arrange(d, dt)  # sort by time
+   
+   # Calculate Li for everyone
+   d$numerator   <- exp(res$f$coefficients[[1]] * d$trt)
+   
+  #d$numerator   <- exp(0 * d$trt)   # show this
+   d$denominator <- (rev(cumsum(rev(d$numerator))))
+   d$Li          <- d$numerator/d$denominator
+   
+   # all censored contribute 1 (on multiplicative scale)
+   d$Li2<- ifelse(d$e %in% 1,d$Li,1)
+   
+   # get the product of all and log answer
+   d$LL <- log(prod(d$Li2))  
+   print(d,digits=6)
+   
+   # model LL, prove we have ecalc correctly
+   res$f$loglik
+   f <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=res$d )
 
-# Calculate Li for everyone
-d$numerator   <- exp(res$f$coefficients[[1]] * d$trt)
-d$denominator <- (rev(cumsum(rev(d$numerator))))
-d$Li          <- d$numerator/d$denominator
-
-# all censored contribute 1 (on multiplicative scale)
-d$Li2<- ifelse(d$e %in% 1,d$Li,1)
-
-# get the product of all and log answer
-d$LL <- log(prod(d$Li2))  
-d
-
-print(d,digits=6)
-
-
-# model LL, prove we have ecalc correctly
-res$f$loglik
-
-
-
-f <- cph(Surv(dt,e) ~  trt, x=TRUE, y=TRUE, data=res$d )
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# time itself does not matter
-res <- coxdata(n=100, allocation=.5, hr=2, baseline = .4)
-
-
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~
-fx <-  res$f2 # Get the  obj #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-f0a <- res$f0a               #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-p1 <- ggsurvplot(fx, main = "Kaplan-Meier Curve", legend.title = "Trt.",
-                 # palette = c("orange", "purple")  ,
-                 xlab=paste0("Time : HR=",  (exp(f0a)))
-                 # ggtheme = theme_bw() # Change ggplot2 theme
-)
-A<-ggplotly(p1[[1]])
-#~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-fx <-  res$f1 # Get the  obj #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-f0a <- res$f0                #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-p2 <- ggsurvplot(fx, main = "Kaplan-Meier Curve", legend.title = "Trt.",
-                 # palette = c("orange", "purple")  ,
-                 xlab=paste0("Time : HR=",  (exp(f0a)))
-                 # ggtheme = theme_bw() # Change ggplot2 theme
-)
-B <- ggplotly(p2[[1]])
-#~~~~~~~~~~~~~~~~~~~~~~~~~
-
-require(gridExtra)
-subplot(A,B,nrows=1, shareX=TRUE , titleX=TRUE)
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+   # time itself does not matter
+   res <- coxdata(n=100, allocation=.5, hr=2, baseline = .4)
+   
+   #~~~~~~~~~~~~~~~~~~~~~~~~~
+   fx <-  res$f2 # Get the  obj #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   f0a <- res$f0a               #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   p1 <- ggsurvplot(fx, main = "Kaplan-Meier Curve", legend.title = "Trt.",
+                    # palette = c("orange", "purple")  ,
+                    xlab=paste0("Time : HR=",  (exp(f0a)))
+                    # ggtheme = theme_bw() # Change ggplot2 theme
+   )
+   A<-ggplotly(p1[[1]])
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+   fx <-  res$f1 # Get the  obj #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   f0a <- res$f0                #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   p2 <- ggsurvplot(fx, main = "Kaplan-Meier Curve", legend.title = "Trt.",
+                    # palette = c("orange", "purple")  ,
+                    xlab=paste0("Time : HR=",  (exp(f0a)))
+                    # ggtheme = theme_bw() # Change ggplot2 theme
+   )
+   B <- ggplotly(p2[[1]])
+   #~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+   require(gridExtra)
+   subplot(A,B,nrows=1, shareX=TRUE , titleX=TRUE)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-tail(res$d)
-tail(res$do)
+# tail(res$d)
+# tail(res$do)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~pdf cdf s(t)
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+#~~~~~~~~~~~~~~~~~~~~~~PDF CDF S(t))
 rm(list=ls())
 require(ggplot2)
 set.seed(100)
@@ -219,8 +186,10 @@ plot2 <- P2
 plot3 <- P3
 grid.arrange(plot1, plot2, plot3, ncol=3)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-p
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~pdf cdf s(t)
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+# ANother PDF CDF S(t) not used
    rm(list=ls())
    require(ggplot2)
    set.seed(1088)
@@ -293,58 +262,10 @@ p
    grid.arrange(plot1, plot2, plot3, ncol=3)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   # 
-   # 
-   # 
-   # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   # dens <- density(Time1$Time, n=n)
-   # pdf <- dens$y 
-   # sum(dens$y)*diff(dens$x[1:2])  # area under the curve sums up to one as pdf should
-   # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   # #
-   # pg <- plyr::arrange(pg, x)
-   # y <- 1-pg$y
-   #  
-   # h <- pdf/y[3:length(y)]
-   # plot(h, type='l')
-   # 
+   #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+   #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+   #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
    
-   
-   
-   
-   
-   
-   
-   
-# library(survival)
-# tm <- c(0, # birth
-#         1/365, # first day of life
-#         7/365, # seventh day of life
-#         28/365, # fourth week of life
-#         1:110) # subsequent years
-# 
-# 
-# 
-# 
-# hazMale <- survexp.us[,"male","2004"] # 2004 males
-# hazFemale <- survexp.us[,"female","2004"] # 2004 females
-# 
-# 
-# plot(hazMale ~ tm)
-# 
-# 
-
-# 
-# x <- 1:9; 
-# names(x) <- x
-# # Multiplication & Power Tables
-# x %o% x
-# 
-# 
-# y <- 2:8; 
-# names(y) <- paste(y,":", sep = "")
-# outer(y, x, "^")
-#https://www.statology.org/plot-exponential-distribution-in-r/
    #~~~~~~~~~~~~~~~~~~~~~~#GOOD#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     rm(list=ls())
